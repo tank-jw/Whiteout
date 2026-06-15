@@ -315,9 +315,27 @@ struct ContentView: View {
 
                 Spacer()
 
-                Text("v\(UpdateChecker.currentVersion)")
-                    .font(.system(size: 10))
-                    .foregroundStyle(Color.secondary.opacity(0.5))
+                // 버전 텍스트 — 클릭하면 수동 업데이트 확인
+                Button {
+                    updater.manualCheck()
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("v\(UpdateChecker.currentVersion)")
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color.secondary.opacity(0.5))
+                        if updater.isChecking {
+                            ProgressView()
+                                .scaleEffect(0.45)
+                                .frame(width: 10, height: 10)
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 9))
+                                .foregroundStyle(Color.secondary.opacity(0.35))
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+                .help("업데이트 확인 (120시간마다 자동 확인)")
 
                 Spacer()
 

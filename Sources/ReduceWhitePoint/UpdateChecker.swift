@@ -7,41 +7,73 @@ class UpdateChecker: ObservableObject {
     // 현재 앱 버전 — 릴리즈 빌드 시 build_dmg.sh의 VERSION과 함께 업데이트할 것
     static let currentVersion = "1.3.0"
 
-    private let apiURL   = URL(string: "https://api.github.com/repos/tank-jw/Reduce_whitepoint/releases/latest")!
+    /// 주기적 재확인 간격 (120시간 = 5일)
+    private static let checkIntervalSeconds: TimeInterval = 120 * 3600
+
+    private let apiURL      = URL(string: "https://api.github.com/repos/tank-jw/Reduce_whitepoint/releases/latest")!
     private let releasesURL = URL(string: "https://github.com/tank-jw/Reduce_whitepoint/releases/latest")!
 
-    @Published var updateAvailable  = false
-    @Published var latestVersion    = ""
-    @Published var isDownloading    = false
+    @Published var updateAvailable:  Bool   = false
+    @Published var latestVersion:    String = ""
+    @Published var isChecking:       Bool   = false   // 수동 확인 진행 중
+    @Published var isDownloading:    Bool   = false
     @Published var downloadProgress: Double = 0
 
     private var zipDownloadURL: URL?
     private var progressObservation: NSKeyValueObservation?
+    private var periodicTimer: Timer?
+
+    deinit { periodicTimer?.invalidate() }
 
     // MARK: - 업데이트 확인
 
-    /// 앱 시작 시 백그라운드에서 조용히 최신 버전 확인
-    func checkInBackground() {
+    /// 앱 시작 시 호출 — 조용히 1회 확인 + 120시간 주기 타이머 시작
+    func startPeriodicChecks() {
+        fetchLatestRelease(isManual: false)
+        scheduleTimer()
+    }
+
+    /// 사용자가 직접 누른 경우 — 즉시 확인 후 타이머 리셋
+    func manualCheck() {
+        guard !isChecking && !isDownloading else { return }
+        fetchLatestRelease(isManual: true)
+        scheduleTimer()   // 수동 확인 시점부터 120시간 리셋
+    }
+
+    // MARK: - 내부 공통 네트워크 요청
+
+    private func fetchLatestRelease(isManual: Bool) {
+        if isManual {
+            DispatchQueue.main.async { self.isChecking = true }
+        }
+
         var request = URLRequest(url: apiURL)
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-        request.timeoutInterval = 8
+        request.timeoutInterval = 10
 
         URLSession.shared.dataTask(with: request) { [weak self] data, _, _ in
-            guard let self,
-                  let data,
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let tag  = json["tag_name"] as? String else { return }
+            guard let self else { return }
+
+            defer {
+                if isManual {
+                    DispatchQueue.main.async { self.isChecking = false }
+                }
+            }
+
+            guard let data,
+                  let json    = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let tag     = json["tag_name"] as? String else { return }
 
             let remote = tag.hasPrefix("v") ? String(tag.dropFirst()) : tag
 
-            // 릴리즈 assets 에서 .zip 다운로드 URL 추출
+            // 릴리즈 assets에서 .zip 다운로드 URL 추출
             var zipURL: URL?
             if let assets = json["assets"] as? [[String: Any]] {
                 for asset in assets {
-                    if let name    = asset["name"] as? String,
+                    if let name   = asset["name"] as? String,
                        name.hasSuffix(".zip"),
-                       let urlStr  = asset["browser_download_url"] as? String,
-                       let url     = URL(string: urlStr) {
+                       let urlStr = asset["browser_download_url"] as? String,
+                       let url    = URL(string: urlStr) {
                         zipURL = url
                         break
                     }
@@ -56,7 +88,19 @@ class UpdateChecker: ObservableObject {
         }.resume()
     }
 
-    // MARK: - 자동 업데이트
+    // MARK: - 타이머
+
+    private func scheduleTimer() {
+        periodicTimer?.invalidate()
+        periodicTimer = Timer.scheduledTimer(
+            withTimeInterval: Self.checkIntervalSeconds,
+            repeats: true
+        ) { [weak self] _ in
+            self?.fetchLatestRelease(isManual: false)
+        }
+    }
+
+    // MARK: - 자동 업데이트 (다운로드 → 설치 → 재실행)
 
     /// zip이 있으면 자동 다운로드→설치, 없으면 브라우저로 폴백
     func performUpdate() {
@@ -80,14 +124,11 @@ class UpdateChecker: ObservableObject {
             self.installUpdate(from: tempURL)
         }
 
-        // 다운로드 진행률 관찰
         progressObservation = task.observe(\.countOfBytesReceived) { [weak self] t, _ in
             let total    = Double(t.countOfBytesExpectedToReceive)
             let received = Double(t.countOfBytesReceived)
             guard total > 0 else { return }
-            DispatchQueue.main.async {
-                self?.downloadProgress = received / total
-            }
+            DispatchQueue.main.async { self?.downloadProgress = received / total }
         }
 
         task.resume()
@@ -100,13 +141,12 @@ class UpdateChecker: ObservableObject {
     // MARK: - 설치
 
     private func installUpdate(from tempZip: URL) {
-        let fm          = FileManager.default
-        let extractDir  = URL(fileURLWithPath: NSTemporaryDirectory())
+        let fm         = FileManager.default
+        let extractDir = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("RWP_Update_\(UUID().uuidString)")
 
         try? fm.createDirectory(at: extractDir, withIntermediateDirectories: true)
 
-        // zip 복사 후 압축 해제
         let zipDest = extractDir.appendingPathComponent("update.zip")
         try? fm.copyItem(at: tempZip, to: zipDest)
 
@@ -122,13 +162,11 @@ class UpdateChecker: ObservableObject {
             return
         }
 
-        // 현재 앱 위치 결정: .app 번들이면 그 위치, 아니면(swift run 등) /Applications
         let currentBundle = Bundle.main.bundleURL
         let destination   = currentBundle.pathExtension == "app"
             ? currentBundle
             : URL(fileURLWithPath: "/Applications/ReduceWhitePoint.app")
 
-        // 업데이터 셸 스크립트 작성 — 앱 종료 후 교체 → 재실행
         let script = """
         #!/bin/bash
         sleep 1
@@ -148,7 +186,6 @@ class UpdateChecker: ObservableObject {
         try? chmod.run()
         chmod.waitUntilExit()
 
-        // 스크립트 실행 후 현재 앱 종료
         let runner = Process()
         runner.executableURL = URL(fileURLWithPath: "/bin/sh")
         runner.arguments     = [scriptPath]

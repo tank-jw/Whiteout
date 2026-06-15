@@ -27,8 +27,8 @@ struct ReduceWhitePointApp: App {
             }
         }
         .task {
-            // 앱 시작 시 백그라운드에서 업데이트 체크
-            updateChecker.checkInBackground()
+            // 앱 시작 시 업데이트 확인 + 120시간 주기 타이머 시작
+            updateChecker.startPeriodicChecks()
         }
     }
 }
