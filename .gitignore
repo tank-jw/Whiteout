@@ -2,3 +2,5 @@
 *.o
 *.d
 ReduceWhitePoint.dmg
+.DS_Store
+ReduceWhitePoint.app/
