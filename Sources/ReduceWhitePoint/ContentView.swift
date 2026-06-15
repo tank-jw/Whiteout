@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject var dm: DisplayManager
+    @EnvironmentObject var updater: UpdateChecker
 
     // MARK: - Bindings
 
@@ -236,33 +237,77 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.2), value: dm.reduction)
     }
 
+    // MARK: - Update Banner
+
+    @ViewBuilder
+    private var updateBanner: some View {
+        if updater.updateAvailable {
+            Divider().opacity(0.5)
+            Button {
+                updater.openReleasePage()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .foregroundStyle(.orange)
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("새 버전 v\(updater.latestVersion) 사용 가능")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(.primary)
+                        Text("클릭하여 다운로드")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .background(Color.orange.opacity(0.08))
+        }
+    }
+
     // MARK: - Footer
 
     private var footerSection: some View {
-        HStack {
-            Button {
-                withAnimation { dm.resetAll() }
-            } label: {
-                Text("초기화")
-                    .font(.system(size: 12))
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(dm.isEnabled || dm.reduction > 0 ? Color.secondary : Color.secondary.opacity(0.4))
-            .disabled(!dm.isEnabled && dm.reduction == 0)
+        VStack(spacing: 0) {
+            updateBanner
 
-            Spacer()
+            HStack {
+                Button {
+                    withAnimation { dm.resetAll() }
+                } label: {
+                    Text("초기화")
+                        .font(.system(size: 12))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(dm.isEnabled || dm.reduction > 0 ? Color.secondary : Color.secondary.opacity(0.4))
+                .disabled(!dm.isEnabled && dm.reduction == 0)
 
-            Button {
-                dm.quit()
-            } label: {
-                Text("종료")
-                    .font(.system(size: 12))
+                Spacer()
+
+                Text("v\(UpdateChecker.currentVersion)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color.secondary.opacity(0.5))
+
+                Spacer()
+
+                Button {
+                    dm.quit()
+                } label: {
+                    Text("종료")
+                        .font(.system(size: 12))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.secondary)
+                .keyboardShortcut("q")
             }
-            .buttonStyle(.plain)
-            .foregroundStyle(Color.secondary)
-            .keyboardShortcut("q")
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
     }
 }

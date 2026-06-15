@@ -4,15 +4,18 @@ import SwiftUI
 struct ReduceWhitePointApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var displayManager = DisplayManager()
+    @StateObject private var updateChecker  = UpdateChecker()
 
     var body: some Scene {
         MenuBarExtra {
             ContentView()
                 .environmentObject(displayManager)
+                .environmentObject(updateChecker)
         } label: {
             menuBarLabel
         }
         .menuBarExtraStyle(.window)
+        .onChange(of: updateChecker.updateAvailable) { _ in }  // trigger redraw if needed
     }
 
     private var menuBarLabel: some View {
@@ -23,5 +26,10 @@ struct ReduceWhitePointApp: App {
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
             }
         }
+        .task {
+            // 앱 시작 시 백그라운드에서 업데이트 체크
+            updateChecker.checkInBackground()
+        }
     }
 }
+
