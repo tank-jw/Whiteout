@@ -242,8 +242,6 @@ struct ContentView: View {
     @ViewBuilder
     private var updateBanner: some View {
         if updater.updateAvailable {
-            Divider().opacity(0.5)
-
             if updater.isDownloading {
                 // 다운로드 진행 중
                 VStack(spacing: 8) {

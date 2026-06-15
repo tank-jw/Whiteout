@@ -12,6 +12,7 @@ private typealias GammaTable = (red: [CGGammaValue], green: [CGGammaValue], blue
 ///   - Black (0) stays 0 — contrast is preserved
 ///   - White (1.0) is scaled down to `1.0 - reduction * 0.3`  (max 30% reduction)
 ///   - Applies to ALL active displays (multi-monitor support)
+///   - Responds to display connect/disconnect at runtime
 ///   - The original gamma table is saved on init and restored on quit / reset
 class DisplayManager: ObservableObject {
 
@@ -61,13 +62,22 @@ class DisplayManager: ObservableObject {
             applyReduction(savedReduction)
         }
 
-        // Restore gamma when the app is about to quit
+        // 앱 종료 시 원본 감마 복원
         NotificationCenter.default.addObserver(
             forName: NSApplication.willTerminateNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
             self?.restoreOriginalTables()
+        }
+
+        // 모니터 연결/해제 시 디스플레이 구성 갱신
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.refreshDisplayConfiguration()
         }
     }
 
@@ -115,9 +125,6 @@ class DisplayManager: ObservableObject {
 
             CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
         }
-
-        UserDefaults.standard.set(amount, forKey: Keys.reduction)
-        UserDefaults.standard.set(true,   forKey: Keys.isEnabled)
     }
 
     /// Toggle the effect on/off.
@@ -175,6 +182,32 @@ class DisplayManager: ObservableObject {
             var g = tables.green
             var b = tables.blue
             CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+        }
+    }
+
+    /// 모니터 연결/해제 시 호출 — 새 디스플레이 추가, 제거된 디스플레이 정리
+    private func refreshDisplayConfiguration() {
+        let currentIDs = Set(activeDisplayIDs())
+        let knownIDs   = Set(originalTables.keys)
+
+        // 새로 연결된 모니터: 원본 테이블 저장 후 즉시 감소 적용
+        for id in currentIDs.subtracting(knownIDs) {
+            var r = [CGGammaValue](repeating: 0, count: tableSize)
+            var g = [CGGammaValue](repeating: 0, count: tableSize)
+            var b = [CGGammaValue](repeating: 0, count: tableSize)
+            var count: UInt32 = 0
+            CGGetDisplayTransferByTable(id, UInt32(tableSize), &r, &g, &b, &count)
+            originalTables[id] = (red: r, green: g, blue: b)
+        }
+
+        // 연결 해제된 모니터: 테이블 제거
+        for id in knownIDs.subtracting(currentIDs) {
+            originalTables.removeValue(forKey: id)
+        }
+
+        // 활성 상태라면 새 구성에 즉시 재적용
+        if isEnabled && reduction > 0.001 {
+            applyReduction()
         }
     }
 }

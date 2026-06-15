@@ -5,7 +5,7 @@ import AppKit
 class UpdateChecker: ObservableObject {
 
     // 현재 앱 버전 — 릴리즈 빌드 시 build_dmg.sh의 VERSION="1.4.0"과 함께 업데이트할 것
-    static let currentVersion = "1.4.1"
+    static let currentVersion = "1.4.2"
 
     /// 주기적 재확인 간격 (120시간 = 5일)
     private static let checkIntervalSeconds: TimeInterval = 120 * 3600
@@ -15,7 +15,7 @@ class UpdateChecker: ObservableObject {
 
     @Published var updateAvailable:  Bool   = false
     @Published var latestVersion:    String = ""
-    @Published var isChecking:       Bool   = false   // 수동 확인 진행 중
+    @Published var isChecking:       Bool   = false
     @Published var isDownloading:    Bool   = false
     @Published var downloadProgress: Double = 0
 
@@ -23,12 +23,18 @@ class UpdateChecker: ObservableObject {
     private var progressObservation: NSKeyValueObservation?
     private var periodicTimer: Timer?
 
+    init() {
+        // View에 의존하지 않고 생성 즉시 주기 확인 시작
+        scheduleTimer()
+        fetchLatestRelease(isManual: false)
+    }
+
     deinit { periodicTimer?.invalidate() }
 
     // MARK: - 업데이트 확인
 
     /// 앱 시작 시 호출 — 조용히 1회 확인 + 120시간 주기 타이머 시작
-    func startPeriodicChecks() {
+    private func startPeriodicChecks() {
         fetchLatestRelease(isManual: false)
         scheduleTimer()
     }
