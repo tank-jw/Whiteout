@@ -3,11 +3,15 @@ import CoreGraphics
 import Foundation
 import Combine
 
+/// 디스플레이 한 개의 원본 감마 테이블
+private typealias GammaTable = (red: [CGGammaValue], green: [CGGammaValue], blue: [CGGammaValue])
+
 /// Manages the display's gamma transfer table to reduce white point intensity.
 ///
 /// This replicates iPad's "Reduce White Point" feature at the GPU/driver level:
 ///   - Black (0) stays 0 — contrast is preserved
 ///   - White (1.0) is scaled down to `1.0 - reduction * 0.3`  (max 30% reduction)
+///   - Applies to ALL active displays (multi-monitor support)
 ///   - The original gamma table is saved on init and restored on quit / reset
 class DisplayManager: ObservableObject {
 
@@ -35,9 +39,9 @@ class DisplayManager: ObservableObject {
     }
 
     private let tableSize = 256
-    private var originalRed:   [CGGammaValue] = []
-    private var originalGreen: [CGGammaValue] = []
-    private var originalBlue:  [CGGammaValue] = []
+
+    /// 디스플레이 ID → 원본 감마 테이블 (다중 모니터 지원)
+    private var originalTables: [CGDirectDisplayID: GammaTable] = [:]
 
     // MARK: - Init
 
@@ -73,7 +77,7 @@ class DisplayManager: ObservableObject {
 
     // MARK: - Public API
 
-    /// Apply the current `reduction` value to the display's gamma table.
+    /// Apply the current `reduction` value to ALL active displays.
     func applyReduction(_ amount: Double? = nil) {
         let amount = amount ?? reduction
         guard amount > 0.001 else {
@@ -95,19 +99,22 @@ class DisplayManager: ObservableObject {
         // Curve exponent preset: 2.5 = general / 4.0 = document·PDF / 6.0 = highlights only
         let exp = CGGammaValue(curveExponent)
 
-        var r = [CGGammaValue](repeating: 0, count: tableSize)
-        var g = [CGGammaValue](repeating: 0, count: tableSize)
-        var b = [CGGammaValue](repeating: 0, count: tableSize)
+        // 모든 저장된 디스플레이에 적용
+        for (displayID, tables) in originalTables {
+            var r = [CGGammaValue](repeating: 0, count: tableSize)
+            var g = [CGGammaValue](repeating: 0, count: tableSize)
+            var b = [CGGammaValue](repeating: 0, count: tableSize)
 
-        for i in 0..<tableSize {
-            let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
-            let scaleFactor = 1.0 - pow(t, exp) * (1.0 - maxOutput)
-            r[i] = originalRed[i]   * scaleFactor
-            g[i] = originalGreen[i] * scaleFactor
-            b[i] = originalBlue[i]  * scaleFactor
+            for i in 0..<tableSize {
+                let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
+                let scaleFactor = 1.0 - pow(t, exp) * (1.0 - maxOutput)
+                r[i] = tables.red[i]   * scaleFactor
+                g[i] = tables.green[i] * scaleFactor
+                b[i] = tables.blue[i]  * scaleFactor
+            }
+
+            CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
         }
-
-        CGSetDisplayTransferByTable(CGMainDisplayID(), UInt32(tableSize), &r, &g, &b)
 
         UserDefaults.standard.set(amount, forKey: Keys.reduction)
         UserDefaults.standard.set(true,   forKey: Keys.isEnabled)
@@ -123,7 +130,7 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    /// Reset everything to factory defaults and restore the display.
+    /// Reset everything to factory defaults and restore all displays.
     func resetAll() {
         restoreOriginalTables()
         reduction = 0
@@ -138,24 +145,36 @@ class DisplayManager: ObservableObject {
 
     // MARK: - Private Helpers
 
-    private func saveOriginalTables() {
-        var r = [CGGammaValue](repeating: 0, count: tableSize)
-        var g = [CGGammaValue](repeating: 0, count: tableSize)
-        var b = [CGGammaValue](repeating: 0, count: tableSize)
+    /// 현재 연결된 모든 활성 디스플레이 ID 반환
+    private func activeDisplayIDs() -> [CGDirectDisplayID] {
         var count: UInt32 = 0
-
-        CGGetDisplayTransferByTable(CGMainDisplayID(), UInt32(tableSize), &r, &g, &b, &count)
-
-        originalRed   = r
-        originalGreen = g
-        originalBlue  = b
+        CGGetActiveDisplayList(0, nil, &count)
+        guard count > 0 else { return [] }
+        var ids = [CGDirectDisplayID](repeating: 0, count: Int(count))
+        CGGetActiveDisplayList(count, &ids, &count)
+        return ids
     }
 
+    /// 모든 활성 디스플레이의 원본 감마 테이블 저장
+    private func saveOriginalTables() {
+        for displayID in activeDisplayIDs() {
+            var r = [CGGammaValue](repeating: 0, count: tableSize)
+            var g = [CGGammaValue](repeating: 0, count: tableSize)
+            var b = [CGGammaValue](repeating: 0, count: tableSize)
+            var count: UInt32 = 0
+            CGGetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b, &count)
+            originalTables[displayID] = (red: r, green: g, blue: b)
+        }
+    }
+
+    /// 모든 디스플레이를 원본 감마로 복원
     private func restoreOriginalTables() {
-        guard !originalRed.isEmpty else { return }
-        var r = originalRed
-        var g = originalGreen
-        var b = originalBlue
-        CGSetDisplayTransferByTable(CGMainDisplayID(), UInt32(tableSize), &r, &g, &b)
+        guard !originalTables.isEmpty else { return }
+        for (displayID, tables) in originalTables {
+            var r = tables.red
+            var g = tables.green
+            var b = tables.blue
+            CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+        }
     }
 }
