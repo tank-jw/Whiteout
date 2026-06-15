@@ -75,6 +75,19 @@ bash build_dmg.sh
 
 ---
 
+## 새 버전 배포 체크리스트
+
+새 기능/버그 수정 후 릴리즈할 때 반드시 확인:
+
+- [ ] `UpdateChecker.swift` — `currentVersion = "x.x.x"` 업데이트
+- [ ] `build_dmg.sh` — `VERSION="x.x.x"` 동일하게 업데이트
+- [ ] `README.md` — **업데이트 내역** 테이블에 새 버전 추가
+- [ ] `bash build_dmg.sh` 실행 → DMG + ZIP 생성 확인
+- [ ] `git commit` + `git push`
+- [ ] `gh release create vx.x.x ReduceWhitePoint.dmg ReduceWhitePoint.zip`
+
+---
+
 ## 파일 구조
 
 ```
