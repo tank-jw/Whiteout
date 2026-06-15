@@ -5,8 +5,9 @@ set -e
 
 APP_NAME="ReduceWhitePoint"
 BUNDLE_ID="com.tankjw.reducewhitepoint"
-VERSION="1.0.0"
+VERSION="1.3.0"
 DMG_NAME="${APP_NAME}.dmg"
+ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"
 APP_DIR="${APP_NAME}.app"
 
@@ -77,10 +78,15 @@ hdiutil create \
 
 rm -rf "${STAGING_DIR}"
 
+echo "🗜️  ZIP 생성 중 (자동 업데이트용)..."
+rm -f "${ZIP_NAME}"
+ditto -c -k --keepParent "${APP_DIR}" "${ZIP_NAME}"
+
 echo ""
 echo "✅ 완료!"
 echo "   📁 앱 번들: ${APP_DIR}"
 echo "   💿 DMG:     ${DMG_NAME}"
+echo "   🗜️  ZIP:     ${ZIP_NAME}"
 echo ""
 echo "⚠️  다른 맥에서 처음 실행 시:"
 echo "   Finder에서 앱을 우클릭 → '열기' → '열기' 버튼 클릭"

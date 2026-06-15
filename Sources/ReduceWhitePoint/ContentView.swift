@@ -243,33 +243,58 @@ struct ContentView: View {
     private var updateBanner: some View {
         if updater.updateAvailable {
             Divider().opacity(0.5)
-            Button {
-                updater.openReleasePage()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.down.circle.fill")
-                        .foregroundStyle(.orange)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text("새 버전 v\(updater.latestVersion) 사용 가능")
+
+            if updater.isDownloading {
+                // 다운로드 진행 중
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .foregroundStyle(.orange)
+                        Text("v\(updater.latestVersion) 다운로드 중...")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(.primary)
-                        Text("클릭하여 다운로드")
-                            .font(.system(size: 10))
+                        Spacer()
+                        Text("\(Int(updater.downloadProgress * 100))%")
+                            .font(.system(size: 11, design: .monospaced))
                             .foregroundStyle(.secondary)
                     }
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.secondary)
+                    ProgressView(value: updater.downloadProgress)
+                        .tint(.orange)
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .contentShape(Rectangle())
+                .background(Color.orange.opacity(0.06))
+
+            } else {
+                // 업데이트 가능 — 클릭 시 자동 업데이트
+                Button {
+                    updater.performUpdate()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "arrow.down.circle.fill")
+                            .foregroundStyle(.orange)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text("새 버전 v\(updater.latestVersion) 사용 가능")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(.primary)
+                            Text("클릭하여 자동 업데이트")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .background(Color.orange.opacity(0.08))
             }
-            .buttonStyle(.plain)
-            .background(Color.orange.opacity(0.08))
         }
     }
+
 
     // MARK: - Footer
 
