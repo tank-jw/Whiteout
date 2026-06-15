@@ -5,7 +5,7 @@ import AppKit
 class UpdateChecker: ObservableObject {
 
     // 현재 앱 버전 — 릴리즈 빌드 시 build_dmg.sh의 VERSION="1.4.0"과 함께 업데이트할 것
-    static let currentVersion = "1.4.0"
+    static let currentVersion = "1.4.1"
 
     /// 주기적 재확인 간격 (120시간 = 5일)
     private static let checkIntervalSeconds: TimeInterval = 120 * 3600
@@ -169,7 +169,7 @@ class UpdateChecker: ObservableObject {
 
         let script = """
         #!/bin/bash
-        sleep 1
+        sleep 2
         rm -rf '\(destination.path)'
         cp -R '\(extractedApp.path)' '\(destination.path)'
         xattr -dr com.apple.quarantine '\(destination.path)' 2>/dev/null || true
@@ -186,12 +186,18 @@ class UpdateChecker: ObservableObject {
         try? chmod.run()
         chmod.waitUntilExit()
 
-        let runner = Process()
-        runner.executableURL = URL(fileURLWithPath: "/bin/sh")
-        runner.arguments     = [scriptPath]
-        try? runner.run()
+        // nohup으로 앱 프로세스 그룹과 완전히 분리하여 실행
+        // — 앱이 종료되어도 스크립트가 계속 실행되어 재실행까지 완료됨
+        let launcher = Process()
+        launcher.executableURL = URL(fileURLWithPath: "/bin/sh")
+        launcher.arguments     = ["-c", "nohup /bin/sh '\(scriptPath)' > /dev/null 2>&1 &"]
+        launcher.standardInput  = FileHandle.nullDevice
+        launcher.standardOutput = FileHandle.nullDevice
+        launcher.standardError  = FileHandle.nullDevice
+        try? launcher.run()
+        launcher.waitUntilExit()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             NSApplication.shared.terminate(nil)
         }
     }

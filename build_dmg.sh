@@ -5,7 +5,7 @@ set -e
 
 APP_NAME="ReduceWhitePoint"
 BUNDLE_ID="com.tankjw.reducewhitepoint"
-VERSION="1.4.0"
+VERSION="1.4.1"
 DMG_NAME="${APP_NAME}.dmg"
 ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"
