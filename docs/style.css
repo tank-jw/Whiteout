@@ -1041,7 +1041,7 @@ a {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: var(--border-radius-md);
     overflow: hidden;
-    aspect-ratio: 450 / 280;
+    aspect-ratio: 580 / 220;
     position: relative;
 }
 

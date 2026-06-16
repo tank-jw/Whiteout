@@ -130,6 +130,13 @@ class DisplayManager: ObservableObject {
         // Curve exponent preset: 2.5 = general / 4.0 = document·PDF / 6.0 = highlights only
         let exp = CGGammaValue(curveExponent)
 
+        // Precalculate curve scaling factors to avoid redundant pow() operations in multi-monitor setups
+        var scaleFactors = [CGGammaValue](repeating: 0, count: tableSize)
+        for i in 0..<tableSize {
+            let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
+            scaleFactors[i] = 1.0 - pow(t, exp) * (1.0 - maxOutput)
+        }
+
         // 모든 저장된 디스플레이에 적용
         for (displayID, tables) in originalTables {
             var r = [CGGammaValue](repeating: 0, count: tableSize)
@@ -137,11 +144,10 @@ class DisplayManager: ObservableObject {
             var b = [CGGammaValue](repeating: 0, count: tableSize)
 
             for i in 0..<tableSize {
-                let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
-                let scaleFactor = 1.0 - pow(t, exp) * (1.0 - maxOutput)
-                r[i] = tables.red[i]   * scaleFactor
-                g[i] = tables.green[i] * scaleFactor
-                b[i] = tables.blue[i]  * scaleFactor
+                let sf = scaleFactors[i]
+                r[i] = tables.red[i]   * sf
+                g[i] = tables.green[i] * sf
+                b[i] = tables.blue[i]  * sf
             }
 
             CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
