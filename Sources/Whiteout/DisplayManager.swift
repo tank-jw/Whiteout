@@ -2,6 +2,7 @@ import Cocoa
 import CoreGraphics
 import Foundation
 import Combine
+import KeyboardShortcuts
 
 /// 디스플레이 한 개의 원본 감마 테이블
 private typealias GammaTable = (red: [CGGammaValue], green: [CGGammaValue], blue: [CGGammaValue])
@@ -31,12 +32,17 @@ class DisplayManager: ObservableObject {
         didSet { UserDefaults.standard.set(curveExponent, forKey: Keys.curveExponent) }
     }
 
+    @Published var isShortcutEnabled: Bool {
+        didSet { UserDefaults.standard.set(isShortcutEnabled, forKey: Keys.isShortcutEnabled) }
+    }
+
     // MARK: - Private
 
     private enum Keys {
-        static let reduction     = "whitePointReduction"
-        static let isEnabled     = "whitePointEnabled"
-        static let curveExponent = "curveExponent"
+        static let reduction         = "whitePointReduction"
+        static let isEnabled         = "whitePointEnabled"
+        static let curveExponent     = "curveExponent"
+        static let isShortcutEnabled = "isShortcutEnabled"
     }
 
     private let tableSize = 256
@@ -50,16 +56,24 @@ class DisplayManager: ObservableObject {
         let savedReduction = UserDefaults.standard.double(forKey: Keys.reduction)
         let savedEnabled   = UserDefaults.standard.bool(forKey: Keys.isEnabled)
         let savedExponent  = UserDefaults.standard.object(forKey: Keys.curveExponent) as? Double ?? 4.0
+        let savedShortcut  = UserDefaults.standard.object(forKey: Keys.isShortcutEnabled) as? Bool ?? true
 
-        self.reduction     = savedReduction
-        self.isEnabled     = savedEnabled
-        self.curveExponent = savedExponent
+        self.reduction         = savedReduction
+        self.isEnabled         = savedEnabled
+        self.curveExponent     = savedExponent
+        self.isShortcutEnabled = savedShortcut
 
         saveOriginalTables()
 
         // Re-apply saved setting on launch
         if savedEnabled && savedReduction > 0 {
             applyReduction(savedReduction)
+        }
+
+        // 글로벌 단축키 리스너 등록
+        KeyboardShortcuts.onKeyUp(for: .toggleWhiteout) { [weak self] in
+            guard let self = self, self.isShortcutEnabled else { return }
+            self.setEnabled(!self.isEnabled)
         }
 
         // 앱 종료 시 원본 감마 복원

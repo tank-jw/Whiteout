@@ -3,9 +3,9 @@
 
 set -e
 
-APP_NAME="ReduceWhitePoint"
-BUNDLE_ID="com.tankjw.reducewhitepoint"
-VERSION="1.4.2"
+APP_NAME="Whiteout"
+BUNDLE_ID="com.tankjw.whiteout"
+VERSION="1.5.1"
 DMG_NAME="${APP_NAME}.dmg"
 ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"
@@ -35,9 +35,9 @@ cat > "${APP_DIR}/Contents/Info.plist" << EOF
   <key>CFBundleIdentifier</key>
   <string>${BUNDLE_ID}</string>
   <key>CFBundleName</key>
-  <string>Reduce White Point</string>
+  <string>Whiteout</string>
   <key>CFBundleDisplayName</key>
-  <string>Reduce White Point</string>
+  <string>Whiteout</string>
   <key>CFBundleVersion</key>
   <string>${VERSION}</string>
   <key>CFBundleShortVersionString</key>
@@ -70,7 +70,7 @@ cp -r "${APP_DIR}" "${STAGING_DIR}/"
 ln -s /Applications "${STAGING_DIR}/Applications"
 
 hdiutil create \
-  -volname "Reduce White Point" \
+  -volname "Whiteout" \
   -srcfolder "${STAGING_DIR}" \
   -ov \
   -format UDZO \

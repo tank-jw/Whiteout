@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct ReduceWhitePointApp: App {
+struct WhiteoutApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var displayManager = DisplayManager()
     @StateObject private var updateChecker  = UpdateChecker()

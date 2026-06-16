@@ -1,18 +1,18 @@
-# Reduce White Point for macOS
+# Whiteout for macOS
 
 > 아이패드의 **화이트포인트 낮추기** 기능을 macOS에서 구현한 메뉴바 앱
 
-[![최신 릴리즈](https://img.shields.io/github/v/release/tank-jw/Reduce_whitepoint?label=최신%20버전&color=orange)](https://github.com/tank-jw/Reduce_whitepoint/releases/latest)
-[![macOS](https://img.shields.io/badge/macOS-13%2B-blue)](https://github.com/tank-jw/Reduce_whitepoint)
-[![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange)](https://github.com/tank-jw/Reduce_whitepoint)
+[![최신 릴리즈](https://img.shields.io/github/v/release/tank-jw/Whiteout?label=최신%20버전&color=orange)](https://github.com/tank-jw/Whiteout/releases/latest)
+[![macOS](https://img.shields.io/badge/macOS-13%2B-blue)](https://github.com/tank-jw/Whiteout)
+[![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange)](https://github.com/tank-jw/Whiteout)
 
 ## 📥 다운로드
 
-**[→ 최신 버전 DMG 다운로드](https://github.com/tank-jw/Reduce_whitepoint/releases/latest)**
+**[→ 최신 버전 DMG 다운로드](https://github.com/tank-jw/Whiteout/releases/latest)**
 
 > ⚠️ **처음 실행 시 Gatekeeper 경고가 뜨면:**
 > - **방법 1 (간단):** 앱을 우클릭 → 열기 → 열기
-> - **방법 2 (터미널):** `xattr -dr com.apple.quarantine /Applications/ReduceWhitePoint.app`
+> - **방법 2 (터미널):** `xattr -dr com.apple.quarantine /Applications/Whiteout.app`
 
 ---
 
@@ -35,8 +35,9 @@
 
 - 🌤 **메뉴바 앱** — Dock에 아이콘 없음
 - 🎚 **감소량 슬라이더** — 0~30%, 5% 단위 스냅
+- ⌨️ **사용자 설정 글로벌 단축키** — 언제 어디서나 키보드 단축키로 온/오프 가능
 - 🖥 **다중 모니터 지원** — 연결된 모든 디스플레이에 동시 적용
-- 🔘 **곡선 타입 선택** — 일반 / 문서·PDF / 하이라이트
+- 🔘 **곡선 타입 선택** — 일반(2.5) / 문서·PDF(4.0) / 하이라이트(6.0)로 세분화하여 T값 표기
 - 🔄 **자동 업데이트** — 새 버전 출시 시 팝오버에서 클릭 한 번으로 업데이트
 - 💾 **설정 자동 저장** — 재시작 후에도 유지
 - ✅ **안전한 종료** — 앱 종료 시 원래 밝기 자동 복원
@@ -61,8 +62,8 @@
 ## 소스에서 실행
 
 ```bash
-git clone https://github.com/tank-jw/Reduce_whitepoint.git
-cd Reduce_whitepoint
+git clone https://github.com/tank-jw/Whiteout.git
+cd Whiteout
 swift run
 ```
 
@@ -70,7 +71,7 @@ swift run
 
 ```bash
 bash build_dmg.sh
-# → ReduceWhitePoint.dmg, ReduceWhitePoint.zip 생성
+# → Whiteout.dmg, Whiteout.zip 생성
 ```
 
 ---
@@ -84,19 +85,20 @@ bash build_dmg.sh
 - [ ] `README.md` — **업데이트 내역** 테이블에 새 버전 추가
 - [ ] `bash build_dmg.sh` 실행 → DMG + ZIP 생성 확인
 - [ ] `git commit` + `git push`
-- [ ] `gh release create vx.x.x ReduceWhitePoint.dmg ReduceWhitePoint.zip`
+- [ ] `gh release create vx.x.x Whiteout.dmg Whiteout.zip`
 
 ---
 
 ## 파일 구조
 
 ```
-Sources/ReduceWhitePoint/
-├── ReduceWhitePointApp.swift   — @main, MenuBarExtra
-├── AppDelegate.swift           — Dock 아이콘 숨김
-├── DisplayManager.swift        — 다중 모니터 감마 테이블 관리
-├── ContentView.swift           — SwiftUI 팝오버 UI
-└── UpdateChecker.swift         — GitHub Releases 자동 업데이트
+Sources/Whiteout/
+├── WhiteoutApp.swift   — @main, MenuBarExtra
+├── AppDelegate.swift   — Dock 아이콘 숨김
+├── DisplayManager.swift — 다중 모니터 감마 테이블 관리 및 단축키 로직 연동
+├── ContentView.swift    — SwiftUI 팝오버 UI (단축키 녹화 컨트롤 포함)
+├── Shortcuts.swift      — KeyboardShortcuts 이름 등록 정의
+└── UpdateChecker.swift  — GitHub Releases 자동 업데이트
 ```
 
 ---
@@ -105,7 +107,9 @@ Sources/ReduceWhitePoint/
 
 | 버전 | 내용 |
 |---|---|
-| **v1.4.2** | 코드 최적화: 이중 Divider 버그 수정, 런타임 모니터 연결/해제 즉시 반영, 중복 코드 제거 |
+| **v1.5.1** | 곡선 타입 버튼 텍스트 복원 및 지수(T값) 레이블 헤더 배치로 레이아웃 개선, 최신 버전일 때의 수동 업데이트 확인 알림 제거(조용히 통과) |
+| v1.5.0 | 앱 이름을 **Whiteout**으로 리브랜딩, 사용자 정의 글로벌 단축키로 On/Off 제어 추가 |
+| v1.4.2 | 코드 최적화: 이중 Divider 버그 수정, 런타임 모니터 연결/해제 즉시 반영, 중복 코드 제거 |
 | v1.4.1 | 자동 업데이트 후 재실행 버그 수정 (`nohup` 프로세스 분리) |
 | v1.4.0 | 120시간 주기 자동 업데이트 확인 + 수동 확인 버튼 |
 | v1.3.0 | 자동 업데이트 (다운로드 → 설치 → 재실행) |

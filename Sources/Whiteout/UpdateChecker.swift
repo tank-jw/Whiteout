@@ -4,20 +4,21 @@ import AppKit
 /// GitHub Releases API를 통해 최신 버전을 확인하고 자동 업데이트를 수행하는 클래스.
 class UpdateChecker: ObservableObject {
 
-    // 현재 앱 버전 — 릴리즈 빌드 시 build_dmg.sh의 VERSION="1.4.0"과 함께 업데이트할 것
-    static let currentVersion = "1.4.2"
+    // 현재 앱 버전 — 릴리즈 빌드 시 build_dmg.sh의 VERSION="1.5.1"과 함께 업데이트할 것
+    static let currentVersion = "1.5.1"
 
     /// 주기적 재확인 간격 (120시간 = 5일)
     private static let checkIntervalSeconds: TimeInterval = 120 * 3600
 
-    private let apiURL      = URL(string: "https://api.github.com/repos/tank-jw/Reduce_whitepoint/releases/latest")!
-    private let releasesURL = URL(string: "https://github.com/tank-jw/Reduce_whitepoint/releases/latest")!
+    private let apiURL      = URL(string: "https://api.github.com/repos/tank-jw/Whiteout/releases/latest")!
+    private let releasesURL = URL(string: "https://github.com/tank-jw/Whiteout/releases/latest")!
 
     @Published var updateAvailable:  Bool   = false
     @Published var latestVersion:    String = ""
     @Published var isChecking:       Bool   = false
     @Published var isDownloading:    Bool   = false
     @Published var downloadProgress: Double = 0
+    @Published var showNetworkErrorAlert: Bool = false
 
     private var zipDownloadURL: URL?
     private var progressObservation: NSKeyValueObservation?
@@ -57,7 +58,7 @@ class UpdateChecker: ObservableObject {
         request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
         request.timeoutInterval = 10
 
-        URLSession.shared.dataTask(with: request) { [weak self] data, _, _ in
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
             guard let self else { return }
 
             defer {
@@ -66,9 +67,25 @@ class UpdateChecker: ObservableObject {
                 }
             }
 
+            if error != nil || data == nil {
+                DispatchQueue.main.async {
+                    if isManual {
+                        self.showNetworkErrorAlert = true
+                    }
+                }
+                return
+            }
+
             guard let data,
                   let json    = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let tag     = json["tag_name"] as? String else { return }
+                  let tag     = json["tag_name"] as? String else {
+                DispatchQueue.main.async {
+                    if isManual {
+                        self.showNetworkErrorAlert = true
+                    }
+                }
+                return
+            }
 
             let remote = tag.hasPrefix("v") ? String(tag.dropFirst()) : tag
 
@@ -149,7 +166,7 @@ class UpdateChecker: ObservableObject {
     private func installUpdate(from tempZip: URL) {
         let fm         = FileManager.default
         let extractDir = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("RWP_Update_\(UUID().uuidString)")
+            .appendingPathComponent("Whiteout_Update_\(UUID().uuidString)")
 
         try? fm.createDirectory(at: extractDir, withIntermediateDirectories: true)
 
@@ -162,7 +179,7 @@ class UpdateChecker: ObservableObject {
         try? unzip.run()
         unzip.waitUntilExit()
 
-        let extractedApp = extractDir.appendingPathComponent("ReduceWhitePoint.app")
+        let extractedApp = extractDir.appendingPathComponent("Whiteout.app")
         guard fm.fileExists(atPath: extractedApp.path) else {
             DispatchQueue.main.async { self.isDownloading = false }
             return
@@ -171,7 +188,7 @@ class UpdateChecker: ObservableObject {
         let currentBundle = Bundle.main.bundleURL
         let destination   = currentBundle.pathExtension == "app"
             ? currentBundle
-            : URL(fileURLWithPath: "/Applications/ReduceWhitePoint.app")
+            : URL(fileURLWithPath: "/Applications/Whiteout.app")
 
         let script = """
         #!/bin/bash
@@ -183,7 +200,7 @@ class UpdateChecker: ObservableObject {
         rm -rf '\(extractDir.path)'
         """
 
-        let scriptPath = NSTemporaryDirectory() + "rwp_updater.sh"
+        let scriptPath = NSTemporaryDirectory() + "whiteout_updater.sh"
         try? script.write(toFile: scriptPath, atomically: true, encoding: .utf8)
 
         let chmod = Process()

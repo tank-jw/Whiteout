@@ -1,8 +1,10 @@
 import SwiftUI
+import KeyboardShortcuts
 
 struct ContentView: View {
     @EnvironmentObject var dm: DisplayManager
     @EnvironmentObject var updater: UpdateChecker
+    @State private var showDetails = false
 
     // MARK: - Bindings
 
@@ -36,17 +38,35 @@ struct ContentView: View {
     // MARK: - Body
 
     var body: some View {
-        VStack(spacing: 0) {
-            headerSection
-            Divider().opacity(0.5)
-            controlSection
-            Divider().opacity(0.5)
-            curveSection
-            Divider().opacity(0.5)
-            footerSection
+        HStack(spacing: 0) {
+            VStack(spacing: 0) {
+                headerSection
+                Divider().opacity(0.5)
+                controlSection
+                Divider().opacity(0.5)
+                shortcutSection
+                Divider().opacity(0.5)
+                curveSection
+                Divider().opacity(0.5)
+                footerSection
+            }
+            .frame(width: 290)
+
+            if showDetails {
+                Divider().opacity(0.5)
+                detailsSection
+                    .transition(.move(edge: .trailing).combined(with: .opacity))
+            }
         }
-        .frame(width: 290)
+        .frame(width: showDetails ? 590 : 290)
         .background(.ultraThinMaterial)
+        .animation(.spring(response: 0.35, dampingFraction: 0.82), value: showDetails)
+        .animation(.easeInOut(duration: 0.2), value: dm.isShortcutEnabled)
+        .alert("업데이트 오류", isPresented: $updater.showNetworkErrorAlert) {
+            Button("확인", role: .cancel) {}
+        } message: {
+            Text("업데이트 정보를 가져오지 못했습니다. 네트워크 연결 상태를 확인해 주세요.")
+        }
     }
 
     // MARK: - Header
@@ -82,6 +102,19 @@ struct ContentView: View {
             }
 
             Spacer()
+
+            // Info Button
+            Button {
+                withAnimation {
+                    showDetails.toggle()
+                }
+            } label: {
+                Image(systemName: showDetails ? "info.circle.fill" : "info.circle")
+                    .font(.system(size: 15))
+                    .foregroundStyle(showDetails ? Color.orange : Color.secondary)
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 2)
 
             // Toggle
             Toggle("", isOn: enabledBinding)
@@ -143,13 +176,18 @@ struct ContentView: View {
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
                 Spacer()
+                if dm.isEnabled {
+                    Text(String(format: "T = %.1f", dm.curveExponent))
+                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(Color.orange)
+                }
             }
 
             // 3-way segmented toggle
             HStack(spacing: 6) {
                 ForEach([
                     (2.5, "일반"),
-                    (4.0, "문서 · PDF"),
+                    (4.0, "문서·PDF"),
                     (6.0, "하이라이트")
                 ], id: \.0) { value, label in
                     let selected = dm.curveExponent == value
@@ -175,6 +213,34 @@ struct ContentView: View {
         .padding(.vertical, 12)
     }
 
+    // MARK: - Shortcut Section
+
+    private var shortcutSection: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text("단축키로 On/Off")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
+                Spacer()
+                Toggle("", isOn: $dm.isShortcutEnabled)
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+                    .tint(.orange)
+            }
+
+            if dm.isShortcutEnabled {
+                HStack {
+                    Text("단축키 설정")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.secondary)
+                    Spacer()
+                    KeyboardShortcuts.Recorder("", name: .toggleWhiteout)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
 
     // MARK: - White Point Bar
 
@@ -235,6 +301,213 @@ struct ContentView: View {
                 .strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5)
         )
         .animation(.easeInOut(duration: 0.2), value: dm.reduction)
+    }
+
+    // MARK: - Details Panel
+
+    private var detailsSection: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 14) {
+                // Header
+                HStack {
+                    Text("원리 및 곡선 분석")
+                        .font(.system(size: 13, weight: .bold))
+                    Spacer()
+                    Button {
+                        withAnimation {
+                            showDetails = false
+                        }
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundStyle(.secondary)
+                            .font(.system(size: 14))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.top, 2)
+
+                // Live Curve Graph
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("밝기 변환 곡선 (입력 → 출력)")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    curveGraph
+                        .frame(height: 120)
+                        .background(Color.black.opacity(0.15))
+                        .cornerRadius(6)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                        )
+                }
+
+                // Dynamic Exponent Explanation
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(curveTypeTitle)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.orange)
+                    Text(curveTypeDescription)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                        .lineSpacing(2)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.orange.opacity(0.06))
+                .cornerRadius(6)
+
+                // How it works comparison
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("작동 방식 차이점")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        bulletPoint(title: "Whiteout (GPU 감마 조절)", desc: "검정색(0) 레벨을 100% 보존하여 명암비와 검정색 표현력이 완벽히 유지됩니다.")
+                        bulletPoint(title: "소프트웨어 오버레이 필터", desc: "화면에 검은 막을 씌워 블랙 레벨을 들뜨게 하고 명암비를 손상시킵니다.")
+                    }
+                }
+
+                // Mathematical Formula
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("압축 곡선 공식")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.secondary)
+
+                    Text("f(t) = t × (1 - tⁿ × (1 - maxOutput))")
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .foregroundStyle(.primary)
+                        .padding(.vertical, 4)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .background(Color.primary.opacity(0.04))
+                        .cornerRadius(4)
+
+                    Text("입력 밝기 t를 비선형 지수 n에 따라 압축하여, 어두운 톤은 보호하고 흰색 화이트포인트만 집중 감소시킵니다.")
+                        .font(.system(size: 9))
+                        .foregroundStyle(.secondary)
+                        .lineSpacing(1.5)
+                }
+            }
+            .padding(14)
+        }
+        .frame(width: 300)
+    }
+
+    private func bulletPoint(title: String, desc: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Circle()
+                    .fill(title.contains("Whiteout") ? Color.orange : Color.secondary)
+                    .frame(width: 3.5, height: 3.5)
+                Text(title)
+                    .font(.system(size: 9.5, weight: .semibold))
+            }
+            Text(desc)
+                .font(.system(size: 9))
+                .foregroundStyle(.secondary)
+                .padding(.leading, 7)
+                .lineSpacing(1.8)
+        }
+    }
+
+    private var curveTypeTitle: String {
+        switch dm.curveExponent {
+        case 2.5:
+            return "일반 모드 (Exponent = 2.5)"
+        case 4.0:
+            return "문서 · PDF 모드 (Exponent = 4.0)"
+        case 6.0:
+            return "하이라이트 모드 (Exponent = 6.0)"
+        default:
+            return "커스텀 모드"
+        }
+    }
+
+    private var curveTypeDescription: String {
+        switch dm.curveExponent {
+        case 2.5:
+            return "전반적으로 자연스럽고 부드럽게 밝기를 낮춥니다. 웹서핑 및 데일리 작업에 가장 적합한 표준 곡선입니다."
+        case 4.0:
+            return "텍스트(검정색)의 또렷함을 완벽히 유지하면서 흰 배경 영역만 집중해서 감쇄합니다. 눈이 편안한 텍스트 리딩에 이상적입니다."
+        case 6.0:
+            return "어두운 톤과 중간 톤을 최대로 보존하고 가장 밝은 극단적 광원 영역만 눌러줍니다. 어두운 방이나 야간 작업에 특화되어 있습니다."
+        default:
+            return "설정된 곡선 지수에 따라 비선형 감쇄가 적용됩니다."
+        }
+    }
+
+    private var curveGraph: some View {
+        Canvas { ctx, size in
+            let w = size.width
+            let h = size.height
+
+            // 1. Draw Grid Lines
+            let gridPath = Path { p in
+                for y in [0.25, 0.5, 0.75] {
+                    p.move(to: CGPoint(x: 0, y: h * y))
+                    p.addLine(to: CGPoint(x: w, y: h * y))
+                }
+                for x in [0.25, 0.5, 0.75] {
+                    p.move(to: CGPoint(x: w * x, y: 0))
+                    p.addLine(to: CGPoint(x: w * x, y: h))
+                }
+            }
+            ctx.stroke(gridPath, with: .color(Color.primary.opacity(0.05)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+
+            // 2. Draw Diagonal Baseline (Reference: 100% Unreduced)
+            let baseLine = Path { p in
+                p.move(to: CGPoint(x: 0, y: h))
+                p.addLine(to: CGPoint(x: w, y: 0))
+            }
+            ctx.stroke(baseLine, with: .color(Color.secondary.opacity(0.25)), style: StrokeStyle(lineWidth: 1, dash: [2, 2]))
+
+            // 3. Calculate curve parameters
+            let amount = dm.isEnabled ? dm.reduction : 0.0
+            let maxOutput = 1.0 - amount * 0.3
+            let exp = dm.curveExponent
+
+            // 4. Draw the actual curve
+            var curvePath = Path()
+
+            let steps = 100
+            for i in 0...steps {
+                let t = Double(i) / Double(steps)
+                let scaleFactor = 1.0 - pow(t, exp) * (1.0 - maxOutput)
+                let output = t * scaleFactor
+
+                let x = CGFloat(t) * w
+                let y = h - CGFloat(output) * h
+
+                if i == 0 {
+                    curvePath.move(to: CGPoint(x: x, y: y))
+                } else {
+                    curvePath.addLine(to: CGPoint(x: x, y: y))
+                }
+            }
+
+            let grad = Gradient(colors: [.orange, .yellow.opacity(0.85)])
+            ctx.stroke(
+                curvePath,
+                with: .linearGradient(grad, startPoint: CGPoint(x: 0, y: h), endPoint: CGPoint(x: w, y: 0)),
+                lineWidth: 2.0
+            )
+
+            // 5. Draw the endpoint indicator dot if reduced
+            if amount > 0.01 {
+                let endPoint = CGPoint(x: w, y: h - CGFloat(maxOutput) * h)
+                ctx.fill(
+                    Path(ellipseIn: CGRect(x: endPoint.x - 3.5, y: endPoint.y - 3.5, width: 7, height: 7)),
+                    with: .color(.orange)
+                )
+                ctx.stroke(
+                    Path(ellipseIn: CGRect(x: endPoint.x - 5.5, y: endPoint.y - 5.5, width: 11, height: 11)),
+                    with: .color(.orange.opacity(0.4)),
+                    lineWidth: 1.2
+                )
+            }
+        }
     }
 
     // MARK: - Update Banner

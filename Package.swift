@@ -2,14 +2,20 @@
 import PackageDescription
 
 let package = Package(
-    name: "ReduceWhitePoint",
+    name: "Whiteout",
     platforms: [
         .macOS(.v13)
     ],
+    dependencies: [
+        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", exact: "1.9.0")
+    ],
     targets: [
         .executableTarget(
-            name: "ReduceWhitePoint",
-            path: "Sources/ReduceWhitePoint"
+            name: "Whiteout",
+            dependencies: [
+                "KeyboardShortcuts"
+            ],
+            path: "Sources/Whiteout"
         )
     ]
 )
