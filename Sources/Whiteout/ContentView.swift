@@ -99,7 +99,7 @@ struct ContentView: View {
                      ? LocalizedStrings.statusActive(isEN: isEN, percent: percent)
                      : LocalizedStrings.statusDisabled(isEN: isEN))
                     .font(.system(size: 11))
-                    .foregroundStyle(dm.isEnabled ? Color.orange : Color.secondary)
+                    .foregroundStyle(statusColor(isEnabled: dm.isEnabled, reduction: dm.reduction))
                     .animation(.easeInOut(duration: 0.2), value: dm.isEnabled)
             }
 
@@ -419,6 +419,24 @@ struct ContentView: View {
         .frame(width: 300)
     }
 
+    private func statusColor(isEnabled: Bool, reduction: Double) -> Color {
+        guard isEnabled else { return Color.secondary }
+        let startColor = NSColor.textColor
+        let endColor = NSColor.orange
+        
+        guard let startRGB = startColor.usingColorSpace(.sRGB),
+              let endRGB = endColor.usingColorSpace(.sRGB) else {
+            return Color.orange
+        }
+        
+        let t = CGFloat(reduction)
+        let r = startRGB.redComponent   + t * (endRGB.redComponent   - startRGB.redComponent)
+        let g = startRGB.greenComponent + t * (endRGB.greenComponent - startRGB.greenComponent)
+        let b = startRGB.blueComponent  + t * (endRGB.blueComponent  - startRGB.blueComponent)
+        
+        return Color(NSColor(red: r, green: g, blue: b, alpha: 1.0))
+    }
+
     private func bulletPoint(title: String, desc: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
@@ -716,7 +734,7 @@ struct LocalizedStrings {
         isEN ? "Whiteout" : "화이트아웃"
     }
     static func statusActive(isEN: Bool, percent: Int) -> String {
-        isEN ? "Max brightness limited to \(percent)%" : "최대 밝기 \(percent)% 로 제한 중"
+        isEN ? "Max White: \(percent)%" : "흰색 최대값 \(percent)%"
     }
     static func statusDisabled(isEN: Bool) -> String {
         isEN ? "Disabled" : "비활성화됨"
