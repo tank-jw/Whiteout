@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteout for macOS — Contrast-Preserving White Point Dimmer</title>
+    <meta name="description" content="Replicate iPad's 'Reduce White Point' on macOS at the GPU level. Protect your eyes, preserve screen contrast, and dim multiple displays simultaneously.">
+    <meta name="keywords" content="Whiteout, macOS, Reduce White Point, Gamma Table, Eye Strain, Screen Dimmer, Multi-Monitor, Contrast Preservation">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Whiteout for macOS — Contrast-Preserving White Point Dimmer">
+    <meta property="og:description" content="Replicate iPad's 'Reduce White Point' on macOS. Keep true blacks pitch black and protect your eyes without losing screen contrast.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/tank-jw/Whiteout">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header / Navigation -->
+    <header class="navbar" id="site-header">
+        <div class="container navbar-container">
+            <a href="#" class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="2.5" />
+                    <line x1="12" y1="1" x2="12" y2="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <line x1="12" y1="20" x2="12" y2="23" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <line x1="1" y1="12" x2="4" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <line x1="20" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <line x1="4.22" y1="4.22" x2="6.34" y2="6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <line x1="17.66" y1="17.66" x2="19.78" y2="19.78" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <line x1="4.22" y1="19.78" x2="6.34" y2="17.66" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    <line x1="17.66" y1="6.34" x2="19.78" y2="4.22" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span>Whiteout</span>
+            </a>
+            <nav class="nav-links">
+                <a href="#how-it-works" id="nav-link-how">How it Works</a>
+                <a href="#curve-details" id="nav-link-curve">Gamma Curve</a>
+                <a href="#features" id="nav-link-features">Features</a>
+                <a href="https://github.com/tank-jw/Whiteout" class="github-link" target="_blank" id="nav-link-github">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero-section">
+        <div class="hero-bg-gradients">
+            <div class="gradient-blob orange"></div>
+            <div class="gradient-blob yellow"></div>
+        </div>
+        <div class="container hero-container">
+            <div class="hero-text">
+                <span class="badge">macOS 13+ Apple Silicon & Intel</span>
+                <h1 class="hero-title">Protect Your Eyes,<br><span class="highlight-text">Not Your Contrast</span></h1>
+                <p class="hero-subtitle">
+                    Replicates iPad's hardware-level <strong>Reduce White Point</strong> on macOS. Dim bright highlights without turning your screen into a washed-out, grey mess.
+                </p>
+                <div class="cta-buttons">
+                    <a href="https://github.com/tank-jw/Whiteout/releases/latest" class="btn btn-primary" id="btn-dmg-download">
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                        </svg>
+                        <span>Download DMG (v1.5.3)</span>
+                    </a>
+                    <a href="https://github.com/tank-jw/Whiteout" class="btn btn-secondary" target="_blank" id="btn-source">
+                        <span>View Source Code</span>
+                    </a>
+                </div>
+                <div class="app-meta">
+                    <span>⚡ Lightweight Native Swift (200KB)</span>
+                    <span>•</span>
+                    <span>🖥️ Full Multi-Monitor Support</span>
+                </div>
+            </div>
+            
+            <!-- App Preview UI Mockup -->
+            <div class="hero-preview">
+                <div class="mac-window">
+                    <div class="mac-header">
+                        <div class="mac-dot red"></div>
+                        <div class="mac-dot yellow"></div>
+                        <div class="mac-dot green"></div>
+                        <span class="mac-title">Whiteout.app</span>
+                    </div>
+                    <div class="mac-content">
+                        <!-- Simulated App Popover UI -->
+                        <div class="app-popover-ui">
+                            <div class="ui-row header-row">
+                                <div class="ui-icon-box enabled">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" class="sun-icon">
+                                        <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm-12.37 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06c.39-.39.39-1.03 0-1.41s-1.03-.39-1.41 0l-1.06 1.06zm13.43-13.43c-.39-.39-1.03-.39-1.41 0s-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06z"/>
+                                    </svg>
+                                </div>
+                                <div class="ui-text-column">
+                                    <span class="ui-title">화이트포인트 낮추기</span>
+                                    <span class="ui-subtitle status-text">최대 밝기 85% 로 제한 중</span>
+                                </div>
+                                <div class="ui-toggle active">
+                                    <div class="ui-toggle-thumb"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="ui-divider"></div>
+                            
+                            <div class="ui-section">
+                                <div class="ui-row label-row">
+                                    <span class="section-label">감소량</span>
+                                    <span class="slider-value" id="ui-reduction-text">15%</span>
+                                </div>
+                                <div class="ui-slider-container">
+                                    <div class="ui-slider-track">
+                                        <div class="ui-slider-fill" style="width: 50%;"></div>
+                                        <div class="ui-slider-thumb" style="left: 50%;"></div>
+                                    </div>
+                                </div>
+                                <div class="ui-visualizer-bar">
+                                    <div class="dimmed-overlay" style="width: 15%;"></div>
+                                    <div class="orange-marker" style="left: 85%;"></div>
+                                    <div class="orange-triangle" style="left: 85%;"></div>
+                                </div>
+                                <div class="ui-row footer-info">
+                                    <span class="info-green">✓ 검정 유지</span>
+                                    <span class="info-gray">흰색 최대값 85%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="ui-divider"></div>
+                            
+                            <div class="ui-section">
+                                <div class="ui-row label-row">
+                                    <span class="section-label">곡선 타입</span>
+                                    <span class="exponent-label">T = 4.0</span>
+                                </div>
+                                <div class="ui-segmented-control">
+                                    <div class="segment">일반</div>
+                                    <div class="segment active">문서·PDF</div>
+                                    <div class="segment">하이라이트</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 1: How It Works & Comparison -->
+    <section class="how-it-works" id="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>Contrast-Preserved GPU Dimming</h2>
+                <p class="section-desc">
+                    Unlike standard dimming tools that cover your screen with a transparent black window, Whiteout modifies the hardware gamma lookup tables inside your Mac's graphics card.
+                </p>
+            </div>
+            
+            <!-- Comparison Grid -->
+            <div class="comparison-grid">
+                
+                <!-- Left: Overlay Dimmers -->
+                <div class="comparison-card overlay-card">
+                    <div class="card-badge badge-red">Traditional Software Overlays</div>
+                    <h3>Ruins Contrast & Blacks</h3>
+                    <p>
+                        Puts a semi-transparent black overlay window over the screen. Pure black gets elevated to a muddy grey, and whites become dark grey. Colors look washed out, and reading text in low light becomes strainful due to crushed contrast.
+                    </p>
+                    
+                    <div class="screen-simulator overlay-sim">
+                        <div class="sim-content">
+                            <span class="sim-bg-title">Simulated Text Page</span>
+                            <p class="txt-primary">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                            <p class="txt-secondary">Contrast is reduced. Reading becomes difficult.</p>
+                            <div class="sim-contrast-badge">Contrast Ratio: <strong>4.2:1 (Washed Out)</strong></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Right: Whiteout GPU Dimmer -->
+                <div class="comparison-card whiteout-card">
+                    <div class="card-badge badge-orange">Whiteout (GPU Gamma)</div>
+                    <h3>Preserves Contrast & Darks</h3>
+                    <p>
+                        Modifies the GPU's transfer function. Pure black stays absolute black (0.0). High brightness levels are compressed down using a customizable mathematical curve. Text remains crisp and black, preserving readability.
+                    </p>
+                    
+                    <div class="screen-simulator whiteout-sim">
+                        <div class="sim-content">
+                            <span class="sim-bg-title">Simulated Text Page</span>
+                            <p class="txt-primary">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+                            <p class="txt-secondary">Contrast is preserved. Darks stay dark and crisp.</p>
+                            <div class="sim-contrast-badge">Contrast Ratio: <strong>14.5:1 (Perfect Contrast)</strong></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Interactive Comparison Slider Widget -->
+            <div class="interactive-slider-section">
+                <h3>Try the Interactive Contrast Comparison</h3>
+                <p class="slider-helper">Drag the handle to compare standard Overlay Dimming (Left) with Whiteout Dimming (Right).</p>
+                
+                <div class="comparison-container" id="contrast-slider-container">
+                    <!-- Before side (Overlay Dimming) -->
+                    <div class="side before-side" id="overlay-side">
+                        <div class="simulated-screen overlay-dimmed">
+                            <div class="screen-text-content">
+                                <h4>Software Overlay Filter</h4>
+                                <p class="text-white-bg">White Background (Washed Out Grey)</p>
+                                <p class="text-black-fg text-faded">Black Text (Muddy Dark Grey)</p>
+                                <div class="contrast-pill bad">Contrast Crushed</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- After side (Whiteout Dimming) -->
+                    <div class="side after-side" id="whiteout-side">
+                        <div class="simulated-screen whiteout-dimmed">
+                            <div class="screen-text-content">
+                                <h4>Whiteout GPU Dimming</h4>
+                                <p class="text-white-bg">Dimmed White Background (Smooth Light Grey)</p>
+                                <p class="text-black-fg text-pure-black">Black Text (True Solid Black)</p>
+                                <div class="contrast-pill good">Contrast Preserved</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Slider Handle -->
+                    <div class="slider-handle" id="comparison-slider-handle">
+                        <div class="handle-line"></div>
+                        <div class="handle-button">
+                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                <path d="M17 12h-10l3-3-1.41-1.42-5.42 5.42 5.42 5.42 1.41-1.42-3-3h10l-3 3 1.41 1.42 5.42-5.42-5.42-5.42-1.41 1.42 3 3z"/>
+                            </svg>
+                        </div>
+                        <div class="handle-line"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Non-linear Curves Detailed Explanation -->
+    <section class="curve-details" id="curve-details">
+        <div class="container">
+            <div class="section-header">
+                <h2>The Non-Linear Brightness Curve</h2>
+                <p class="section-desc">
+                    Whiteout uses a power-based exponent curve to map input pixel values from the GPU to the display. This ensures that dark and mid-tone values are compressed much less than peak highlights.
+                </p>
+            </div>
+            
+            <div class="curve-split-grid">
+                <!-- Math & Exponent details -->
+                <div class="curve-info-panel">
+                    <div class="math-box">
+                        <span class="math-label">Mathematical Exponent Formula</span>
+                        <div class="formula">
+                            $$\text{scaleFactor}(t) = 1.0 - t^T \times (1.0 - \text{maxOutput})$$
+                        </div>
+                        <p class="formula-desc">
+                            Where $t$ is the original brightness (0 to 1), $T$ is the curve exponent (T-value), and $\text{maxOutput}$ is the scaled down white point limit ($1.0 - \text{reduction} \times 0.3$).
+                        </p>
+                    </div>
+                    
+                    <div class="presets-explainer">
+                        <h3>Three Curve Exponent Presets</h3>
+                        
+                        <div class="preset-item" data-preset="2.5">
+                            <div class="preset-badge orange">T = 2.5</div>
+                            <div class="preset-desc">
+                                <strong>General Mode:</strong> Smooth, balanced reduction. Best for daily activities, browsing web pages, and light coding.
+                            </div>
+                        </div>
+                        
+                        <div class="preset-item" data-preset="4.0">
+                            <div class="preset-badge yellow">T = 4.0</div>
+                            <div class="preset-desc">
+                                <strong>Document & PDF Mode:</strong> Concentrated white compression. Maximizes black text contrast while muting bright white page backgrounds, making PDF reading exceptionally comfortable.
+                            </div>
+                        </div>
+                        
+                        <div class="preset-item" data-preset="6.0">
+                            <div class="preset-badge white">T = 6.0</div>
+                            <div class="preset-desc">
+                                <strong>Highlights-Only Mode:</strong> Keeps darks and mid-tones almost entirely untouched. Targets only the brightest pure highlights, ideal for viewing dark content in a pitch-black room.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Live Interactive Graph -->
+                <div class="curve-visualizer-panel">
+                    <div class="graph-header">
+                        <h3>Interactive Live Gamma Curve Visualizer</h3>
+                        <p>Simulating the High-Contrast Graph in Whiteout v1.5.3</p>
+                    </div>
+                    
+                    <div class="canvas-wrapper">
+                        <canvas id="live-curve-canvas" width="450" height="280"></canvas>
+                    </div>
+                    
+                    <!-- Graph Controls -->
+                    <div class="graph-controls">
+                        <!-- Reduction Slider -->
+                        <div class="control-group">
+                            <div class="control-header">
+                                <label for="reduction-range">White Point Reduction</label>
+                                <span class="control-value" id="reduction-val-display">15%</span>
+                            </div>
+                            <input type="range" id="reduction-range" min="0" max="30" step="5" value="15">
+                            <div class="slider-ticks">
+                                <span>0%</span>
+                                <span>10%</span>
+                                <span>20%</span>
+                                <span>30%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Exponent Select Buttons -->
+                        <div class="control-group">
+                            <label>Curve Exponent (T-Value)</label>
+                            <div class="preset-buttons-group">
+                                <button type="button" class="btn-preset" data-val="2.5" id="btn-t-2-5">General (2.5)</button>
+                                <button type="button" class="btn-preset active" data-val="4.0" id="btn-t-4-0">Document (4.0)</button>
+                                <button type="button" class="btn-preset" data-val="6.0" id="btn-t-6-0">Highlights (6.0)</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Feature Matrix -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Designed for Power Users</h2>
+                <p class="section-desc">Whiteout packs advanced features in a lightweight menu bar app to deliver a seamless, native macOS experience.</p>
+            </div>
+            
+            <div class="features-grid">
+                <!-- Multi-Monitor -->
+                <div class="feature-tile">
+                    <div class="tile-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="13" rx="2" />
+                            <path d="M12 16v5M8 21h8" />
+                        </svg>
+                    </div>
+                    <h3>Multi-Monitor Support</h3>
+                    <p>Applies white point reduction to all active displays. Dynamically adapts when plugging or unplugging monitors without needing restarts.</p>
+                </div>
+                
+                <!-- Global Hotkeys -->
+                <div class="feature-tile">
+                    <div class="tile-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="12" rx="2" />
+                            <path d="M6 8h1M10 8h1M14 8h1M18 8h1M6 12h12" />
+                        </svg>
+                    </div>
+                    <h3>Customizable Shortcuts</h3>
+                    <p>Register system-wide keyboard shortcuts. Toggle Whiteout on and off instantly from any active application with smooth fade transitions.</p>
+                </div>
+                
+                <!-- 0-30% Snap Safety -->
+                <div class="feature-tile">
+                    <div class="tile-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </div>
+                    <h3>Contrast Reversal Safeguard</h3>
+                    <p>Restricts reduction between 0% and 30% with tactile 5% snaps. This prevents visual artifacts and color inversion typical at higher ranges.</p>
+                </div>
+                
+                <!-- Lightweight Native Swift -->
+                <div class="feature-tile">
+                    <div class="tile-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                    </div>
+                    <h3>100% Native & Lightweight</h3>
+                    <p>Built completely in Swift using Cocoa & SwiftUI APIs. Runs directly in the menu bar. Consumes less than 15MB RAM and 0% idle CPU.</p>
+                </div>
+                
+                <!-- Safe Termination -->
+                <div class="feature-tile">
+                    <div class="tile-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10" />
+                        </svg>
+                    </div>
+                    <h3>Safe Hardware Restores</h3>
+                    <p>Listens to app terminate notifications and system changes. Safely restores the original factory display gamma tables on app exit.</p>
+                </div>
+                
+                <!-- Automated Updates -->
+                <div class="feature-tile">
+                    <div class="tile-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+                        </svg>
+                    </div>
+                    <h3>Seamless Auto Updates</h3>
+                    <p>Automatically checks for GitHub releases. Download, install, and relaunch into the newest version silently with a single click.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer" id="site-footer">
+        <div class="container footer-container">
+            <div class="footer-info">
+                <h3>Whiteout for macOS</h3>
+                <p>An open source utility to replicate iOS "Reduce White Point" on macOS desktops.</p>
+                <p class="license">Licensed under the MIT License.</p>
+            </div>
+            
+            <div class="footer-links">
+                <div class="link-group">
+                    <h4>GitHub</h4>
+                    <a href="https://github.com/tank-jw/Whiteout" target="_blank">Repository</a>
+                    <a href="https://github.com/tank-jw/Whiteout/releases" target="_blank">Release Notes</a>
+                    <a href="https://github.com/tank-jw/Whiteout/issues" target="_blank">Issues</a>
+                </div>
+                <div class="link-group">
+                    <h4>Troubleshooting</h4>
+                    <a href="#gatekeeper-instructions" class="modal-trigger" id="trigger-gatekeeper">Gatekeeper Bypass</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gatekeeper Drawer/Card (expanded on click) -->
+        <div class="gatekeeper-box container" id="gatekeeper-instructions">
+            <h4>⚠️ Security & Quarantine Warning (Gatekeeper)</h4>
+            <p>Because Whiteout is self-signed and distributed off-App Store, macOS may alert that the file is damaged or cannot be checked.</p>
+            <div class="code-instructions">
+                <p><strong>Method 1 (Simple):</strong> Right-click <code>Whiteout.app</code> in your Applications folder and click <strong>Open</strong> twice.</p>
+                <div class="divider-text">or</div>
+                <p><strong>Method 2 (Terminal):</strong> Run the following command in terminal to clear the quarantine flag:</p>
+                <pre><code>xattr -dr com.apple.quarantine /Applications/Whiteout.app</code></pre>
+            </div>
+        </div>
+        
+        <div class="copyright container">
+            <p>&copy; 2026 tank-jw. Designed with care for dark environments.</p>
+        </div>
+    </footer>
+
+    <!-- MathJax for nice mathematical formatting -->
+    <script type="text/javascript" async
+      src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    
+    <!-- Script file -->
+    <script src="script.js"></script>
+</body>
+</html>

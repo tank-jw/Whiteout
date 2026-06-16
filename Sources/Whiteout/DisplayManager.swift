@@ -36,6 +36,10 @@ class DisplayManager: ObservableObject {
         didSet { UserDefaults.standard.set(isShortcutEnabled, forKey: Keys.isShortcutEnabled) }
     }
 
+    @Published var language: String {
+        didSet { UserDefaults.standard.set(language, forKey: Keys.language) }
+    }
+
     // MARK: - Private
 
     private enum Keys {
@@ -43,6 +47,7 @@ class DisplayManager: ObservableObject {
         static let isEnabled         = "whitePointEnabled"
         static let curveExponent     = "curveExponent"
         static let isShortcutEnabled = "isShortcutEnabled"
+        static let language          = "language"
     }
 
     private let tableSize = 256
@@ -57,11 +62,13 @@ class DisplayManager: ObservableObject {
         let savedEnabled   = UserDefaults.standard.bool(forKey: Keys.isEnabled)
         let savedExponent  = UserDefaults.standard.object(forKey: Keys.curveExponent) as? Double ?? 4.0
         let savedShortcut  = UserDefaults.standard.object(forKey: Keys.isShortcutEnabled) as? Bool ?? true
+        let savedLanguage  = UserDefaults.standard.string(forKey: Keys.language) ?? "ko"
 
         self.reduction         = savedReduction
         self.isEnabled         = savedEnabled
         self.curveExponent     = savedExponent
         self.isShortcutEnabled = savedShortcut
+        self.language          = savedLanguage
 
         saveOriginalTables()
 
@@ -151,12 +158,7 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    /// Reset everything to factory defaults and restore all displays.
-    func resetAll() {
-        restoreOriginalTables()
-        reduction = 0
-        isEnabled = false
-    }
+
 
     /// Restore original tables and quit.
     func quit() {

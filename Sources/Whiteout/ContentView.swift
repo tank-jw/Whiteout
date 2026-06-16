@@ -62,10 +62,10 @@ struct ContentView: View {
         .background(.ultraThinMaterial)
         .animation(.spring(response: 0.35, dampingFraction: 0.82), value: showDetails)
         .animation(.easeInOut(duration: 0.2), value: dm.isShortcutEnabled)
-        .alert("업데이트 오류", isPresented: $updater.showNetworkErrorAlert) {
-            Button("확인", role: .cancel) {}
+        .alert(LocalizedStrings.updateNetworkErrorTitle(isEN: dm.language == "en"), isPresented: $updater.showNetworkErrorAlert) {
+            Button(dm.language == "en" ? "OK" : "확인", role: .cancel) {}
         } message: {
-            Text("업데이트 정보를 가져오지 못했습니다. 네트워크 연결 상태를 확인해 주세요.")
+            Text(LocalizedStrings.updateNetworkErrorMsg(isEN: dm.language == "en"))
         }
     }
 
@@ -90,12 +90,14 @@ struct ContentView: View {
             }
 
             // Title + status
+            let isEN = dm.language == "en"
+            let percent = 100 - Int((dm.reduction * 30).rounded())
             VStack(alignment: .leading, spacing: 3) {
-                Text("화이트포인트 낮추기")
+                Text(LocalizedStrings.title(isEN: isEN))
                     .font(.system(size: 13, weight: .semibold))
                 Text(dm.isEnabled
-                     ? "최대 밝기 \(100 - Int((dm.reduction * 30).rounded()))% 로 제한 중"
-                     : "비활성화됨")
+                     ? LocalizedStrings.statusActive(isEN: isEN, percent: percent)
+                     : LocalizedStrings.statusDisabled(isEN: isEN))
                     .font(.system(size: 11))
                     .foregroundStyle(dm.isEnabled ? Color.orange : Color.secondary)
                     .animation(.easeInOut(duration: 0.2), value: dm.isEnabled)
@@ -129,10 +131,11 @@ struct ContentView: View {
     // MARK: - Controls
 
     private var controlSection: some View {
-        VStack(spacing: 14) {
+        let isEN = dm.language == "en"
+        return VStack(spacing: 14) {
             // Label row
             HStack {
-                Text("감소량")
+                Text(LocalizedStrings.reductionLabel(isEN: isEN))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
                 Spacer()
@@ -153,11 +156,11 @@ struct ContentView: View {
 
             // Info labels
             HStack {
-                Label("검정 유지", systemImage: "checkmark.circle.fill")
+                Label(LocalizedStrings.preserveBlacks(isEN: isEN), systemImage: "checkmark.circle.fill")
                     .font(.system(size: 10))
                     .foregroundStyle(Color.green)
                 Spacer()
-                Text("흰색 최대값 \(100 - Int((dm.reduction * 30).rounded()))%")
+                Text(LocalizedStrings.maxWhiteLevel(isEN: isEN, percent: 100 - Int((dm.reduction * 30).rounded())))
                     .font(.system(size: 10))
                     .foregroundStyle(Color.secondary)
                     .contentTransition(.numericText())
@@ -170,9 +173,10 @@ struct ContentView: View {
     // MARK: - Curve Preset Section
 
     private var curveSection: some View {
-        VStack(spacing: 10) {
+        let isEN = dm.language == "en"
+        return VStack(spacing: 10) {
             HStack {
-                Text("곡선 타입")
+                Text(LocalizedStrings.curveTypeLabel(isEN: isEN))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
                 Spacer()
@@ -185,11 +189,12 @@ struct ContentView: View {
 
             // 3-way segmented toggle
             HStack(spacing: 6) {
-                ForEach([
-                    (2.5, "일반"),
-                    (4.0, "문서·PDF"),
-                    (6.0, "하이라이트")
-                ], id: \.0) { value, label in
+                let segments = [
+                    (2.5, LocalizedStrings.curveGeneral(isEN: isEN)),
+                    (4.0, LocalizedStrings.curveDocs(isEN: isEN)),
+                    (6.0, LocalizedStrings.curveHighlights(isEN: isEN))
+                ]
+                ForEach(segments, id: \.0) { value, label in
                     let selected = dm.curveExponent == value
                     Button {
                         exponentBinding.wrappedValue = value
@@ -216,9 +221,10 @@ struct ContentView: View {
     // MARK: - Shortcut Section
 
     private var shortcutSection: some View {
-        VStack(spacing: 8) {
+        let isEN = dm.language == "en"
+        return VStack(spacing: 8) {
             HStack {
-                Text("단축키로 On/Off")
+                Text(LocalizedStrings.shortcutToggle(isEN: isEN))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
                 Spacer()
@@ -230,7 +236,7 @@ struct ContentView: View {
 
             if dm.isShortcutEnabled {
                 HStack {
-                    Text("단축키 설정")
+                    Text(LocalizedStrings.shortcutRecord(isEN: isEN))
                         .font(.system(size: 11))
                         .foregroundStyle(Color.secondary)
                     Spacer()
@@ -306,11 +312,12 @@ struct ContentView: View {
     // MARK: - Details Panel
 
     private var detailsSection: some View {
-        ScrollView {
+        let isEN = dm.language == "en"
+        return ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 // Header
                 HStack {
-                    Text("원리 및 곡선 분석")
+                    Text(LocalizedStrings.detailsSectionTitle(isEN: isEN))
                         .font(.system(size: 13, weight: .bold))
                     Spacer()
                     Button {
@@ -328,7 +335,7 @@ struct ContentView: View {
 
                 // Live Curve Graph
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("밝기 변환 곡선 (x축 : 입력 밝기 → y축 : 출력 밝기)")
+                    Text(LocalizedStrings.detailsTitle(isEN: isEN))
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(.secondary)
 
@@ -387,13 +394,23 @@ struct ContentView: View {
 
                 // How it works comparison
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("작동 방식 차이점")
+                    Text(LocalizedStrings.detailsHowItWorks(isEN: isEN))
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(.secondary)
 
                     VStack(alignment: .leading, spacing: 6) {
-                        bulletPoint(title: "Whiteout (GPU 감마 조절)", desc: "검정색(0) 레벨을 100% 보존하여 명암비와 검정색 표현력이 완벽히 유지됩니다.")
-                        bulletPoint(title: "소프트웨어 오버레이 필터", desc: "화면에 검은 막을 씌워 블랙 레벨을 들뜨게 하고 명암비를 손상시킵니다.")
+                        bulletPoint(
+                            title: isEN ? "Whiteout (GPU Gamma)" : "Whiteout (GPU 감마 조절)",
+                            desc: isEN 
+                                ? "Perfectly preserves black levels (0), keeping contrast ratio and OLED blacks intact."
+                                : "검정색(0) 레벨을 100% 보존하여 명암비와 검정색 표현력이 완벽히 유지됩니다."
+                        )
+                        bulletPoint(
+                            title: isEN ? "Software Overlay Filter" : "소프트웨어 오버레이 필터",
+                            desc: isEN 
+                                ? "Draws a black semi-transparent mask over the screen, raising black levels and degrading contrast."
+                                : "화면에 검은 막을 씌워 블랙 레벨을 들뜨게 하고 명암비를 손상시킵니다."
+                        )
                     }
                 }
             }
@@ -420,28 +437,38 @@ struct ContentView: View {
     }
 
     private var curveTypeTitle: String {
+        let isEN = dm.language == "en"
         switch dm.curveExponent {
         case 2.5:
-            return "일반 모드 (Exponent = 2.5)"
+            return isEN ? "General Mode (Exponent = 2.5)" : "일반 모드 (Exponent = 2.5)"
         case 4.0:
-            return "문서 · PDF 모드 (Exponent = 4.0)"
+            return isEN ? "Docs · PDF Mode (Exponent = 4.0)" : "문서 · PDF 모드 (Exponent = 4.0)"
         case 6.0:
-            return "하이라이트 모드 (Exponent = 6.0)"
+            return isEN ? "Highlight Mode (Exponent = 6.0)" : "하이라이트 모드 (Exponent = 6.0)"
         default:
-            return "커스텀 모드"
+            return isEN ? "Custom Mode" : "커스텀 모드"
         }
     }
 
     private var curveTypeDescription: String {
+        let isEN = dm.language == "en"
         switch dm.curveExponent {
         case 2.5:
-            return "전반적으로 자연스럽고 부드럽게 밝기를 낮춥니다. 웹서핑 및 데일리 작업에 가장 적합한 표준 곡선입니다."
+            return isEN 
+                ? "Lowers brightness smoothly and naturally. Best standard curve for web browsing and daily tasks."
+                : "전반적으로 자연스럽고 부드럽게 밝기를 낮춥니다. 웹서핑 및 데일리 작업에 가장 적합한 표준 곡선입니다."
         case 4.0:
-            return "텍스트(검정색)의 또렷함을 완벽히 유지하면서 흰 배경 영역만 집중해서 감쇄합니다. 눈이 편안한 텍스트 리딩에 이상적입니다."
+            return isEN 
+                ? "Perfectly preserves text (black) sharpness while compressing white backgrounds. Ideal for comfortable reading."
+                : "텍스트(검정색)의 또렷함을 완벽히 유지하면서 흰 배경 영역만 집중해서 감쇄합니다. 눈이 편안한 텍스트 리딩에 이상적입니다."
         case 6.0:
-            return "어두운 톤과 중간 톤을 최대로 보존하고 가장 밝은 극단적 광원 영역만 눌러줍니다. 어두운 방이나 야간 작업에 특화되어 있습니다."
+            return isEN 
+                ? "Maximum preservation of dark and mid-tones, compressing only the brightest extremes. Tailored for dark rooms and night work."
+                : "어두운 톤과 중간 톤을 최대로 보존하고 가장 밝은 극단적 광원 영역만 눌러줍니다. 어두운 방이나 야간 작업에 특화되어 있습니다."
         default:
-            return "설정된 곡선 지수에 따라 비선형 감쇄가 적용됩니다."
+            return isEN 
+                ? "Nonlinear dimming is applied based on the configured exponent."
+                : "설정된 곡선 지수에 따라 비선형 감쇄가 적용됩니다."
         }
     }
 
@@ -558,54 +585,57 @@ struct ContentView: View {
 
     @ViewBuilder
     private var updateBanner: some View {
-        if updater.updateAvailable {
-            if updater.isDownloading {
-                // 다운로드 진행 중
-                VStack(spacing: 8) {
-                    HStack {
-                        Image(systemName: "arrow.down.circle.fill")
-                            .foregroundStyle(.orange)
-                        Text("v\(updater.latestVersion) 다운로드 중...")
-                            .font(.system(size: 11, weight: .semibold))
-                        Spacer()
-                        Text("\(Int(updater.downloadProgress * 100))%")
-                            .font(.system(size: 11, design: .monospaced))
-                            .foregroundStyle(.secondary)
-                    }
-                    ProgressView(value: updater.downloadProgress)
-                        .tint(.orange)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color.orange.opacity(0.06))
-
-            } else {
-                // 업데이트 가능 — 클릭 시 자동 업데이트
-                Button {
-                    updater.performUpdate()
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "arrow.down.circle.fill")
-                            .foregroundStyle(.orange)
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("새 버전 v\(updater.latestVersion) 사용 가능")
+        let isEN = dm.language == "en"
+        Group {
+            if updater.updateAvailable {
+                if updater.isDownloading {
+                    // 다운로드 진행 중
+                    VStack(spacing: 8) {
+                        HStack {
+                            Image(systemName: "arrow.down.circle.fill")
+                                .foregroundStyle(.orange)
+                            Text(LocalizedStrings.updateDownloading(isEN: isEN, ver: updater.latestVersion))
                                 .font(.system(size: 11, weight: .semibold))
-                                .foregroundStyle(.primary)
-                            Text("클릭하여 자동 업데이트")
-                                .font(.system(size: 10))
+                            Spacer()
+                            Text("\(Int(updater.downloadProgress * 100))%")
+                                .font(.system(size: 11, design: .monospaced))
                                 .foregroundStyle(.secondary)
                         }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 10))
-                            .foregroundStyle(.secondary)
+                        ProgressView(value: updater.downloadProgress)
+                            .tint(.orange)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .contentShape(Rectangle())
+                    .background(Color.orange.opacity(0.06))
+
+                } else {
+                    // 업데이트 가능 — 클릭 시 자동 업데이트
+                    Button {
+                        updater.performUpdate()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "arrow.down.circle.fill")
+                                .foregroundStyle(.orange)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(LocalizedStrings.updateAvailable(isEN: isEN, ver: updater.latestVersion))
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(.primary)
+                                Text(LocalizedStrings.updateClickToUpdate(isEN: isEN))
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(Color.orange.opacity(0.08))
                 }
-                .buttonStyle(.plain)
-                .background(Color.orange.opacity(0.08))
             }
         }
     }
@@ -614,19 +644,28 @@ struct ContentView: View {
     // MARK: - Footer
 
     private var footerSection: some View {
-        VStack(spacing: 0) {
+        let isEN = dm.language == "en"
+        return VStack(spacing: 0) {
             updateBanner
 
             HStack {
+                // KR / EN Language Switch Button
                 Button {
-                    withAnimation { dm.resetAll() }
+                    withAnimation {
+                        dm.language = (dm.language == "ko") ? "en" : "ko"
+                    }
                 } label: {
-                    Text("초기화")
-                        .font(.system(size: 12))
+                    HStack(spacing: 2) {
+                        Text("KR")
+                            .foregroundStyle(dm.language == "ko" ? Color.orange : Color.secondary.opacity(0.5))
+                        Text("/")
+                            .foregroundStyle(Color.secondary.opacity(0.3))
+                        Text("EN")
+                            .foregroundStyle(dm.language == "en" ? Color.orange : Color.secondary.opacity(0.5))
+                    }
+                    .font(.system(size: 10, weight: .bold))
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(dm.isEnabled || dm.reduction > 0 ? Color.secondary : Color.secondary.opacity(0.4))
-                .disabled(!dm.isEnabled && dm.reduction == 0)
 
                 Spacer()
 
@@ -650,14 +689,14 @@ struct ContentView: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .help("업데이트 확인 (120시간마다 자동 확인)")
+                .help(LocalizedStrings.manualCheckHelp(isEN: isEN))
 
                 Spacer()
 
                 Button {
                     dm.quit()
                 } label: {
-                    Text("종료")
+                    Text(LocalizedStrings.quitLabel(isEN: isEN))
                         .font(.system(size: 12))
                 }
                 .buttonStyle(.plain)
@@ -667,5 +706,76 @@ struct ContentView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
+    }
+}
+
+// MARK: - Localization
+
+struct LocalizedStrings {
+    static func title(isEN: Bool) -> String {
+        isEN ? "Whiteout" : "화이트아웃"
+    }
+    static func statusActive(isEN: Bool, percent: Int) -> String {
+        isEN ? "Max brightness limited to \(percent)%" : "최대 밝기 \(percent)% 로 제한 중"
+    }
+    static func statusDisabled(isEN: Bool) -> String {
+        isEN ? "Disabled" : "비활성화됨"
+    }
+    static func reductionLabel(isEN: Bool) -> String {
+        isEN ? "Reduction" : "감소량"
+    }
+    static func preserveBlacks(isEN: Bool) -> String {
+        isEN ? "Preserve Blacks" : "검정 유지"
+    }
+    static func maxWhiteLevel(isEN: Bool, percent: Int) -> String {
+        isEN ? "Max white level \(percent)%" : "흰색 최대값 \(percent)%"
+    }
+    static func shortcutToggle(isEN: Bool) -> String {
+        isEN ? "Toggle via Shortcut" : "단축키로 On/Off"
+    }
+    static func shortcutRecord(isEN: Bool) -> String {
+        isEN ? "Configure Shortcut" : "단축키 설정"
+    }
+    static func curveTypeLabel(isEN: Bool) -> String {
+        isEN ? "Curve Type" : "곡선 타입"
+    }
+    static func curveGeneral(isEN: Bool) -> String {
+        isEN ? "General" : "일반"
+    }
+    static func curveDocs(isEN: Bool) -> String {
+        isEN ? "Docs · PDF" : "문서·PDF"
+    }
+    static func curveHighlights(isEN: Bool) -> String {
+        isEN ? "Highlights" : "하이라이트"
+    }
+    static func manualCheckHelp(isEN: Bool) -> String {
+        isEN ? "Check for updates" : "업데이트 확인 (120시간마다 자동 확인)"
+    }
+    static func quitLabel(isEN: Bool) -> String {
+        isEN ? "Quit" : "종료"
+    }
+    static func detailsTitle(isEN: Bool) -> String {
+        isEN ? "Brightness Curve (x-axis: Input ➔ y-axis: Output)" : "밝기 변환 곡선 (x축 : 입력 밝기 → y축 : 출력 밝기)"
+    }
+    static func detailsSectionTitle(isEN: Bool) -> String {
+        isEN ? "Principles & Curve Analysis" : "원리 및 곡선 분석"
+    }
+    static func detailsHowItWorks(isEN: Bool) -> String {
+        isEN ? "Comparison of Methods" : "작동 방식 차이점"
+    }
+    static func updateDownloading(isEN: Bool, ver: String) -> String {
+        isEN ? "Downloading v\(ver)..." : "v\(ver) 다운로드 중..."
+    }
+    static func updateAvailable(isEN: Bool, ver: String) -> String {
+        isEN ? "New version v\(ver) available" : "새 버전 v\(ver) 사용 가능"
+    }
+    static func updateClickToUpdate(isEN: Bool) -> String {
+        isEN ? "Click to auto update" : "클릭하여 자동 업데이트"
+    }
+    static func updateNetworkErrorTitle(isEN: Bool) -> String {
+        isEN ? "Update Error" : "업데이트 오류"
+    }
+    static func updateNetworkErrorMsg(isEN: Bool) -> String {
+        isEN ? "Failed to get update info. Please check your network connection." : "업데이트 정보를 가져오지 못했습니다. 네트워크 연결 상태를 확인해 주세요."
     }
 }
