@@ -4,8 +4,8 @@ import AppKit
 /// GitHub Releases API를 통해 최신 버전을 확인하고 자동 업데이트를 수행하는 클래스.
 class UpdateChecker: ObservableObject {
 
-    // 현재 앱 버전 — 릴리즈 빌드 시 build_dmg.sh의 VERSION="1.5.2"와 함께 업데이트할 것
-    static let currentVersion = "1.5.2"
+    // 현재 앱 버전 — 릴리즈 빌드 시 build_dmg.sh의 VERSION="1.5.3"과 함께 업데이트할 것
+    static let currentVersion = "1.5.3"
 
     /// 주기적 재확인 간격 (120시간 = 5일)
     private static let checkIntervalSeconds: TimeInterval = 120 * 3600

@@ -328,18 +328,45 @@ struct ContentView: View {
 
                 // Live Curve Graph
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("밝기 변환 곡선 (입력 → 출력)")
+                    Text("밝기 변환 곡선 (x축 : 입력 밝기 → y축 : 출력 밝기)")
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(.secondary)
 
-                    curveGraph
-                        .frame(height: 120)
-                        .background(Color.black.opacity(0.15))
-                        .cornerRadius(6)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 6)
-                                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
-                        )
+                    ZStack(alignment: .bottomTrailing) {
+                        curveGraph
+                            .frame(height: 120)
+                            .background(Color.black.opacity(0.15))
+                            .cornerRadius(6)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                            )
+
+                        // Overlay percentage markers
+                        // Top-left: 100%
+                        Text("100%")
+                            .font(.system(size: 7, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(.secondary.opacity(0.5))
+                            .padding(.leading, 6)
+                            .padding(.top, 4)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+
+                        // Bottom-left: 0%
+                        Text("0%")
+                            .font(.system(size: 7, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(.secondary.opacity(0.5))
+                            .padding(.leading, 6)
+                            .padding(.bottom, 4)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+
+                        // Bottom-right: 100%
+                        Text("100%")
+                            .font(.system(size: 7, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(.secondary.opacity(0.5))
+                            .padding(.trailing, 6)
+                            .padding(.bottom, 4)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    }
                 }
 
                 // Dynamic Exponent Explanation
@@ -423,23 +450,60 @@ struct ContentView: View {
             let w = size.width
             let h = size.height
 
+            let uSplit = 0.2
+            let tSplit = 0.3
+            let base = 10.0
+
+            let getT = { (u: Double) -> Double in
+                if u < uSplit {
+                    let ratio = u / uSplit
+                    return (pow(base, ratio) - 1.0) / (base - 1.0) * tSplit
+                } else {
+                    let ratio = (u - uSplit) / (1.0 - uSplit)
+                    return tSplit + ratio * (1.0 - tSplit)
+                }
+            }
+
             // 1. Draw Grid Lines
             let gridPath = Path { p in
+                // Horizontal grid lines (linear)
                 for y in [0.25, 0.5, 0.75] {
                     p.move(to: CGPoint(x: 0, y: h * y))
                     p.addLine(to: CGPoint(x: w, y: h * y))
                 }
-                for x in [0.25, 0.5, 0.75] {
-                    p.move(to: CGPoint(x: w * x, y: 0))
-                    p.addLine(to: CGPoint(x: w * x, y: h))
+                
+                // Vertical grid lines (logarithmic below 30%, linear above)
+                let verticalTs = [0.1, 0.2, 0.5, 0.75]
+                for t in verticalTs {
+                    let u: Double
+                    if t < tSplit {
+                        let ratio = log10((t / tSplit) * 9.0 + 1.0)
+                        u = ratio * uSplit
+                    } else {
+                        let ratio = (t - tSplit) / (1.0 - tSplit)
+                        u = uSplit + ratio * (1.0 - uSplit)
+                    }
+                    let x = CGFloat(u) * w
+                    p.move(to: CGPoint(x: x, y: 0))
+                    p.addLine(to: CGPoint(x: x, y: h))
                 }
             }
-            ctx.stroke(gridPath, with: .color(Color.primary.opacity(0.05)), style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+            ctx.stroke(gridPath, with: .color(Color.primary.opacity(0.04)), style: StrokeStyle(lineWidth: 0.8, dash: [3, 3]))
 
             // 2. Draw Diagonal Baseline (Reference: 100% Unreduced)
-            let baseLine = Path { p in
-                p.move(to: CGPoint(x: 0, y: h))
-                p.addLine(to: CGPoint(x: w, y: 0))
+            var baseLine = Path()
+            let steps = 120
+            for i in 0...steps {
+                let u = Double(i) / Double(steps)
+                let t = getT(u)
+                let x = CGFloat(u) * w
+                let y = h - CGFloat(t) * h
+                
+                if i == 0 {
+                    baseLine.move(to: CGPoint(x: x, y: y))
+                } else {
+                    baseLine.addLine(to: CGPoint(x: x, y: y))
+                }
             }
             ctx.stroke(baseLine, with: .color(Color.secondary.opacity(0.25)), style: StrokeStyle(lineWidth: 1, dash: [2, 2]))
 
@@ -451,13 +515,13 @@ struct ContentView: View {
             // 4. Draw the actual curve
             var curvePath = Path()
 
-            let steps = 100
             for i in 0...steps {
-                let t = Double(i) / Double(steps)
+                let u = Double(i) / Double(steps)
+                let t = getT(u)
                 let scaleFactor = 1.0 - pow(t, exp) * (1.0 - maxOutput)
                 let output = t * scaleFactor
 
-                let x = CGFloat(t) * w
+                let x = CGFloat(u) * w
                 let y = h - CGFloat(output) * h
 
                 if i == 0 {
