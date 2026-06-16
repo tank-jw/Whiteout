@@ -22,6 +22,9 @@ struct LocalizedStrings {
     static func shortcutToggle(isEN: Bool) -> String {
         isEN ? "Toggle via Shortcut" : "단축키로 On/Off"
     }
+    static func launchAtLogin(isEN: Bool) -> String {
+        isEN ? "Launch at Login" : "로그인 시 자동 실행"
+    }
     static func shortcutRecord(isEN: Bool) -> String {
         isEN ? "Configure Shortcut" : "단축키 설정"
     }

@@ -46,6 +46,8 @@ struct ContentView: View {
                 Divider().opacity(0.5)
                 shortcutSection
                 Divider().opacity(0.5)
+                launchAtLoginSection
+                Divider().opacity(0.5)
                 curveSection
                 Divider().opacity(0.5)
                 footerSection
@@ -247,6 +249,24 @@ struct ContentView: View {
                     KeyboardShortcuts.Recorder("", name: .toggleWhiteout)
                 }
             }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+
+    // MARK: - Launch at Login Section
+
+    private var launchAtLoginSection: some View {
+        let isEN = dm.language == "en"
+        return HStack {
+            Text(LocalizedStrings.launchAtLogin(isEN: isEN))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(Color.primary)
+            Spacer()
+            Toggle("", isOn: $dm.launchAtLogin)
+                .toggleStyle(.switch)
+                .labelsHidden()
+                .tint(.orange)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)

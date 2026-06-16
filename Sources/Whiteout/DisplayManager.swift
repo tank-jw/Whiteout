@@ -3,6 +3,7 @@ import CoreGraphics
 import Foundation
 import Combine
 import KeyboardShortcuts
+import ServiceManagement
 
 /// 디스플레이 한 개의 원본 감마 테이블
 private typealias GammaTable = (red: [CGGammaValue], green: [CGGammaValue], blue: [CGGammaValue])
@@ -40,6 +41,13 @@ class DisplayManager: ObservableObject {
         didSet { UserDefaults.standard.set(language, forKey: Keys.language) }
     }
 
+    @Published var launchAtLogin: Bool {
+        didSet {
+            UserDefaults.standard.set(launchAtLogin, forKey: Keys.launchAtLogin)
+            syncLaunchAtLogin()
+        }
+    }
+
     // MARK: - Private
 
     private enum Keys {
@@ -48,6 +56,7 @@ class DisplayManager: ObservableObject {
         static let curveExponent     = "curveExponent"
         static let isShortcutEnabled = "isShortcutEnabled"
         static let language          = "language"
+        static let launchAtLogin     = "launchAtLogin"
     }
 
     private let tableSize = 256
@@ -63,14 +72,17 @@ class DisplayManager: ObservableObject {
         let savedExponent  = UserDefaults.standard.object(forKey: Keys.curveExponent) as? Double ?? 4.0
         let savedShortcut  = UserDefaults.standard.object(forKey: Keys.isShortcutEnabled) as? Bool ?? true
         let savedLanguage  = UserDefaults.standard.string(forKey: Keys.language) ?? "ko"
+        let savedLaunch    = UserDefaults.standard.bool(forKey: Keys.launchAtLogin)
 
         self.reduction         = savedReduction
         self.isEnabled         = savedEnabled
         self.curveExponent     = savedExponent
         self.isShortcutEnabled = savedShortcut
         self.language          = savedLanguage
+        self.launchAtLogin     = savedLaunch
 
         saveOriginalTables()
+        syncLaunchAtLogin()
 
         // Re-apply saved setting on launch
         if savedEnabled && savedReduction > 0 {
@@ -230,6 +242,27 @@ class DisplayManager: ObservableObject {
         // 활성 상태라면 새 구성에 즉시 재적용
         if isEnabled && reduction > 0.001 {
             applyReduction()
+        }
+    }
+
+    /// 로그인 시 자동 실행 등록/해제 동기화
+    private func syncLaunchAtLogin() {
+        if launchAtLogin {
+            if SMAppService.mainApp.status != .enabled {
+                do {
+                    try SMAppService.mainApp.register()
+                } catch {
+                    print("Failed to register SMAppService: \(error)")
+                }
+            }
+        } else {
+            if SMAppService.mainApp.status == .enabled {
+                do {
+                    try SMAppService.mainApp.unregister()
+                } catch {
+                    print("Failed to unregister SMAppService: \(error)")
+                }
+            }
         }
     }
 }
