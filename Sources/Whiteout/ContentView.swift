@@ -91,17 +91,21 @@ struct ContentView: View {
 
             // Title + status
             let isEN = dm.language == "en"
-            let percent = 100 - Int((dm.reduction * 30).rounded())
-            VStack(alignment: .leading, spacing: 3) {
-                Text(LocalizedStrings.title(isEN: isEN))
-                    .font(.system(size: 13, weight: .semibold))
-                Text(dm.isEnabled
-                     ? LocalizedStrings.statusActive(isEN: isEN, percent: percent)
-                     : LocalizedStrings.statusDisabled(isEN: isEN))
-                    .font(.system(size: 11))
-                    .foregroundStyle(statusColor(isEnabled: dm.isEnabled, reduction: dm.reduction))
-                    .animation(.easeInOut(duration: 0.2), value: dm.isEnabled)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(isEN ? "White" : "화이트")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(Color.primary)
+                if dm.isEnabled {
+                    Text(isEN ? "out" : "아웃")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(statusColor(isEnabled: dm.isEnabled, reduction: dm.reduction))
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .top)),
+                            removal: .opacity
+                        ))
+                }
             }
+            .frame(minHeight: 36, alignment: .leading)
 
             Spacer()
 
@@ -162,7 +166,7 @@ struct ContentView: View {
                 Spacer()
                 Text(LocalizedStrings.maxWhiteLevel(isEN: isEN, percent: 100 - Int((dm.reduction * 30).rounded())))
                     .font(.system(size: 10))
-                    .foregroundStyle(Color.secondary)
+                    .foregroundStyle(statusColor(isEnabled: dm.isEnabled, reduction: dm.reduction))
                     .contentTransition(.numericText())
                     .animation(.easeOut(duration: 0.15), value: dm.reduction)
             }
