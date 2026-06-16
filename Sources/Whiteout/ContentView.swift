@@ -369,26 +369,6 @@ struct ContentView: View {
                         bulletPoint(title: "소프트웨어 오버레이 필터", desc: "화면에 검은 막을 씌워 블랙 레벨을 들뜨게 하고 명암비를 손상시킵니다.")
                     }
                 }
-
-                // Mathematical Formula
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("압축 곡선 공식")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.secondary)
-
-                    Text("f(t) = t × (1 - tⁿ × (1 - maxOutput))")
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .foregroundStyle(.primary)
-                        .padding(.vertical, 4)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .background(Color.primary.opacity(0.04))
-                        .cornerRadius(4)
-
-                    Text("입력 밝기 t를 비선형 지수 n에 따라 압축하여, 어두운 톤은 보호하고 흰색 화이트포인트만 집중 감소시킵니다.")
-                        .font(.system(size: 9))
-                        .foregroundStyle(.secondary)
-                        .lineSpacing(1.5)
-                }
             }
             .padding(14)
         }
