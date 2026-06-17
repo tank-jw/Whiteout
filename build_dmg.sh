@@ -109,15 +109,15 @@ echo "📦 실제 마운트된 볼륨 이름: ${ACTUAL_VOL_NAME}"
 cp -r "${APP_DIR}" "/Volumes/${ACTUAL_VOL_NAME}/"
 ln -s /Applications "/Volumes/${ACTUAL_VOL_NAME}/Applications"
 
-# 4. 배경 이미지 복사 (.background 디렉토리에 숨김 처리 및 1200x1200 @ 144 DPI Retina 리사이징)
+# 4. 배경 이미지 복사 (.background 디렉토리에 숨김 처리 및 1200x1200  해상도 매칭 - Retina 대응)
 mkdir -p "/Volumes/${ACTUAL_VOL_NAME}/.background"
 if [ -f "assets/dmg_background.png" ]; then
   echo "🎨 DMG 배경화면 설정 중 (1200x1200 @ 144 DPI Retina 리사이징)..."
   sips -s format png -z 1200 1200 -s dpiHeight 144.0 -s dpiWidth 144.0 assets/dmg_background.png --out "/Volumes/${ACTUAL_VOL_NAME}/.background/dmg_background.png" > /dev/null
 fi
 
-# 5. AppleScript를 이용해 Finder 창 레이아웃 및 배경 설정
-echo "🎨 DMG 레이아웃 설정 중..."
+# 5. AppleScript를 이용해 Finder 창 레이아웃 설정
+echo "🎨 DMG 레이아웃 및 배경 적용 중..."
 osascript <<EOF
 tell application "Finder"
     open disk "${ACTUAL_VOL_NAME}"
@@ -129,13 +129,13 @@ tell application "Finder"
     set the bounds of containerWindow to {400, 100, 1000, 700} -- 가로 600, 세로 600
     
     set viewOptions to icon view options of containerWindow
-    set icon size of viewOptions to 100
+    set icon size of viewOptions to 115
     set arrangement of viewOptions to not arranged
     set background picture of viewOptions to file ".background:dmg_background.png" of disk "${ACTUAL_VOL_NAME}"
     
-    -- 앱 아이콘 및 Applications 심볼릭 링크 위치 정렬 (600x600 창에 맞춰 대칭 정렬)
-    set position of item "WhiteOut.app" of containerWindow to {150, 300}
-    set position of item "Applications" of containerWindow to {450, 300}
+    -- 앱 아이콘 및 Applications 심볼릭 링크 위치 정렬
+    set position of item "WhiteOut.app" of containerWindow to {150, 310}
+    set position of item "Applications" of containerWindow to {450, 310}
     
     update every item of containerWindow
     delay 2
