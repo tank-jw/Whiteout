@@ -112,8 +112,8 @@ ln -s /Applications "/Volumes/${ACTUAL_VOL_NAME}/Applications"
 # 4. 배경 이미지 복사 (.background 디렉토리에 숨김 처리 및 1200x1200  해상도 매칭 - Retina 대응)
 mkdir -p "/Volumes/${ACTUAL_VOL_NAME}/.background"
 if [ -f "assets/dmg_background.png" ]; then
-  echo "🎨 DMG 배경화면 설정 중 (1200x1200 Retina 리사이징)..."
-  sips -s format png -z 1200 1200 assets/dmg_background.png --out "/Volumes/${ACTUAL_VOL_NAME}/.background/dmg_background.png" > /dev/null
+  echo "🎨 DMG 배경화면 설정 중 (1200x1200 @ 144 DPI Retina 리사이징)..."
+  sips -s format png -z 1200 1200 -s dpiHeight 144.0 -s dpiWidth 144.0 assets/dmg_background.png --out "/Volumes/${ACTUAL_VOL_NAME}/.background/dmg_background.png" > /dev/null
 fi
 
 # 5. AppleScript를 이용해 Finder 창 레이아웃 설정
