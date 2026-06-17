@@ -129,7 +129,7 @@ tell application "Finder"
     set the bounds of containerWindow to {400, 100, 1000, 700} -- 가로 600, 세로 600
     
     set viewOptions to icon view options of containerWindow
-    set icon size of viewOptions to 100
+    set icon size of viewOptions to 115
     set arrangement of viewOptions to not arranged
     set background picture of viewOptions to file ".background:dmg_background.png" of disk "${ACTUAL_VOL_NAME}"
     
