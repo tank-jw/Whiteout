@@ -15,21 +15,47 @@ private typealias GammaTable = (red: [CGGammaValue], green: [CGGammaValue], blue
 ///   - Applies to ALL active displays (multi-monitor support)
 ///   - Responds to display connect/disconnect at runtime
 ///   - The original gamma table is saved on init and restored on quit / reset
+struct DisplaySetting: Codable, Identifiable, Equatable {
+    var id: String { String(displayID) }
+    let displayID: CGDirectDisplayID
+    let name: String
+    var reduction: Double
+    var curveExponent: Double
+    var isEnabled: Bool
+}
+
+struct AppRule: Codable, Identifiable, Equatable {
+    var id: String { bundleIdentifier }
+    let bundleIdentifier: String
+    let appName: String
+    var reduction: Double
+    var curveExponent: Double
+    var isEnabled: Bool
+}
+
 class DisplayManager: ObservableObject {
 
     // MARK: - Published State
 
     @Published var reduction: Double {
-        didSet { UserDefaults.standard.set(reduction, forKey: Keys.reduction) }
+        didSet {
+            UserDefaults.standard.set(reduction, forKey: Keys.reduction)
+            handleUserAdjustedReduction(reduction)
+        }
     }
 
     @Published var isEnabled: Bool {
-        didSet { UserDefaults.standard.set(isEnabled, forKey: Keys.isEnabled) }
+        didSet {
+            UserDefaults.standard.set(isEnabled, forKey: Keys.isEnabled)
+            handleUserAdjustedEnabled(isEnabled)
+        }
     }
 
-    /// 비선형 곡선 지수 프리셋: 2.5(일반) / 4.0(문서·PDF) / 6.0(하이라이트 집중)
     @Published var curveExponent: Double {
-        didSet { UserDefaults.standard.set(curveExponent, forKey: Keys.curveExponent) }
+        didSet {
+            UserDefaults.standard.set(curveExponent, forKey: Keys.curveExponent)
+            handleUserAdjustedExponent(curveExponent)
+        }
     }
 
     @Published var isShortcutEnabled: Bool {
@@ -43,7 +69,6 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    /// 현재 등록된 전역 단축키 (nil = 미설정)
     @Published var shortcut: KeyShortcut? {
         didSet {
             if let sc = shortcut, let data = try? JSONEncoder().encode(sc) {
@@ -72,7 +97,33 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    // MARK: - Private
+    // picker selection: "all" or displayID string
+    @Published var selectedDisplayID: String = "all" {
+        didSet {
+            UserDefaults.standard.set(selectedDisplayID, forKey: Keys.selectedDisplayID)
+            syncSelectedDisplayToGlobalProperties()
+        }
+    }
+
+    @Published var displaySettings: [String: DisplaySetting] = [:] {
+        didSet {
+            if let data = try? JSONEncoder().encode(displaySettings) {
+                UserDefaults.standard.set(data, forKey: Keys.displaySettings)
+            }
+        }
+    }
+
+    @Published var appRules: [AppRule] = [] {
+        didSet {
+            if let data = try? JSONEncoder().encode(appRules) {
+                UserDefaults.standard.set(data, forKey: Keys.appRules)
+            }
+        }
+    }
+
+    @Published var activeRuleAppName: String? = nil
+
+    // MARK: - Private / App-tracking properties
 
     private enum Keys {
         static let reduction         = "whitePointReduction"
@@ -82,12 +133,17 @@ class DisplayManager: ObservableObject {
         static let shortcut          = "globalShortcut"
         static let language          = "language"
         static let launchAtLogin     = "launchAtLogin"
+        static let selectedDisplayID = "selectedDisplayID"
+        static let displaySettings   = "displaySettings"
+        static let appRules          = "appRules"
     }
 
     private let tableSize = 256
-
-    /// 디스플레이 ID → 원본 감마 테이블 (다중 모니터 지원)
     private var originalTables: [CGDirectDisplayID: GammaTable] = [:]
+    private var isSyncingProperties = false
+
+    var lastActiveAppBundleIdentifier: String?
+    var lastActiveAppName: String?
 
     // MARK: - Init
 
@@ -101,6 +157,20 @@ class DisplayManager: ObservableObject {
         let savedShortcutData = UserDefaults.standard.data(forKey: Keys.shortcut)
         let savedShortcut     = savedShortcutData.flatMap { try? JSONDecoder().decode(KeyShortcut.self, from: $0) }
 
+        let savedSelectedDisplay = UserDefaults.standard.string(forKey: Keys.selectedDisplayID) ?? "all"
+
+        var loadedDisplaySettings: [String: DisplaySetting] = [:]
+        if let data = UserDefaults.standard.data(forKey: Keys.displaySettings),
+           let decoded = try? JSONDecoder().decode([String: DisplaySetting].self, from: data) {
+            loadedDisplaySettings = decoded
+        }
+
+        var loadedAppRules: [AppRule] = []
+        if let data = UserDefaults.standard.data(forKey: Keys.appRules),
+           let decoded = try? JSONDecoder().decode([AppRule].self, from: data) {
+            loadedAppRules = decoded
+        }
+
         self.reduction         = savedReduction
         self.isEnabled         = savedEnabled
         self.curveExponent     = savedExponent
@@ -109,12 +179,24 @@ class DisplayManager: ObservableObject {
         self.launchAtLogin     = savedLaunch
         self.shortcut          = savedShortcut
 
+        self.selectedDisplayID = savedSelectedDisplay
+        self.displaySettings   = loadedDisplaySettings
+        self.appRules          = loadedAppRules
+
         saveOriginalTables()
         syncLaunchAtLogin()
 
+        // Initialize settings for active displays
+        for displayID in activeDisplayIDs() {
+            let key = String(displayID)
+            if displaySettings[key] == nil {
+                displaySettings[key] = DisplaySetting(displayID: displayID, name: getDisplayName(displayID), reduction: savedReduction, curveExponent: savedExponent, isEnabled: savedEnabled)
+            }
+        }
+
         // Re-apply saved setting on launch
         if savedEnabled && savedReduction > 0 {
-            applyReduction(savedReduction)
+            applyReduction()
         }
 
         // 글로벌 단축키 설정 (Carbon ShortcutManager)
@@ -143,6 +225,14 @@ class DisplayManager: ObservableObject {
         ) { [weak self] _ in
             self?.refreshDisplayConfiguration()
         }
+
+        // Observe application focus change
+        NSWorkspace.shared.notificationCenter.addObserver(
+            self,
+            selector: #selector(appDidActivate(_:)),
+            name: NSWorkspace.didActivateApplicationNotification,
+            object: nil
+        )
     }
 
     deinit {
@@ -151,48 +241,71 @@ class DisplayManager: ObservableObject {
 
     // MARK: - Public API
 
-    /// Apply the current `reduction` value to ALL active displays.
-    func applyReduction(_ amount: Double? = nil) {
-        let amount = amount ?? reduction
-        guard amount > 0.001 else {
-            restoreOriginalTables()
+    /// Apply the current `reduction` value to active displays.
+    func applyReduction() {
+        // If an app rule is currently active, apply the active app rule's settings to all screens
+        if let activeAppName = activeRuleAppName,
+           let rule = appRules.first(where: { $0.appName == activeAppName }) {
+            applyReductionForActiveRule(rule)
             return
         }
 
-        // Map: slider 0‥1  →  max white output 1.0‥0.7  (최대 30% 감소)
-        let maxOutput = CGGammaValue(1.0 - amount * 0.3)
-
-        // Non-linear highlight compression curve
-        //
-        //  scaleFactor(t) = 1.0 - t^exponent × (1 - maxOutput)
-        //
-        //  t = 0 (black) → scaleFactor = 1.0  → output unchanged  ✓
-        //  t = 1 (white) → scaleFactor = maxOutput               ✓
-        //  mid-tones     → smooth transition, biased toward preserving darks
-        //
-        // Curve exponent preset: 2.5 = general / 4.0 = document·PDF / 6.0 = highlights only
-        let exp = CGGammaValue(curveExponent)
-
-        // Precalculate curve scaling factors to avoid redundant pow() operations in multi-monitor setups
-        var scaleFactors = [CGGammaValue](repeating: 0, count: tableSize)
-        for i in 0..<tableSize {
-            let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
-            scaleFactors[i] = 1.0 - pow(t, exp) * (1.0 - maxOutput)
-        }
-
-        // 모든 저장된 디스플레이에 적용
+        // Otherwise, apply display-specific settings
         for (displayID, tables) in originalTables {
+            let key = String(displayID)
+            let setting = displaySettings[key] ?? DisplaySetting(displayID: displayID, name: getDisplayName(displayID), reduction: reduction, curveExponent: curveExponent, isEnabled: isEnabled)
+
+            guard setting.isEnabled, setting.reduction > 0.001 else {
+                // Restore this display only
+                var r = tables.red
+                var g = tables.green
+                var b = tables.blue
+                CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+                continue
+            }
+
+            let maxOutput = CGGammaValue(1.0 - setting.reduction * 0.3)
+            let exp = CGGammaValue(setting.curveExponent)
+
             var r = [CGGammaValue](repeating: 0, count: tableSize)
             var g = [CGGammaValue](repeating: 0, count: tableSize)
             var b = [CGGammaValue](repeating: 0, count: tableSize)
 
             for i in 0..<tableSize {
-                let sf = scaleFactors[i]
+                let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
+                let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
                 r[i] = tables.red[i]   * sf
                 g[i] = tables.green[i] * sf
                 b[i] = tables.blue[i]  * sf
             }
+            CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+        }
+    }
 
+    private func applyReductionForActiveRule(_ rule: AppRule) {
+        for (displayID, tables) in originalTables {
+            guard rule.isEnabled, rule.reduction > 0.001 else {
+                var r = tables.red
+                var g = tables.green
+                var b = tables.blue
+                CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+                continue
+            }
+
+            let maxOutput = CGGammaValue(1.0 - rule.reduction * 0.3)
+            let exp = CGGammaValue(rule.curveExponent)
+
+            var r = [CGGammaValue](repeating: 0, count: tableSize)
+            var g = [CGGammaValue](repeating: 0, count: tableSize)
+            var b = [CGGammaValue](repeating: 0, count: tableSize)
+
+            for i in 0..<tableSize {
+                let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
+                let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
+                r[i] = tables.red[i]   * sf
+                g[i] = tables.green[i] * sf
+                b[i] = tables.blue[i]  * sf
+            }
             CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
         }
     }
@@ -200,14 +313,8 @@ class DisplayManager: ObservableObject {
     /// Toggle the effect on/off.
     func setEnabled(_ enabled: Bool) {
         isEnabled = enabled
-        if enabled && reduction > 0 {
-            applyReduction()
-        } else {
-            restoreOriginalTables()
-        }
+        applyReduction()
     }
-
-
 
     /// Restore original tables and quit.
     func quit() {
@@ -215,7 +322,162 @@ class DisplayManager: ObservableObject {
         NSApplication.shared.terminate(nil)
     }
 
+    // MARK: - Monitor/App Rule Management
+
+    func getDisplayName(_ displayID: CGDirectDisplayID) -> String {
+        for screen in NSScreen.screens {
+            if let screenNumber = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID,
+               screenNumber == displayID {
+                return screen.localizedName
+            }
+        }
+        return "외장 디스플레이 (\(displayID))"
+    }
+
+    func addAppRuleForLastActiveApp() {
+        guard let bundleID = lastActiveAppBundleIdentifier,
+              let name = lastActiveAppName else { return }
+
+        if appRules.contains(where: { $0.bundleIdentifier == bundleID }) {
+            return
+        }
+
+        let rule = AppRule(bundleIdentifier: bundleID, appName: name, reduction: reduction, curveExponent: curveExponent, isEnabled: isEnabled)
+        appRules.append(rule)
+
+        activeRuleAppName = name
+        applyReduction()
+    }
+
+    func deleteAppRule(at index: Int) {
+        let rule = appRules[index]
+        appRules.remove(at: index)
+
+        if activeRuleAppName == rule.appName {
+            activeRuleAppName = nil
+            syncSelectedDisplayToGlobalProperties()
+            applyReduction()
+        }
+    }
+
+    func getAppIcon(bundleIdentifier: String) -> NSImage? {
+        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) {
+            return NSWorkspace.shared.icon(forFile: url.path)
+        }
+        return nil
+    }
+
     // MARK: - Private Helpers
+
+    private func handleUserAdjustedReduction(_ val: Double) {
+        guard !isSyncingProperties else { return }
+
+        if let activeAppName = activeRuleAppName,
+           let index = appRules.firstIndex(where: { $0.appName == activeAppName }) {
+            appRules[index].reduction = val
+            applyReductionForActiveRule(appRules[index])
+            return
+        }
+
+        if selectedDisplayID == "all" {
+            for key in displaySettings.keys {
+                displaySettings[key]?.reduction = val
+            }
+        } else {
+            displaySettings[selectedDisplayID]?.reduction = val
+        }
+        applyReduction()
+    }
+
+    private func handleUserAdjustedExponent(_ val: Double) {
+        guard !isSyncingProperties else { return }
+
+        if let activeAppName = activeRuleAppName,
+           let index = appRules.firstIndex(where: { $0.appName == activeAppName }) {
+            appRules[index].curveExponent = val
+            applyReductionForActiveRule(appRules[index])
+            return
+        }
+
+        if selectedDisplayID == "all" {
+            for key in displaySettings.keys {
+                displaySettings[key]?.curveExponent = val
+            }
+        } else {
+            displaySettings[selectedDisplayID]?.curveExponent = val
+        }
+        applyReduction()
+    }
+
+    private func handleUserAdjustedEnabled(_ val: Bool) {
+        guard !isSyncingProperties else { return }
+
+        if let activeAppName = activeRuleAppName,
+           let index = appRules.firstIndex(where: { $0.appName == activeAppName }) {
+            appRules[index].isEnabled = val
+            applyReductionForActiveRule(appRules[index])
+            return
+        }
+
+        if selectedDisplayID == "all" {
+            for key in displaySettings.keys {
+                displaySettings[key]?.isEnabled = val
+            }
+        } else {
+            displaySettings[selectedDisplayID]?.isEnabled = val
+        }
+        applyReduction()
+    }
+
+    private func syncSelectedDisplayToGlobalProperties() {
+        isSyncingProperties = true
+        defer { isSyncingProperties = false }
+
+        if selectedDisplayID == "all" {
+            let savedReduction = UserDefaults.standard.double(forKey: Keys.reduction)
+            let savedEnabled   = UserDefaults.standard.bool(forKey: Keys.isEnabled)
+            let savedExponent  = UserDefaults.standard.object(forKey: Keys.curveExponent) as? Double ?? 4.0
+
+            self.reduction = savedReduction
+            self.isEnabled = savedEnabled
+            self.curveExponent = savedExponent
+        } else if let setting = displaySettings[selectedDisplayID] {
+            self.reduction = setting.reduction
+            self.isEnabled = setting.isEnabled
+            self.curveExponent = setting.curveExponent
+        }
+    }
+
+    @objc private func appDidActivate(_ notification: Notification) {
+        guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+              let bundleID = app.bundleIdentifier else { return }
+
+        let myBundleID = Bundle.main.bundleIdentifier ?? "com.tankjw.whiteout"
+        if bundleID == myBundleID {
+            return
+        }
+
+        lastActiveAppBundleIdentifier = bundleID
+        lastActiveAppName = app.localizedName
+
+        if let rule = appRules.first(where: { $0.bundleIdentifier == bundleID }) {
+            activeRuleAppName = rule.appName
+
+            isSyncingProperties = true
+            self.reduction = rule.reduction
+            self.curveExponent = rule.curveExponent
+            self.isEnabled = rule.isEnabled
+            isSyncingProperties = false
+
+            applyReduction()
+        } else {
+            if activeRuleAppName != nil {
+                activeRuleAppName = nil
+                syncSelectedDisplayToGlobalProperties()
+                applyReduction()
+            }
+        }
+    }
 
     /// 현재 연결된 모든 활성 디스플레이 ID 반환
     private func activeDisplayIDs() -> [CGDirectDisplayID] {
@@ -263,6 +525,11 @@ class DisplayManager: ObservableObject {
             var count: UInt32 = 0
             CGGetDisplayTransferByTable(id, UInt32(tableSize), &r, &g, &b, &count)
             originalTables[id] = (red: r, green: g, blue: b)
+
+            let key = String(id)
+            if displaySettings[key] == nil {
+                displaySettings[key] = DisplaySetting(displayID: id, name: getDisplayName(id), reduction: reduction, curveExponent: curveExponent, isEnabled: isEnabled)
+            }
         }
 
         // 연결 해제된 모니터: 테이블 제거
@@ -270,10 +537,7 @@ class DisplayManager: ObservableObject {
             originalTables.removeValue(forKey: id)
         }
 
-        // 활성 상태라면 새 구성에 즉시 재적용
-        if isEnabled && reduction > 0.001 {
-            applyReduction()
-        }
+        applyReduction()
     }
 
     /// 로그인 시 자동 실행 등록/해제 동기화

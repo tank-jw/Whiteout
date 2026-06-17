@@ -41,11 +41,28 @@
                 <span>Whiteout</span>
             </a>
             <nav class="nav-links">
-                <a href="#how-it-works" id="nav-link-how">How it Works</a>
-                <a href="#curve-details" id="nav-link-curve">Gamma Curve</a>
-                <a href="#features" id="nav-link-features">Features</a>
+                <a href="#how-it-works" id="nav-link-how">
+                    <span class="lang-en">How it Works</span>
+                    <span class="lang-ko">작동 원리</span>
+                </a>
+                <a href="#curve-details" id="nav-link-curve">
+                    <span class="lang-en">Gamma Curve</span>
+                    <span class="lang-ko">감마 곡선</span>
+                </a>
+                <a href="#features" id="nav-link-features">
+                    <span class="lang-en">Features</span>
+                    <span class="lang-ko">주요 기능</span>
+                </a>
+                
+                <!-- Website Language Switcher -->
+                <div class="site-lang-switch">
+                    <button class="site-lang-btn active" data-lang="en">EN</button>
+                    <span class="site-lang-divider">/</span>
+                    <button class="site-lang-btn" data-lang="ko">KO</button>
+                </div>
+
                 <a href="https://github.com/tank-jw/Whiteout" class="github-link" target="_blank" id="nav-link-github">
-                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
                         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                     </svg>
                     <span>GitHub</span>
@@ -62,26 +79,36 @@
         </div>
         <div class="container hero-container">
             <div class="hero-text">
-                <span class="badge">macOS 13+ Apple Silicon & Intel</span>
-                <h1 class="hero-title">Protect Your Eyes,<br><span class="highlight-text">Not Your Contrast</span></h1>
+                <span class="badge">
+                    <span class="lang-en">macOS 13+ Apple Silicon & Intel</span>
+                    <span class="lang-ko">macOS 13+ Apple Silicon & Intel 지원</span>
+                </span>
+                <h1 class="hero-title">
+                    <span class="lang-en">Protect Your Eyes,<br><span class="highlight-text">Not Your Contrast</span></span>
+                    <span class="lang-ko">눈을 보호하세요,<br><span class="highlight-text">대비는 지키면서</span></span>
+                </h1>
                 <p class="hero-subtitle">
-                    Replicates iPad's hardware-level <strong>Reduce White Point</strong> on macOS. Dim bright highlights without turning your screen into a washed-out, grey mess.
+                    <span class="lang-en">Replicates iPad's hardware-level <strong>Reduce White Point</strong> on macOS. Dim bright highlights without turning your screen into a washed-out, grey mess.</span>
+                    <span class="lang-ko">아이패드의 하드웨어 기반 <strong>화이트포인트 낮추기</strong> 기능을 macOS에서 완벽히 재현합니다. 화면을 하얗게 가리는 일반 필터와 달리, 눈을 피로하게 만드는 밝은 하이라이트만 효과적으로 감쇄합니다.</span>
                 </p>
                 <div class="cta-buttons">
                     <a href="https://github.com/tank-jw/Whiteout/releases/latest" class="btn btn-primary" id="btn-dmg-download">
                         <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
                         </svg>
-                        <span>Download DMG (v1.5.3)</span>
+                        <span>Download DMG (v1.6.6)</span>
                     </a>
                     <a href="https://github.com/tank-jw/Whiteout" class="btn btn-secondary" target="_blank" id="btn-source">
-                        <span>View Source Code</span>
+                        <span class="lang-en">View Source Code</span>
+                        <span class="lang-ko">소스 코드 보기</span>
                     </a>
                 </div>
                 <div class="app-meta">
-                    <span>⚡ Lightweight Native Swift (200KB)</span>
+                    <span class="lang-en">⚡ Lightweight Native Swift (200KB)</span>
+                    <span class="lang-ko">⚡ 가벼운 네이티브 Swift 앱 (200KB)</span>
                     <span>•</span>
-                    <span>🖥️ Full Multi-Monitor Support</span>
+                    <span class="lang-en">🖥️ Full Multi-Monitor Support</span>
+                    <span class="lang-ko">🖥️ 다중 모니터 완벽 지원</span>
                 </div>
             </div>
             
@@ -95,7 +122,7 @@
                         <span class="mac-title">Whiteout.app</span>
                     </div>
                     <div class="mac-content">
-                        <!-- Simulated App Popover UI -->
+                        <!-- Simulated App Popover UI (Bilingual via JS & CSS) -->
                         <div class="app-popover-ui">
                             <div class="ui-row header-row">
                                 <div class="ui-icon-box enabled">
@@ -104,10 +131,16 @@
                                     </svg>
                                 </div>
                                 <div class="ui-text-column">
-                                    <span class="ui-title">화이트포인트 낮추기</span>
-                                    <span class="ui-subtitle status-text">최대 밝기 85% 로 제한 중</span>
+                                    <span class="ui-title">
+                                        <span class="lang-en">WhiteOut</span>
+                                        <span class="lang-ko">화이트아웃</span>
+                                    </span>
+                                    <span class="ui-subtitle status-text" id="popover-status-text">
+                                        <span class="lang-en">Max White: 85%</span>
+                                        <span class="lang-ko">최대 밝기 85% 로 제한 중</span>
+                                    </span>
                                 </div>
-                                <div class="ui-toggle active">
+                                <div class="ui-toggle active" id="popover-toggle">
                                     <div class="ui-toggle-thumb"></div>
                                 </div>
                             </div>
@@ -116,7 +149,10 @@
                             
                             <div class="ui-section">
                                 <div class="ui-row label-row">
-                                    <span class="section-label">감소량</span>
+                                    <span class="section-label">
+                                        <span class="lang-en">Reduction</span>
+                                        <span class="lang-ko">감소량</span>
+                                    </span>
                                     <span class="slider-value" id="ui-reduction-text">15%</span>
                                 </div>
                                 <div class="ui-slider-container">
@@ -131,8 +167,14 @@
                                     <div class="orange-triangle" style="left: 85%;"></div>
                                 </div>
                                 <div class="ui-row footer-info">
-                                    <span class="info-green">✓ 검정 유지</span>
-                                    <span class="info-gray">흰색 최대값 85%</span>
+                                    <span class="info-green">
+                                        <span class="lang-en">✓ Preserve Blacks</span>
+                                        <span class="lang-ko">✓ 검정 유지</span>
+                                    </span>
+                                    <span class="info-gray" id="popover-info-gray">
+                                        <span class="lang-en">Max white level 85%</span>
+                                        <span class="lang-ko">흰색 최대값 85%</span>
+                                    </span>
                                 </div>
                             </div>
                             
@@ -140,14 +182,65 @@
                             
                             <div class="ui-section">
                                 <div class="ui-row label-row">
-                                    <span class="section-label">곡선 타입</span>
+                                    <span class="section-label">
+                                        <span class="lang-en">Curve Type</span>
+                                        <span class="lang-ko">곡선 타입</span>
+                                    </span>
                                     <span class="exponent-label">T = 4.0</span>
                                 </div>
                                 <div class="ui-segmented-control">
-                                    <div class="segment">일반</div>
-                                    <div class="segment active">문서·PDF</div>
-                                    <div class="segment">하이라이트</div>
+                                    <div class="segment">
+                                        <span class="lang-en">General</span>
+                                        <span class="lang-ko">일반</span>
+                                    </div>
+                                    <div class="segment active">
+                                        <span class="lang-en">Docs</span>
+                                        <span class="lang-ko">문서·PDF</span>
+                                    </div>
+                                    <div class="segment">
+                                        <span class="lang-en">Highlights</span>
+                                        <span class="lang-ko">하이라이트</span>
+                                    </div>
                                 </div>
+                            </div>
+                            
+                            <div class="ui-divider"></div>
+                            
+                            <!-- App Popover Switchers (Shortcut, Login, Language) -->
+                            <div class="ui-section opt-row">
+                                <div class="ui-row option-toggle">
+                                    <span class="opt-label">
+                                        <span class="lang-en">Toggle via Shortcut</span>
+                                        <span class="lang-ko">단축키로 On/Off</span>
+                                    </span>
+                                    <div class="ui-switch mini active">
+                                        <div class="ui-switch-thumb"></div>
+                                    </div>
+                                </div>
+                                <div class="ui-row option-toggle">
+                                    <span class="opt-label">
+                                        <span class="lang-en">Launch at Login</span>
+                                        <span class="lang-ko">로그인 시 자동 실행</span>
+                                    </span>
+                                    <div class="ui-switch mini">
+                                        <div class="ui-switch-thumb"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ui-divider"></div>
+                            
+                            <!-- Popover Footer with language selector mimicking native switch -->
+                            <div class="ui-row popover-footer">
+                                <div class="popover-lang-switch">
+                                    <span class="popover-lang active" data-target-lang="ko">KR</span>
+                                    <span class="popover-lang-slash">/</span>
+                                    <span class="popover-lang" data-target-lang="en">EN</span>
+                                </div>
+                                <span class="popover-quit-btn">
+                                    <span class="lang-en">Quit</span>
+                                    <span class="lang-ko">종료</span>
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -160,9 +253,13 @@
     <section class="how-it-works" id="how-it-works">
         <div class="container">
             <div class="section-header">
-                <h2>Contrast-Preserved GPU Dimming</h2>
+                <h2>
+                    <span class="lang-en">Contrast-Preserving Hardware Dimming</span>
+                    <span class="lang-ko">대비를 보존하는 하드웨어 감마 디밍</span>
+                </h2>
                 <p class="section-desc">
-                    Unlike standard dimming tools that cover your screen with a transparent black window, Whiteout modifies the hardware gamma lookup tables inside your Mac's graphics card.
+                    <span class="lang-en">Unlike standard dimming tools that cover your screen with a transparent black window, Whiteout modifies the hardware gamma lookup tables inside your Mac's graphics card.</span>
+                    <span class="lang-ko">화면 전체에 어두운 창을 씌워 시야를 가리는 일반 필터 소프트웨어와 달리, 화이트아웃은 맥 그래픽 카드 내부의 하드웨어 수준 감마 테이블을 직접 제어합니다.</span>
                 </p>
             </div>
             
@@ -171,10 +268,17 @@
                 
                 <!-- Left: Overlay Dimmers -->
                 <div class="comparison-card overlay-card">
-                    <div class="card-badge badge-red">Traditional Software Overlays</div>
-                    <h3>Ruins Contrast & Blacks</h3>
+                    <div class="card-badge badge-red">
+                        <span class="lang-en">Traditional Software Overlays</span>
+                        <span class="lang-ko">일반 소프트웨어 오버레이</span>
+                    </div>
+                    <h3>
+                        <span class="lang-en">Ruins Contrast & Blacks</span>
+                        <span class="lang-ko">대비 손상 및 들뜨는 블랙</span>
+                    </h3>
                     <p>
-                        Puts a semi-transparent black overlay window over the screen. Pure black gets elevated to a muddy grey, and whites become dark grey. Colors look washed out, and reading text in low light becomes strainful due to crushed contrast.
+                        <span class="lang-en">Puts a semi-transparent black overlay window over the screen. Pure black gets elevated to a muddy grey, and whites become dark grey. Colors look washed out, and reading text in low light becomes strainful due to crushed contrast.</span>
+                        <span class="lang-ko">화면 위에 검은색 반투명 레이어를 덮는 방식입니다. 검은색 텍스트와 배경이 회색조로 뿌옇게 들뜨고, 명암비가 급격히 손실되어 저조도 환경에서 글자를 장시간 읽을 때 오히려 안구 피로를 가중시킵니다.</span>
                     </p>
                     
                     <div class="screen-simulator overlay-sim">
@@ -189,10 +293,17 @@
                 
                 <!-- Right: Whiteout GPU Dimmer -->
                 <div class="comparison-card whiteout-card">
-                    <div class="card-badge badge-orange">Whiteout (GPU Gamma)</div>
-                    <h3>Preserves Contrast & Darks</h3>
+                    <div class="card-badge badge-orange">
+                        <span class="lang-en">Whiteout (GPU Gamma)</span>
+                        <span class="lang-ko">화이트아웃 (GPU 감마 조절)</span>
+                    </div>
+                    <h3>
+                        <span class="lang-en">Preserves Contrast & Darks</span>
+                        <span class="lang-ko">명암비 보존 및 트루 블랙 유지</span>
+                    </h3>
                     <p>
-                        Modifies the GPU's transfer function. Pure black stays absolute black (0.0). High brightness levels are compressed down using a customizable mathematical curve. Text remains crisp and black, preserving readability.
+                        <span class="lang-en">Modifies the GPU's transfer function. Pure black stays absolute black (0.0). High brightness levels are compressed down using a customizable mathematical curve. Text remains crisp and black, preserving readability.</span>
+                        <span class="lang-ko">그래픽 카드의 신호 레벨 자체를 조절합니다. 완벽한 블랙(0.0) 신호는 그대로 두고 밝은 화이트 광원 영역만 부드럽게 감쇄합니다. 명암대비가 보존되어 텍스트가 칼같이 선명하게 유지되며 눈에 편안합니다.</span>
                     </p>
                     
                     <div class="screen-simulator whiteout-sim">
@@ -208,8 +319,14 @@
             
             <!-- Interactive Comparison Slider Widget -->
             <div class="interactive-slider-section">
-                <h3>Try the Interactive Contrast Comparison</h3>
-                <p class="slider-helper">Drag the handle to compare standard Overlay Dimming (Left) with Whiteout Dimming (Right).</p>
+                <h3>
+                    <span class="lang-en">Try the Interactive Contrast Comparison</span>
+                    <span class="lang-ko">대비 보존 효과 실시간 체험</span>
+                </h3>
+                <p class="slider-helper">
+                    <span class="lang-en">Drag the handle to compare standard Overlay Dimming (Left) with Whiteout Dimming (Right).</span>
+                    <span class="lang-ko">가운데 슬라이더를 잡고 드래그하여 일반 오버레이(왼쪽)와 화이트아웃 하드웨어 감마 디밍(오른쪽)의 선명도 차이를 비교해 보세요.</span>
+                </p>
                 
                 <div class="comparison-container" id="contrast-slider-container">
                     <!-- Before side (Overlay Dimming) -->
@@ -255,38 +372,58 @@
     <section class="curve-details" id="curve-details">
         <div class="container">
             <div class="section-header">
-                <h2>The Non-Linear Brightness Curve</h2>
+                <h2>
+                    <span class="lang-en">The Non-Linear Brightness Curve</span>
+                    <span class="lang-ko">비선형 밝기 감쇄 곡선</span>
+                </h2>
                 <p class="section-desc">
-                    Whiteout uses a power-based exponent curve to map input pixel values from the GPU to the display. This ensures that dark and mid-tone values are compressed much less than peak highlights.
+                    <span class="lang-en">Whiteout uses a power-based exponent curve to map input pixel values from the GPU to the display. This ensures that dark and mid-tone values are compressed much less than peak highlights.</span>
+                    <span class="lang-ko">화이트아웃은 화면 신호 변환 시 단순 1차원 선형 필터를 사용하지 않고 수학적 비선형 지수 공식을 적용합니다. 어둡거나 평범한 중간 밝기 영역은 원본에 최대한 보존하여 왜곡을 없애고, 순백색을 비롯한 극단적인 눈부심 유발 영역만 효율적으로 잡아줍니다.</span>
                 </p>
             </div>
             
             <div class="curve-split-grid">
-                <!-- Math & Exponent details -->
+                <!-- Preset details -->
                 <div class="curve-info-panel">
-
-                    
                     <div class="presets-explainer">
-                        <h3>Three Curve Exponent Presets</h3>
+                        <h3>
+                            <span class="lang-en">Three Curve Exponent Presets</span>
+                            <span class="lang-ko">목적에 맞춰 세분화된 세 가지 프리셋</span>
+                        </h3>
                         
-                        <div class="preset-item" data-preset="2.5">
+                        <div class="preset-item active" data-preset="2.5">
                             <div class="preset-badge orange">T = 2.5</div>
                             <div class="preset-desc">
-                                <strong>General Mode:</strong> Smooth, balanced reduction. Best for daily activities, browsing web pages, and light coding.
+                                <strong>
+                                    <span class="lang-en">General Mode</span>
+                                    <span class="lang-ko">일반 모드</span>
+                                </strong>
+                                <span class="lang-en">Smooth, balanced reduction. Best for daily activities, browsing web pages, and light coding.</span>
+                                <span class="lang-ko">전반적으로 고르고 부드럽게 밝기를 낮춥니다. 웹서핑, 오피스 작업 등 일상적인 웹 활용 환경에 가장 무난한 추천 기본 모드입니다.</span>
                             </div>
                         </div>
                         
                         <div class="preset-item" data-preset="4.0">
                             <div class="preset-badge yellow">T = 4.0</div>
                             <div class="preset-desc">
-                                <strong>Document & PDF Mode:</strong> Concentrated white compression. Maximizes black text contrast while muting bright white page backgrounds, making PDF reading exceptionally comfortable.
+                                <strong>
+                                    <span class="lang-en">Document & PDF Mode</span>
+                                    <span class="lang-ko">문서·PDF 모드</span>
+                                </strong>
+                                <span class="lang-en">Concentrated white compression. Maximizes black text contrast while muting bright white page backgrounds, making PDF reading exceptionally comfortable.</span>
+                                <span class="lang-ko">흰색 배경 영역만 집중적으로 강하게 압축합니다. 검정색 텍스트와 라인의 선명도는 100% 살린 채, 눈을 시리게 만드는 문서 배경을 부드럽게 가라앉혀 줍니다.</span>
                             </div>
                         </div>
                         
                         <div class="preset-item" data-preset="6.0">
-                            <div class="preset-badge white">T = 6.0</div>
+                            <div class="preset-badge dark">T = 6.0</div>
                             <div class="preset-desc">
-                                <strong>Highlights-Only Mode:</strong> Keeps darks and mid-tones almost entirely untouched. Targets only the brightest pure highlights, ideal for viewing dark content in a pitch-black room.
+                                <strong>
+                                    <span class="lang-en">Highlights-Only Mode</span>
+                                    <span class="lang-ko">하이라이트 집중 모드</span>
+                                </strong>
+                                <span class="lang-en">Keeps darks and mid-tones almost entirely untouched. Targets only the brightest pure highlights, ideal for viewing dark content in a pitch-black room.</span>
+                                <span class="lang-ko">중간 톤을 거의 완벽히 유지하고 극단적인 순백색(Pure White) 부분만 눌러줍니다. 어두운 배경 위주인 소스 코드 에디터 활용이나 불 꺼진 침실 작업 시 탁월합니다.</span>
                             </div>
                         </div>
                     </div>
@@ -295,12 +432,18 @@
                 <!-- Live Interactive Graph -->
                 <div class="curve-visualizer-panel">
                     <div class="graph-header">
-                        <h3>Interactive Live Gamma Curve Visualizer</h3>
-                        <p>Simulating the High-Contrast Graph in Whiteout v1.5.3</p>
+                        <h3>
+                            <span class="lang-en">Interactive Live Gamma Curve Visualizer</span>
+                            <span class="lang-ko">실시간 감마 곡선 시각화 그래프</span>
+                        </h3>
+                        <p>
+                            <span class="lang-en">Simulating the High-Contrast Graph in Whiteout v1.6.6 (0-30% range compressed)</span>
+                            <span class="lang-ko">Whiteout v1.6.6 앱의 축 압축 방식(0-30% 변화가 적은 영역 축소)이 그대로 구현된 시각화 시뮬레이터</span>
+                        </p>
                     </div>
                     
                     <div class="canvas-wrapper">
-                        <canvas id="live-curve-canvas" width="450" height="280"></canvas>
+                        <canvas id="live-curve-canvas"></canvas>
                     </div>
                     
                     <!-- Graph Controls -->
@@ -308,7 +451,10 @@
                         <!-- Reduction Slider -->
                         <div class="control-group">
                             <div class="control-header">
-                                <label for="reduction-range">White Point Reduction</label>
+                                <label for="reduction-range">
+                                    <span class="lang-en">White Point Reduction</span>
+                                    <span class="lang-ko">화이트포인트 감소량</span>
+                                </label>
                                 <span class="control-value" id="reduction-val-display">15%</span>
                             </div>
                             <input type="range" id="reduction-range" min="0" max="30" step="5" value="15">
@@ -322,11 +468,23 @@
                         
                         <!-- Exponent Select Buttons -->
                         <div class="control-group">
-                            <label>Curve Exponent (T-Value)</label>
+                            <label>
+                                <span class="lang-en">Curve Exponent (T-Value)</span>
+                                <span class="lang-ko">곡선 감쇄 지수 (T값)</span>
+                            </label>
                             <div class="preset-buttons-group">
-                                <button type="button" class="btn-preset" data-val="2.5" id="btn-t-2-5">General (2.5)</button>
-                                <button type="button" class="btn-preset active" data-val="4.0" id="btn-t-4-0">Document (4.0)</button>
-                                <button type="button" class="btn-preset" data-val="6.0" id="btn-t-6-0">Highlights (6.0)</button>
+                                <button type="button" class="btn-preset" data-val="2.5" id="btn-t-2-5">
+                                    <span class="lang-en">General (2.5)</span>
+                                    <span class="lang-ko">일반 (2.5)</span>
+                                </button>
+                                <button type="button" class="btn-preset active" data-val="4.0" id="btn-t-4-0">
+                                    <span class="lang-en">Document (4.0)</span>
+                                    <span class="lang-ko">문서 (4.0)</span>
+                                </button>
+                                <button type="button" class="btn-preset" data-val="6.0" id="btn-t-6-0">
+                                    <span class="lang-en">Highlights (6.0)</span>
+                                    <span class="lang-ko">하이라이트 (6.0)</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -339,8 +497,14 @@
     <section class="features" id="features">
         <div class="container">
             <div class="section-header">
-                <h2>Designed for Power Users</h2>
-                <p class="section-desc">Whiteout packs advanced features in a lightweight menu bar app to deliver a seamless, native macOS experience.</p>
+                <h2>
+                    <span class="lang-en">Designed for Power Users</span>
+                    <span class="lang-ko">맥 유저를 위한 세심한 설계</span>
+                </h2>
+                <p class="section-desc">
+                    <span class="lang-en">Whiteout packs advanced features in a lightweight menu bar app to deliver a seamless, native macOS experience.</span>
+                    <span class="lang-ko">화이트아웃은 가볍게 동작하는 메뉴 막대 전용 유틸리티로, 맥OS 고유의 심플하고 군더더기 없는 사용성을 제공합니다.</span>
+                </p>
             </div>
             
             <div class="features-grid">
@@ -352,8 +516,14 @@
                             <path d="M12 16v5M8 21h8" />
                         </svg>
                     </div>
-                    <h3>Multi-Monitor Support</h3>
-                    <p>Applies white point reduction to all active displays. Dynamically adapts when plugging or unplugging monitors without needing restarts.</p>
+                    <h3>
+                        <span class="lang-en">Multi-Monitor Support</span>
+                        <span class="lang-ko">다중 모니터 동시 제어</span>
+                    </h3>
+                    <p>
+                        <span class="lang-en">Applies white point reduction to all active displays. Dynamically adapts when plugging or unplugging monitors without needing restarts.</span>
+                        <span class="lang-ko">연결된 모든 모니터의 화이트포인트를 일괄 디밍합니다. 시스템 수준에서 모니터 연결이 감지(핫플러그)되면 프로그램 재시작 없이 즉시 감마 테이블을 동기화합니다.</span>
+                    </p>
                 </div>
                 
                 <!-- Global Hotkeys -->
@@ -364,8 +534,14 @@
                             <path d="M6 8h1M10 8h1M14 8h1M18 8h1M6 12h12" />
                         </svg>
                     </div>
-                    <h3>Customizable Shortcuts</h3>
-                    <p>Register system-wide keyboard shortcuts. Toggle Whiteout on and off instantly from any active application with smooth fade transitions.</p>
+                    <h3>
+                        <span class="lang-en">Customizable Shortcuts</span>
+                        <span class="lang-ko">사용자 설정 글로벌 단축키</span>
+                    </h3>
+                    <p>
+                        <span class="lang-en">Register system-wide keyboard shortcuts. Toggle Whiteout on and off instantly from any active application with smooth fade transitions.</span>
+                        <span class="lang-ko">작업 도중 언제 어디서나 단축키 조작 한 번으로 디밍 효과를 켜고 끌 수 있습니다. macOS 표준 API 기반의 직관적인 단축키 녹화기를 지원합니다.</span>
+                    </p>
                 </div>
                 
                 <!-- 0-30% Snap Safety -->
@@ -375,8 +551,14 @@
                             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                         </svg>
                     </div>
-                    <h3>Contrast Reversal Safeguard</h3>
-                    <p>Restricts reduction between 0% and 30% with tactile 5% snaps. This prevents visual artifacts and color inversion typical at higher ranges.</p>
+                    <h3>
+                        <span class="lang-en">Contrast Reversal Safeguard</span>
+                        <span class="lang-ko">명암비 컬러 역전 방지 장치</span>
+                    </h3>
+                    <p>
+                        <span class="lang-en">Restricts reduction between 0% and 30% with tactile 5% snaps. This prevents visual artifacts and color inversion typical at higher ranges.</span>
+                        <span class="lang-ko">디밍 범위를 검증된 수준인 0~30%로 제한하고 5% 마다 부드럽게 감기는 스냅을 제공합니다. 이는 너무 어둡게 설정되어 색상이 일그러지거나 대비가 무너지는 왜곡을 원천 봉쇄합니다.</span>
+                    </p>
                 </div>
                 
                 <!-- Lightweight Native Swift -->
@@ -386,8 +568,14 @@
                             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                         </svg>
                     </div>
-                    <h3>100% Native & Lightweight</h3>
-                    <p>Built completely in Swift using Cocoa & SwiftUI APIs. Runs directly in the menu bar. Consumes less than 15MB RAM and 0% idle CPU.</p>
+                    <h3>
+                        <span class="lang-en">100% Native & Lightweight</span>
+                        <span class="lang-ko">가볍고 쾌적한 네이티브 설계</span>
+                    </h3>
+                    <p>
+                        <span class="lang-en">Built completely in Swift using Cocoa & SwiftUI APIs. Runs directly in the menu bar. Consumes less than 15MB RAM and 0% idle CPU.</span>
+                        <span class="lang-ko">Swift 언어와 오리지널 Cocoa/SwiftUI 프레임워크로 제작되었습니다. 메모리 점유율 15MB 이하, 유휴 상태일 때 CPU 소모량 0%를 유지해 성능 저하가 없습니다.</span>
+                    </p>
                 </div>
                 
                 <!-- Safe Termination -->
@@ -397,8 +585,14 @@
                             <path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10" />
                         </svg>
                     </div>
-                    <h3>Safe Hardware Restores</h3>
-                    <p>Listens to app terminate notifications and system changes. Safely restores the original factory display gamma tables on app exit.</p>
+                    <h3>
+                        <span class="lang-en">Safe Hardware Restores</span>
+                        <span class="lang-ko">안전한 종료 감마 복구</span>
+                    </h3>
+                    <p>
+                        <span class="lang-en">Listens to app terminate notifications and system changes. Safely restores the original factory display gamma tables on app exit.</span>
+                        <span class="lang-ko">앱 종료(`cmd+Q`)를 감지하거나 사용자가 초기화 버튼을 누르면, 디스플레이 하드웨어 테이블 설정을 깨끗하게 초기 오리지널 값으로 원복하여 뒤끝을 남기지 않습니다.</span>
+                    </p>
                 </div>
                 
                 <!-- Automated Updates -->
@@ -408,8 +602,14 @@
                             <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
                         </svg>
                     </div>
-                    <h3>Seamless Auto Updates</h3>
-                    <p>Automatically checks for GitHub releases. Download, install, and relaunch into the newest version silently with a single click.</p>
+                    <h3>
+                        <span class="lang-en">Seamless Auto Updates</span>
+                        <span class="lang-ko">배너 원클릭 자동 업데이트</span>
+                    </h3>
+                    <p>
+                        <span class="lang-en">Automatically checks for GitHub releases. Download, install, and relaunch into the newest version silently with a single click.</span>
+                        <span class="lang-ko">깃허브 API를 모니터링하여 새 버전이 릴리즈되면 알아서 UI에 업데이트를 표시합니다. 복잡한 설치 과정 없이 배너를 클릭하면 백그라운드 갱신 및 재시작까지 알아서 진행됩니다.</span>
+                    </p>
                 </div>
             </div>
         </div>
@@ -420,7 +620,8 @@
         <div class="container footer-container">
             <div class="footer-info">
                 <h3>Whiteout for macOS</h3>
-                <p>An open source utility to replicate iOS "Reduce White Point" on macOS desktops.</p>
+                <p class="lang-en">An open source utility to replicate iOS "Reduce White Point" on macOS desktops.</p>
+                <p class="lang-ko">iOS의 '화이트포인트 낮추기' 기능을 macOS 데스크톱 및 랩톱에서 구현하기 위한 독립형 오픈소스 유틸리티입니다.</p>
                 <p class="license">Licensed under the MIT License.</p>
             </div>
             
@@ -433,19 +634,36 @@
                 </div>
                 <div class="link-group">
                     <h4>Troubleshooting</h4>
-                    <a href="#gatekeeper-instructions" class="modal-trigger" id="trigger-gatekeeper">Gatekeeper Bypass</a>
+                    <a href="#gatekeeper-instructions" class="modal-trigger" id="trigger-gatekeeper">
+                        <span class="lang-en">Gatekeeper Bypass</span>
+                        <span class="lang-ko">보안 경고 해결 방법</span>
+                    </a>
                 </div>
             </div>
         </div>
         
         <!-- Gatekeeper Drawer/Card (expanded on click) -->
         <div class="gatekeeper-box container" id="gatekeeper-instructions">
-            <h4>⚠️ Security & Quarantine Warning (Gatekeeper)</h4>
-            <p>Because Whiteout is self-signed and distributed off-App Store, macOS may alert that the file is damaged or cannot be checked.</p>
+            <h4>
+                <span class="lang-en">⚠️ Security & Quarantine Warning (Gatekeeper)</span>
+                <span class="lang-ko">⚠️ macOS 보안 격리(Gatekeeper) 해결법</span>
+            </h4>
+            <p>
+                <span class="lang-en">Because Whiteout is self-signed and distributed off-App Store, macOS may alert that the file is damaged or cannot be checked.</span>
+                <span class="lang-ko">화이트아웃은 인디 서명으로 배포되는 오픈소스 외부 프로그램입니다. 다운로드 후 실행이 안 되거나 '손상된 파일'이라는 문구가 뜰 시 아래 방법으로 간단히 해제할 수 있습니다.</span>
+            </p>
             <div class="code-instructions">
-                <p><strong>Method 1 (Simple):</strong> Right-click <code>Whiteout.app</code> in your Applications folder and click <strong>Open</strong> twice.</p>
+                <p>
+                    <strong><span class="lang-en">Method 1 (Simple):</span><span class="lang-ko">방법 1 (간단):</span></strong> 
+                    <span class="lang-en">Right-click <code>Whiteout.app</code> in your Applications folder and click <strong>Open</strong> twice.</span>
+                    <span class="lang-ko">응용 프로그램 폴더에 넣은 <code>Whiteout.app</code> 파일을 마우스 우클릭한 뒤 <strong>열기</strong> -> <strong>열기</strong>를 차례대로 누릅니다.</span>
+                </p>
                 <div class="divider-text">or</div>
-                <p><strong>Method 2 (Terminal):</strong> Run the following command in terminal to clear the quarantine flag:</p>
+                <p>
+                    <strong><span class="lang-en">Method 2 (Terminal):</span><span class="lang-ko">방법 2 (터미널):</span></strong> 
+                    <span class="lang-en">Run the following command in terminal to clear the quarantine flag:</span>
+                    <span class="lang-ko">터미널 앱을 열고 아래 명령어를 복사하여 입력해 격리 캐시를 해제해 줍니다:</span>
+                </p>
                 <pre><code>xattr -dr com.apple.quarantine /Applications/Whiteout.app</code></pre>
             </div>
         </div>
@@ -454,8 +672,6 @@
             <p>&copy; 2026 tank-jw. Designed with care for dark environments.</p>
         </div>
     </footer>
-
-
     
     <!-- Script file -->
     <script src="script.js"></script>

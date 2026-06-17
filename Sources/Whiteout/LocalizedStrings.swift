@@ -70,4 +70,34 @@ struct LocalizedStrings {
     static func updateNetworkErrorMsg(isEN: Bool) -> String {
         isEN ? "Failed to get update info. Please check your network connection." : "업데이트 정보를 가져오지 못했습니다. 네트워크 연결 상태를 확인해 주세요."
     }
+    static func allDisplays(isEN: Bool) -> String {
+        isEN ? "All Displays" : "모든 디스플레이"
+    }
+    static func displayLabel(isEN: Bool) -> String {
+        isEN ? "Display" : "디스플레이"
+    }
+    static func appRulesSectionTitle(isEN: Bool) -> String {
+        isEN ? "App-Specific Rules" : "앱별 자동 설정"
+    }
+    static func addRuleBtn(isEN: Bool, appName: String) -> String {
+        isEN ? "+ Add \(appName)" : "+ \(appName) 추가"
+    }
+    static func addRuleBtnDefault(isEN: Bool) -> String {
+        isEN ? "+ Add App Rule" : "+ 앱 규칙 추가"
+    }
+    static func ruleActiveBanner(isEN: Bool, appName: String) -> String {
+        isEN ? "\(appName) rules active" : "\(appName) 자동 적용 중"
+    }
+    static func compareOurApp(isEN: Bool) -> String {
+        isEN ? "Whiteout (GPU Gamma)" : "Whiteout (GPU 감마 조절)"
+    }
+    static func compareOurAppDesc(isEN: Bool) -> String {
+        isEN ? "Preserves 100% black level, maintaining contrast and picture quality." : "검정색(0) 레벨을 100% 보존하여 명암비와 화질이 완벽히 유지됩니다."
+    }
+    static func compareOverlay(isEN: Bool) -> String {
+        isEN ? "Software Overlay Filter" : "소프트웨어 오버레이 필터"
+    }
+    static func compareOverlayDesc(isEN: Bool) -> String {
+        isEN ? "Draws a dark window, elevating black levels and ruining contrast." : "화면에 검은 막을 씌워 블랙 레벨을 들뜨게 하고 명암비를 손상시킵니다."
+    }
 }

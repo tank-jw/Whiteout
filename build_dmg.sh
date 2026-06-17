@@ -99,7 +99,9 @@ hdiutil create -size 45m -fs HFS+ -volname "WhiteOut" -ov temp.dmg
 
 # 2. 마운트
 MOUNT_DIR="/Volumes/WhiteOut"
-hdiutil attach temp.dmg -readwrite -mountpoint "${MOUNT_DIR}"
+ATTACH_OUT=$(hdiutil attach temp.dmg -readwrite -mountpoint "${MOUNT_DIR}")
+echo "${ATTACH_OUT}"
+DEV_NODE=$(echo "${ATTACH_OUT}" | grep Apple_HFS | awk '{print $1}')
 
 # 3. 파일 복사 및 바로가기 생성
 cp -r "${APP_DIR}" "${MOUNT_DIR}/"
@@ -138,13 +140,18 @@ tell application "Finder"
         close container window
         open
         delay 2
+        close container window
     end tell
 end tell
 EOF
 
 # 6. 동기화 및 마운트 해제
 sync
-hdiutil detach "${MOUNT_DIR}"
+if [ -n "${DEV_NODE}" ]; then
+  hdiutil detach -force "${DEV_NODE}"
+else
+  hdiutil detach -force "${MOUNT_DIR}"
+fi
 
 # 7. 최종 배포용 DMG 생성 (압축형식 UDZO)
 hdiutil convert temp.dmg -format UDZO -imagekey zlib-level=9 -o "${DMG_NAME}"

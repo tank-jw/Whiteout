@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- State Variables ---
     let reductionVal = 15; // Percent (0 to 30)
     let curveExponent = 4.0; // 2.5, 4.0, or 6.0
+    let currentLang = localStorage.getItem("whiteout-lang") || "en"; // "en" or "ko"
 
     // --- DOM Elements ---
     const comparisonContainer = document.getElementById("contrast-slider-container");
@@ -23,11 +24,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const uiVisualizerDimmed = document.querySelector(".ui-visualizer-bar .dimmed-overlay");
     const uiVisualizerMarker = document.querySelector(".ui-visualizer-bar .orange-marker");
     const uiVisualizerTriangle = document.querySelector(".ui-visualizer-bar .orange-triangle");
-    const uiStatusText = document.querySelector(".status-text");
-    const uiFooterInfoGray = document.querySelector(".ui-row.footer-info .info-gray");
+    const uiStatusText = document.getElementById("popover-status-text");
+    const uiFooterInfoGray = document.getElementById("popover-info-gray");
     const uiExponentLabel = document.querySelector(".exponent-label");
     const uiSegments = document.querySelectorAll(".ui-segmented-control .segment");
-    const uiToggle = document.querySelector(".ui-toggle");
+    const uiToggle = document.getElementById("popover-toggle");
+
+    // Popover Switch Elements
+    const optionToggles = document.querySelectorAll(".option-toggle");
+    
+    // Popover Language Switcher Footer
+    const popoverLangKo = document.querySelector('.popover-lang[data-target-lang="ko"]');
+    const popoverLangEn = document.querySelector('.popover-lang[data-target-lang="en"]');
+    const popoverQuitBtn = document.querySelector('.popover-quit-btn');
+
+    // Website Header Language Selectors
+    const siteLangBtns = document.querySelectorAll(".site-lang-btn");
 
     // Troubleshooting Trigger
     const triggerGatekeeper = document.getElementById("trigger-gatekeeper");
@@ -35,7 +47,62 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ==========================================
-    // 1. Interactive Before/After Image Slider
+    // 1. Language Switching Logic (Bilingual)
+    // ==========================================
+    const setLanguage = (lang) => {
+        if (lang !== "en" && lang !== "ko") return;
+        currentLang = lang;
+        localStorage.setItem("whiteout-lang", lang);
+        
+        // Update document lang attribute (drives HTML text displays via CSS)
+        document.documentElement.setAttribute("lang", lang);
+
+        // Update active class on navbar language buttons
+        siteLangBtns.forEach(btn => {
+            if (btn.getAttribute("data-lang") === lang) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        });
+
+        // Update active class on popover language selector links
+        if (lang === "ko") {
+            popoverLangKo.classList.add("active");
+            popoverLangEn.classList.remove("active");
+        } else {
+            popoverLangKo.classList.remove("active");
+            popoverLangEn.classList.add("active");
+        }
+
+        // Redraw Canvas (so axis label texts change immediately)
+        drawGammaCurve();
+        updatePopoverUI();
+    };
+
+    // Bind Navbar Language buttons
+    siteLangBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            setLanguage(btn.getAttribute("data-lang"));
+        });
+    });
+
+    // Bind Popover language selector footer links
+    if (popoverLangKo && popoverLangEn) {
+        popoverLangKo.addEventListener("click", () => setLanguage("ko"));
+        popoverLangEn.addEventListener("click", () => setLanguage("en"));
+    }
+
+    // Mock quit action (brief alert)
+    if (popoverQuitBtn) {
+        popoverQuitBtn.addEventListener("click", () => {
+            alert(currentLang === "ko" ? "데모: 실시간 화이트아웃 애플리케이션 종료" : "Demo: Terminating live Whiteout application");
+        });
+    }
+
+
+    // ==========================================
+    // 2. Interactive Before/After Contrast Slider
     // ==========================================
     let isDragging = false;
 
@@ -83,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // ==========================================
-    // 2. High-Contrast Gamma Curve Canvas
+    // 3. High-Contrast Gamma Curve Canvas
     // ==========================================
     const drawGammaCurve = () => {
         if (!liveCanvas) return;
@@ -102,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const w = width;
         const h = height;
 
-        // Curve constants (matching Swift code in Whiteout v1.5.3)
+        // Curve constants (matching Swift code in Whiteout v1.6.5)
         const uSplit = 0.2;
         const tSplit = 0.3;
         const base = 10.0;
@@ -123,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillRect(0, 0, w, h);
 
         // --- 1. Draw Grid Lines ---
-        ctx.strokeStyle = "rgba(244, 244, 245, 0.05)";
+        ctx.strokeStyle = "rgba(244, 244, 245, 0.04)";
         ctx.lineWidth = 1;
         ctx.setLineDash([3, 3]);
 
@@ -154,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // --- 2. Draw Diagonal Baseline (Reference: 100% Unreduced) ---
-        ctx.strokeStyle = "rgba(244, 244, 245, 0.2)";
+        ctx.strokeStyle = "rgba(244, 244, 245, 0.15)";
         ctx.lineWidth = 1;
         ctx.setLineDash([2, 2]);
         ctx.beginPath();
@@ -171,8 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         ctx.stroke();
 
-        // --- 3. Draw Actual Reduced Curve ---
-        // Map slider percent to reduction factor
+        // --- 3. Draw Actual Reduced Curve (Orange & Yellow Gradient Theme) ---
         const reductionRatio = reductionVal / 100.0;
         const maxOutput = 1.0 - reductionRatio * 0.3; // Replicates 1.0 - amount * 0.3
 
@@ -182,7 +248,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Gradient for curve
         const grad = ctx.createLinearGradient(0, h, w, 0);
         grad.addColorStop(0, "#ff7600");
-        grad.addColorStop(1, "#ffcc00");
+        grad.addColorStop(1, "#ffb800");
         ctx.strokeStyle = grad;
         ctx.beginPath();
 
@@ -206,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const endY = h - maxOutput * h;
 
             // Outer glow
-            ctx.fillStyle = "rgba(255, 118, 0, 0.3)";
+            ctx.fillStyle = "rgba(255, 118, 0, 0.25)";
             ctx.beginPath();
             ctx.arc(endX, endY, 6, 0, Math.PI * 2);
             ctx.fill();
@@ -226,33 +292,46 @@ document.addEventListener("DOMContentLoaded", () => {
         // Y-axis label (Output)
         ctx.save();
         ctx.translate(12, 15);
-        ctx.fillText("Output Brightness (출력)", 0, 0);
+        ctx.fillText(currentLang === "ko" ? "출력 밝기 (Output)" : "Output Brightness", 0, 0);
         ctx.restore();
 
         // X-axis label (Input)
-        ctx.fillText("Input Brightness (입력)", w - 140, h - 8);
+        ctx.fillText(currentLang === "ko" ? "입력 밝기 (Input)" : "Input Brightness", w - 145, h - 8);
     };
 
 
     // ==========================================
-    // 3. Control Interactions & Syncing
+    // 4. Control Interactions & Syncing
     // ==========================================
     const updatePopoverUI = () => {
         // Sync Reduction Text
         const maxWhitePercent = 100 - Math.round(reductionVal * 0.3);
         
         if (uiReductionText) uiReductionText.textContent = `${reductionVal}%`;
-        if (uiStatusText) uiStatusText.textContent = `최대 밝기 ${maxWhitePercent}% 로 제한 중`;
-        if (uiFooterInfoGray) uiFooterInfoGray.textContent = `흰색 최대값 ${maxWhitePercent}%`;
+        
+        // Dynamic status text bilingual updates
+        if (uiStatusText) {
+            if (reductionVal === 0) {
+                uiStatusText.textContent = currentLang === "ko" ? "비활성화됨" : "Disabled";
+            } else {
+                uiStatusText.textContent = currentLang === "ko" 
+                    ? `최대 밝기 ${maxWhitePercent}% 로 제한 중` 
+                    : `Max White: ${maxWhitePercent}%`;
+            }
+        }
+
+        if (uiFooterInfoGray) {
+            uiFooterInfoGray.textContent = currentLang === "ko"
+                ? `흰색 최대값 ${maxWhitePercent}%`
+                : `Max white level ${maxWhitePercent}%`;
+        }
 
         // Sync Popover Slider thumb & track width
-        // Slider ranges 0 to 30%, which maps to slider thumb left 0% to 100%
         const sliderRatio = reductionVal / 30; // 0 to 1
         if (uiSliderFill) uiSliderFill.style.width = `${sliderRatio * 100}%`;
         if (uiSliderThumb) uiSliderThumb.style.left = `${sliderRatio * 100}%`;
 
         // Sync Visualizer Bar Overlay
-        // The overlay represents the clipped region from maxWhitePercent to 100%
         const whitepointRatio = maxWhitePercent / 100; // e.g. 0.85
         if (uiVisualizerDimmed) uiVisualizerDimmed.style.width = `${(1 - whitepointRatio) * 100}%`;
         if (uiVisualizerMarker) uiVisualizerMarker.style.left = `${whitepointRatio * 100}%`;
@@ -277,11 +356,10 @@ document.addEventListener("DOMContentLoaded", () => {
         // Toggle styling on/off based on reduction
         if (reductionVal === 0) {
             uiToggle.classList.remove("active");
-            uiStatusText.textContent = "비활성화됨";
-            uiStatusText.style.color = "#a1a1aa";
+            if (uiStatusText) uiStatusText.style.color = "#a1a1aa";
         } else {
             uiToggle.classList.add("active");
-            uiStatusText.style.color = "#ff7600";
+            if (uiStatusText) uiStatusText.style.color = "#ff7600";
         }
     };
 
@@ -348,7 +426,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Toggle click inside popover simulation
     uiToggle.addEventListener("click", () => {
         if (reductionVal > 0) {
-            // save previous and turn to 0
             uiToggle.dataset.prevVal = reductionVal;
             reductionVal = 0;
         } else {
@@ -361,9 +438,19 @@ document.addEventListener("DOMContentLoaded", () => {
         updatePopoverUI();
     });
 
+    // Interactivity for option switches inside popover (Launch at Login, Shortcut toggle)
+    optionToggles.forEach(toggle => {
+        const sw = toggle.querySelector(".ui-switch");
+        if (sw) {
+            toggle.addEventListener("click", () => {
+                sw.classList.toggle("active");
+            });
+        }
+    });
+
 
     // ==========================================
-    // 4. Troubleshooting Drawer
+    // 5. Troubleshooting Drawer
     // ==========================================
     if (triggerGatekeeper && gatekeeperBox) {
         triggerGatekeeper.addEventListener("click", (e) => {
@@ -377,6 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     // --- Init Call ---
+    setLanguage(currentLang);
     drawGammaCurve();
     updatePopoverUI();
 

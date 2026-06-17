@@ -137,7 +137,46 @@ struct ContentView: View {
 
     private var controlSection: some View {
         let isEN = dm.language == "en"
-        return VStack(spacing: 14) {
+        return VStack(spacing: 12) {
+            // App Rule Active Banner
+            if let activeAppName = dm.activeRuleAppName {
+                HStack(spacing: 6) {
+                    Image(systemName: "bolt.shield.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.orange)
+                    Text(LocalizedStrings.ruleActiveBanner(isEN: isEN, appName: activeAppName))
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.orange)
+                    Spacer()
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.orange.opacity(0.08))
+                .cornerRadius(6)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
+            // Display Picker
+            HStack {
+                Text(LocalizedStrings.displayLabel(isEN: isEN))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
+                Spacer()
+                Picker("", selection: $dm.selectedDisplayID) {
+                    Text(LocalizedStrings.allDisplays(isEN: isEN))
+                        .tag("all")
+                    ForEach(Array(dm.displaySettings.values.sorted(by: { $0.name < $1.name }))) { setting in
+                        Text(setting.name)
+                            .tag(String(setting.displayID))
+                    }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+                .scaleEffect(0.9)
+                .frame(maxHeight: 24)
+            }
+            .padding(.bottom, 2)
+
             // Label row
             HStack {
                 Text(LocalizedStrings.reductionLabel(isEN: isEN))
@@ -424,23 +463,179 @@ struct ContentView: View {
 
                     VStack(alignment: .leading, spacing: 6) {
                         bulletPoint(
-                            title: isEN ? "WhiteOut (GPU Gamma)" : "WhiteOut (GPU 감마 조절)",
-                            desc: isEN 
-                                ? "Perfectly preserves black levels (0), keeping contrast ratio and OLED blacks intact."
-                                : "검정색(0) 레벨을 100% 보존하여 명암비와 검정색 표현력이 완벽히 유지됩니다."
+                            title: LocalizedStrings.compareOurApp(isEN: isEN),
+                            desc: LocalizedStrings.compareOurAppDesc(isEN: isEN)
                         )
                         bulletPoint(
-                            title: isEN ? "Software Overlay Filter" : "소프트웨어 오버레이 필터",
-                            desc: isEN 
-                                ? "Draws a black semi-transparent mask over the screen, raising black levels and degrading contrast."
-                                : "화면에 검은 막을 씌워 블랙 레벨을 들뜨게 하고 명암비를 손상시킵니다."
+                            title: LocalizedStrings.compareOverlay(isEN: isEN),
+                            desc: LocalizedStrings.compareOverlayDesc(isEN: isEN)
                         )
+                    }
+                }
+
+                Divider().opacity(0.5)
+
+                // App-Specific Rules Section
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text(LocalizedStrings.appRulesSectionTitle(isEN: isEN))
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(.secondary)
+                        Spacer()
+                    }
+
+                    // Add current app button
+                    if let lastAppName = dm.lastActiveAppName {
+                        Button {
+                            withAnimation {
+                                dm.addAppRuleForLastActiveApp()
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                if let bundleID = dm.lastActiveAppBundleIdentifier,
+                                   let icon = dm.getAppIcon(bundleIdentifier: bundleID) {
+                                    Image(nsImage: icon)
+                                        .resizable()
+                                        .frame(width: 12, height: 12)
+                                } else {
+                                    Image(systemName: "plus.app.fill")
+                                        .font(.system(size: 11))
+                                }
+                                Text(LocalizedStrings.addRuleBtn(isEN: isEN, appName: lastAppName))
+                                    .font(.system(size: 10, weight: .semibold))
+                            }
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.orange.opacity(0.08))
+                            .cornerRadius(6)
+                            .foregroundStyle(.orange)
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    // List of registered rules
+                    if dm.appRules.isEmpty {
+                        Text(isEN ? "No app rules registered." : "등록된 앱 규칙이 없습니다.")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.secondary)
+                            .padding(.vertical, 4)
+                    } else {
+                        VStack(spacing: 8) {
+                            ForEach(dm.appRules) { rule in
+                                appRuleRow(rule: rule, isEN: isEN)
+                            }
+                        }
                     }
                 }
             }
             .padding(14)
         }
         .frame(width: 300)
+    }
+
+    private func appRuleRow(rule: AppRule, isEN: Bool) -> some View {
+        let active = dm.activeRuleAppName == rule.appName
+        
+        return VStack(spacing: 6) {
+            HStack(spacing: 8) {
+                if let icon = dm.getAppIcon(bundleIdentifier: rule.bundleIdentifier) {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .frame(width: 16, height: 16)
+                } else {
+                    Image(systemName: "app.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
+                }
+                
+                Text(rule.appName)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(active ? Color.orange : Color.primary)
+                    .lineLimit(1)
+                
+                if active {
+                    Text(isEN ? "Active" : "작동 중")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(.orange)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1)
+                        .background(Color.orange.opacity(0.12))
+                        .cornerRadius(3)
+                }
+                
+                Spacer()
+                
+                Button {
+                    if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
+                        withAnimation {
+                            dm.deleteAppRule(at: idx)
+                        }
+                    }
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.red.opacity(0.8))
+                }
+                .buttonStyle(.plain)
+            }
+            
+            HStack(spacing: 12) {
+                Toggle("", isOn: Binding(
+                    get: { rule.isEnabled },
+                    set: { newVal in
+                        if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
+                            dm.appRules[idx].isEnabled = newVal
+                            dm.applyReduction()
+                        }
+                    }
+                ))
+                .toggleStyle(.switch)
+                .labelsHidden()
+                .tint(.orange)
+                .scaleEffect(0.7)
+                .frame(width: 32)
+                
+                Slider(value: Binding(
+                    get: { rule.reduction },
+                    set: { newVal in
+                        if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
+                            dm.appRules[idx].reduction = newVal
+                            dm.applyReduction()
+                        }
+                    }
+                ), in: 0...1, step: 1.0/6.0)
+                .tint(.orange)
+                .disabled(!rule.isEnabled)
+                .scaleEffect(0.85)
+                
+                Picker("", selection: Binding(
+                    get: { rule.curveExponent },
+                    set: { newVal in
+                        if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
+                            dm.appRules[idx].curveExponent = newVal
+                            dm.applyReduction()
+                        }
+                    }
+                )) {
+                    Text("2.5").tag(2.5)
+                    Text("4.0").tag(4.0)
+                    Text("6.0").tag(6.0)
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+                .scaleEffect(0.8)
+                .frame(width: 44)
+                .disabled(!rule.isEnabled)
+            }
+            .padding(.leading, 24)
+        }
+        .padding(8)
+        .background(active ? Color.orange.opacity(0.04) : Color.primary.opacity(0.02))
+        .cornerRadius(6)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(active ? Color.orange.opacity(0.2) : Color.clear, lineWidth: 0.5)
+        )
     }
 
     private func statusColor(isEnabled: Bool, reduction: Double) -> Color {
