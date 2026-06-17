@@ -107,11 +107,11 @@ DEV_NODE=$(echo "${ATTACH_OUT}" | grep Apple_HFS | awk '{print $1}')
 cp -r "${APP_DIR}" "${MOUNT_DIR}/"
 ln -s /Applications "${MOUNT_DIR}/Applications"
 
-# 4. 배경 이미지 복사 (.background 디렉토리에 숨김 처리 및 600x600 해상도 매칭)
+# 4. 배경 이미지 복사 (.background 디렉토리에 숨김 처리 및 1200x1200  해상도 매칭 - Retina 대응)
 mkdir -p "${MOUNT_DIR}/.background"
 if [ -f "assets/dmg_background.png" ]; then
-  echo "🎨 DMG 배경화면 설정 중 (600x600 리사이징)..."
-  sips -s format png -z 600 600 assets/dmg_background.png --out "${MOUNT_DIR}/.background/dmg_background.png" > /dev/null
+  echo "🎨 DMG 배경화면 설정 중 (1200x1200 Retina 리사이징)..."
+  sips -s format png -z 1200 1200 assets/dmg_background.png --out "${MOUNT_DIR}/.background/dmg_background.png" > /dev/null
 fi
 
 # 5. AppleScript를 이용해 Finder 창 레이아웃 설정
