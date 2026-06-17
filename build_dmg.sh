@@ -32,13 +32,8 @@ mkdir -p "${APP_DIR}/Contents/Resources"
 cp "${BUILD_DIR}/${APP_NAME}" "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 chmod +x "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 
-# 의존성 리소스 번들 복사
-# SwiftPM resource_bundle_accessor는 실행 파일 위치(Contents/MacOS/) 기준으로도 번들을 탐색한다.
-# .app 루트는 codesign --deep 서명 대상 밖이므로 Contents/MacOS/ 에 배치한다.
-if [ -d ".build/arm64/arm64-apple-macosx/release/KeyboardShortcuts_KeyboardShortcuts.bundle" ]; then
-  echo "📦 KeyboardShortcuts 리소스 번들 복사 중..."
-  cp -r ".build/arm64/arm64-apple-macosx/release/KeyboardShortcuts_KeyboardShortcuts.bundle" "${APP_DIR}/Contents/MacOS/"
-fi
+
+
 
 echo "📝 Info.plist 생성 중..."
 cat > "${APP_DIR}/Contents/Info.plist" << EOF

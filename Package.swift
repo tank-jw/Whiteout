@@ -6,16 +6,16 @@ let package = Package(
     platforms: [
         .macOS(.v13)
     ],
-    dependencies: [
-        .package(url: "https://github.com/sindresorhus/KeyboardShortcuts", exact: "1.9.0")
-    ],
+    dependencies: [],
     targets: [
         .executableTarget(
             name: "Whiteout",
-            dependencies: [
-                "KeyboardShortcuts"
-            ],
-            path: "Sources/Whiteout"
+            dependencies: [],
+            path: "Sources/Whiteout",
+            linkerSettings: [
+                // Carbon framework: EventHotKey API (RegisterEventHotKey 등)
+                .linkedFramework("Carbon")
+            ]
         )
     ]
 )

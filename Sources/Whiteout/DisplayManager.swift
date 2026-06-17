@@ -2,7 +2,6 @@ import Cocoa
 import CoreGraphics
 import Foundation
 import Combine
-import KeyboardShortcuts
 import ServiceManagement
 
 /// 디스플레이 한 개의 원본 감마 테이블
@@ -34,7 +33,32 @@ class DisplayManager: ObservableObject {
     }
 
     @Published var isShortcutEnabled: Bool {
-        didSet { UserDefaults.standard.set(isShortcutEnabled, forKey: Keys.isShortcutEnabled) }
+        didSet {
+            UserDefaults.standard.set(isShortcutEnabled, forKey: Keys.isShortcutEnabled)
+            if isShortcutEnabled, let sc = shortcut {
+                ShortcutManager.shared.register(sc)
+            } else {
+                ShortcutManager.shared.unregister()
+            }
+        }
+    }
+
+    /// 현재 등록된 전역 단축키 (nil = 미설정)
+    @Published var shortcut: KeyShortcut? {
+        didSet {
+            if let sc = shortcut, let data = try? JSONEncoder().encode(sc) {
+                UserDefaults.standard.set(data, forKey: Keys.shortcut)
+            } else {
+                UserDefaults.standard.removeObject(forKey: Keys.shortcut)
+            }
+            if isShortcutEnabled {
+                if let sc = shortcut {
+                    ShortcutManager.shared.register(sc)
+                } else {
+                    ShortcutManager.shared.unregister()
+                }
+            }
+        }
     }
 
     @Published var language: String {
@@ -55,6 +79,7 @@ class DisplayManager: ObservableObject {
         static let isEnabled         = "whitePointEnabled"
         static let curveExponent     = "curveExponent"
         static let isShortcutEnabled = "isShortcutEnabled"
+        static let shortcut          = "globalShortcut"
         static let language          = "language"
         static let launchAtLogin     = "launchAtLogin"
     }
@@ -67,19 +92,22 @@ class DisplayManager: ObservableObject {
     // MARK: - Init
 
     init() {
-        let savedReduction = UserDefaults.standard.double(forKey: Keys.reduction)
-        let savedEnabled   = UserDefaults.standard.bool(forKey: Keys.isEnabled)
-        let savedExponent  = UserDefaults.standard.object(forKey: Keys.curveExponent) as? Double ?? 4.0
-        let savedShortcut  = UserDefaults.standard.object(forKey: Keys.isShortcutEnabled) as? Bool ?? true
-        let savedLanguage  = UserDefaults.standard.string(forKey: Keys.language) ?? "ko"
-        let savedLaunch    = UserDefaults.standard.bool(forKey: Keys.launchAtLogin)
+        let savedReduction    = UserDefaults.standard.double(forKey: Keys.reduction)
+        let savedEnabled      = UserDefaults.standard.bool(forKey: Keys.isEnabled)
+        let savedExponent     = UserDefaults.standard.object(forKey: Keys.curveExponent) as? Double ?? 4.0
+        let savedShortcutOn   = UserDefaults.standard.object(forKey: Keys.isShortcutEnabled) as? Bool ?? true
+        let savedLanguage     = UserDefaults.standard.string(forKey: Keys.language) ?? "ko"
+        let savedLaunch       = UserDefaults.standard.bool(forKey: Keys.launchAtLogin)
+        let savedShortcutData = UserDefaults.standard.data(forKey: Keys.shortcut)
+        let savedShortcut     = savedShortcutData.flatMap { try? JSONDecoder().decode(KeyShortcut.self, from: $0) }
 
         self.reduction         = savedReduction
         self.isEnabled         = savedEnabled
         self.curveExponent     = savedExponent
-        self.isShortcutEnabled = savedShortcut
+        self.isShortcutEnabled = savedShortcutOn
         self.language          = savedLanguage
         self.launchAtLogin     = savedLaunch
+        self.shortcut          = savedShortcut
 
         saveOriginalTables()
         syncLaunchAtLogin()
@@ -89,10 +117,13 @@ class DisplayManager: ObservableObject {
             applyReduction(savedReduction)
         }
 
-        // 글로벌 단축키 리스너 등록
-        KeyboardShortcuts.onKeyUp(for: .toggleWhiteout) { [weak self] in
+        // 글로벌 단축키 설정 (Carbon ShortcutManager)
+        ShortcutManager.shared.onTrigger = { [weak self] in
             guard let self = self, self.isShortcutEnabled else { return }
             self.setEnabled(!self.isEnabled)
+        }
+        if savedShortcutOn, let sc = savedShortcut {
+            ShortcutManager.shared.register(sc)
         }
 
         // 앱 종료 시 원본 감마 복원

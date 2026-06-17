@@ -1,5 +1,4 @@
 import SwiftUI
-import KeyboardShortcuts
 
 struct ContentView: View {
     @EnvironmentObject var dm: DisplayManager
@@ -246,7 +245,8 @@ struct ContentView: View {
                         .font(.system(size: 11))
                         .foregroundStyle(Color.secondary)
                     Spacer()
-                    KeyboardShortcuts.Recorder("", name: .toggleWhiteout)
+                    ShortcutRecorderView(shortcut: $dm.shortcut)
+                        .frame(width: 120, height: 22)
                 }
             }
         }

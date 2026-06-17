@@ -5,17 +5,7 @@
 	<key>files</key>
 	<dict/>
 	<key>files2</key>
-	<dict>
-		<key>MacOS/KeyboardShortcuts_KeyboardShortcuts.bundle</key>
-		<dict>
-			<key>cdhash</key>
-			<data>
-			/ExU6wAfyzfi4mNiQB8ppEoFtJM=
-			</data>
-			<key>requirement</key>
-			<string>cdhash H"fc4c54eb001fcb37e2e26362401f29a44a05b493"</string>
-		</dict>
-	</dict>
+	<dict/>
 	<key>rules</key>
 	<dict>
 		<key>^Resources/</key>
