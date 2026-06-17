@@ -5,7 +5,7 @@ set -e
 
 APP_NAME="WhiteOut"
 BUNDLE_ID="com.tankjw.whiteout"
-VERSION="1.6.6"
+VERSION="1.7.0"
 DMG_NAME="${APP_NAME}.dmg"
 ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"
