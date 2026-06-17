@@ -109,15 +109,8 @@ echo "📦 실제 마운트된 볼륨 이름: ${ACTUAL_VOL_NAME}"
 cp -r "${APP_DIR}" "/Volumes/${ACTUAL_VOL_NAME}/"
 ln -s /Applications "/Volumes/${ACTUAL_VOL_NAME}/Applications"
 
-# 4. 배경 이미지 복사 (.background 디렉토리에 숨김 처리 및 1200x1200  해상도 매칭 - Retina 대응)
-mkdir -p "/Volumes/${ACTUAL_VOL_NAME}/.background"
-if [ -f "assets/dmg_background.png" ]; then
-  echo "🎨 DMG 배경화면 설정 중 (1200x1200 @ 144 DPI Retina 리사이징)..."
-  sips -s format png -z 1200 1200 -s dpiHeight 144.0 -s dpiWidth 144.0 assets/dmg_background.png --out "/Volumes/${ACTUAL_VOL_NAME}/.background/dmg_background.png" > /dev/null
-fi
-
-# 5. AppleScript를 이용해 Finder 창 레이아웃 설정
-echo "🎨 DMG 레이아웃 및 배경 적용 중..."
+# 4. AppleScript를 이용해 Finder 창 레이아웃 설정 (배경 이미지 없이 심플하고 표준적인 480x280 레이아웃)
+echo "🎨 DMG 레이아웃 설정 중..."
 osascript <<EOF
 tell application "Finder"
     open disk "${ACTUAL_VOL_NAME}"
@@ -126,16 +119,15 @@ tell application "Finder"
     set current view of containerWindow to icon view
     set toolbar visible of containerWindow to false
     set statusbar visible of containerWindow to false
-    set the bounds of containerWindow to {400, 100, 1000, 700} -- 가로 600, 세로 600
+    set the bounds of containerWindow to {400, 100, 880, 380} -- 가로 480, 세로 280
     
     set viewOptions to icon view options of containerWindow
-    set icon size of viewOptions to 115
+    set icon size of viewOptions to 96
     set arrangement of viewOptions to not arranged
-    set background picture of viewOptions to file ".background:dmg_background.png" of disk "${ACTUAL_VOL_NAME}"
     
-    -- 앱 아이콘 및 Applications 심볼릭 링크 위치 정렬
-    set position of item "WhiteOut.app" of containerWindow to {150, 310}
-    set position of item "Applications" of containerWindow to {450, 310}
+    -- 앱 아이콘 및 Applications 심볼릭 링크 위치 정렬 (480x280 창에 맞춰 대칭 정렬)
+    set position of item "WhiteOut.app" of containerWindow to {120, 130}
+    set position of item "Applications" of containerWindow to {360, 130}
     
     update every item of containerWindow
     delay 2
@@ -143,7 +135,7 @@ tell application "Finder"
 end tell
 EOF
 
-# 6. 동기화 및 마운트 해제 (Finder가 .DS_Store 파일 쓰기를 끝마칠 수 있도록 5초 대기 후 안전하게 디태치)
+# 5. 동기화 및 마운트 해제 (Finder가 .DS_Store 파일 쓰기를 끝마칠 수 있도록 5초 대기 후 안전하게 디태치)
 echo "💾 Finder 캐시 저장 대기 중 (5초)..."
 sleep 5
 sync
@@ -154,7 +146,7 @@ else
   hdiutil detach "/Volumes/${ACTUAL_VOL_NAME}" || hdiutil detach -force "/Volumes/${ACTUAL_VOL_NAME}"
 fi
 
-# 7. 최종 배포용 DMG 생성 (압축형식 UDZO)
+# 6. 최종 배포용 DMG 생성 (압축형식 UDZO)
 hdiutil convert temp.dmg -format UDZO -imagekey zlib-level=9 -o "${DMG_NAME}"
 rm -f temp.dmg
 
