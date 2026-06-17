@@ -102,55 +102,56 @@ MOUNT_DIR="/Volumes/WhiteOut"
 ATTACH_OUT=$(hdiutil attach temp.dmg -readwrite -mountpoint "${MOUNT_DIR}")
 echo "${ATTACH_OUT}"
 DEV_NODE=$(echo "${ATTACH_OUT}" | grep Apple_HFS | awk '{print $1}')
+ACTUAL_VOL_NAME=$(basename "$(echo "${ATTACH_OUT}" | grep -o '/Volumes/.*')")
+echo "📦 실제 마운트된 볼륨 이름: ${ACTUAL_VOL_NAME}"
 
 # 3. 파일 복사 및 바로가기 생성
-cp -r "${APP_DIR}" "${MOUNT_DIR}/"
-ln -s /Applications "${MOUNT_DIR}/Applications"
+cp -r "${APP_DIR}" "/Volumes/${ACTUAL_VOL_NAME}/"
+ln -s /Applications "/Volumes/${ACTUAL_VOL_NAME}/Applications"
 
 # 4. 배경 이미지 복사 (.background 디렉토리에 숨김 처리 및 1200x1200  해상도 매칭 - Retina 대응)
-mkdir -p "${MOUNT_DIR}/.background"
+mkdir -p "/Volumes/${ACTUAL_VOL_NAME}/.background"
 if [ -f "assets/dmg_background.png" ]; then
   echo "🎨 DMG 배경화면 설정 중 (1200x1200 Retina 리사이징)..."
-  sips -s format png -z 1200 1200 assets/dmg_background.png --out "${MOUNT_DIR}/.background/dmg_background.png" > /dev/null
+  sips -s format png -z 1200 1200 assets/dmg_background.png --out "/Volumes/${ACTUAL_VOL_NAME}/.background/dmg_background.png" > /dev/null
 fi
 
 # 5. AppleScript를 이용해 Finder 창 레이아웃 설정
 echo "🎨 DMG 레이아웃 및 배경 적용 중..."
 osascript <<EOF
 tell application "Finder"
-    tell disk "WhiteOut"
-        open
-        delay 1
-        set current view of container window to icon view
-        set toolbar visible of container window to false
-        set statusbar visible of container window to false
-        set the bounds of container window to {400, 100, 1000, 700} -- 가로 600, 세로 600
-        set viewOptions to the icon view options of container window
-        set icon size of viewOptions to 100
-        set arrangement of viewOptions to not arranged
-        if exists file ".background:dmg_background.png" then
-            set background picture of viewOptions to file ".background:dmg_background.png"
-        end if
-        
-        -- 앱 아이콘 및 Applications 심볼릭 링크 위치 정렬
-        -- 생성된 백그라운드의 A 로고와 폴더 아이콘에 맞춤
-        set position of item "WhiteOut.app" to {150, 310}
-        set position of item "Applications" to {450, 310}
-        
-        close container window
-        open
-        delay 2
-        close container window
-    end tell
+    open disk "${ACTUAL_VOL_NAME}"
+    delay 2
+    set containerWindow to container window of disk "${ACTUAL_VOL_NAME}"
+    set current view of containerWindow to icon view
+    set toolbar visible of containerWindow to false
+    set statusbar visible of containerWindow to false
+    set the bounds of containerWindow to {400, 100, 1000, 700} -- 가로 600, 세로 600
+    
+    set viewOptions to icon view options of containerWindow
+    set icon size of viewOptions to 100
+    set arrangement of viewOptions to not arranged
+    set background picture of viewOptions to file ".background:dmg_background.png" of disk "${ACTUAL_VOL_NAME}"
+    
+    -- 앱 아이콘 및 Applications 심볼릭 링크 위치 정렬
+    set position of item "WhiteOut.app" of containerWindow to {150, 310}
+    set position of item "Applications" of containerWindow to {450, 310}
+    
+    update every item of containerWindow
+    delay 2
+    close containerWindow
 end tell
 EOF
 
-# 6. 동기화 및 마운트 해제
+# 6. 동기화 및 마운트 해제 (Finder가 .DS_Store 파일 쓰기를 끝마칠 수 있도록 5초 대기 후 안전하게 디태치)
+echo "💾 Finder 캐시 저장 대기 중 (5초)..."
+sleep 5
 sync
+
 if [ -n "${DEV_NODE}" ]; then
-  hdiutil detach -force "${DEV_NODE}"
+  hdiutil detach "${DEV_NODE}" || hdiutil detach -force "${DEV_NODE}"
 else
-  hdiutil detach -force "${MOUNT_DIR}"
+  hdiutil detach "/Volumes/${ACTUAL_VOL_NAME}" || hdiutil detach -force "/Volumes/${ACTUAL_VOL_NAME}"
 fi
 
 # 7. 최종 배포용 DMG 생성 (압축형식 UDZO)
