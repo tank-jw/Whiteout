@@ -4,13 +4,13 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleExecutable</key>
-  <string>Whiteout</string>
+  <string>WhiteOut</string>
   <key>CFBundleIdentifier</key>
   <string>com.tankjw.whiteout</string>
   <key>CFBundleName</key>
-  <string>Whiteout</string>
+  <string>WhiteOut</string>
   <key>CFBundleDisplayName</key>
-  <string>Whiteout</string>
+  <string>WhiteOut</string>
   <key>CFBundleVersion</key>
   <string>1.6.6</string>
   <key>CFBundleShortVersionString</key>

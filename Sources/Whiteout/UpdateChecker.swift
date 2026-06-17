@@ -166,7 +166,7 @@ class UpdateChecker: ObservableObject {
     private func installUpdate(from tempZip: URL) {
         let fm         = FileManager.default
         let extractDir = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("Whiteout_Update_\(UUID().uuidString)")
+            .appendingPathComponent("WhiteOut_Update_\(UUID().uuidString)")
 
         try? fm.createDirectory(at: extractDir, withIntermediateDirectories: true)
 
@@ -179,7 +179,7 @@ class UpdateChecker: ObservableObject {
         try? unzip.run()
         unzip.waitUntilExit()
 
-        let extractedApp = extractDir.appendingPathComponent("Whiteout.app")
+        let extractedApp = extractDir.appendingPathComponent("WhiteOut.app")
         guard fm.fileExists(atPath: extractedApp.path) else {
             DispatchQueue.main.async { self.isDownloading = false }
             return
@@ -188,7 +188,7 @@ class UpdateChecker: ObservableObject {
         let currentBundle = Bundle.main.bundleURL
         let destination   = currentBundle.pathExtension == "app"
             ? currentBundle
-            : URL(fileURLWithPath: "/Applications/Whiteout.app")
+            : URL(fileURLWithPath: "/Applications/WhiteOut.app")
 
         let script = """
         #!/bin/bash

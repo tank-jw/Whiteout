@@ -2,14 +2,14 @@
 import PackageDescription
 
 let package = Package(
-    name: "Whiteout",
+    name: "WhiteOut",
     platforms: [
         .macOS(.v13)
     ],
     dependencies: [],
     targets: [
         .executableTarget(
-            name: "Whiteout",
+            name: "WhiteOut",
             dependencies: [],
             path: "Sources/Whiteout",
             linkerSettings: [

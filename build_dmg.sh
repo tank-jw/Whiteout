@@ -3,7 +3,7 @@
 
 set -e
 
-APP_NAME="Whiteout"
+APP_NAME="WhiteOut"
 BUNDLE_ID="com.tankjw.whiteout"
 VERSION="1.6.6"
 DMG_NAME="${APP_NAME}.dmg"
@@ -24,8 +24,8 @@ echo "💿 유니버셜 바이너리(Universal Binary) 생성 중..."
 mkdir -p .build/release
 
 # 빌드된 바이너리 경로 탐색 (dSYM 제외)
-ARM64_BIN=$(find .build/arm64 -name "Whiteout" -type f | grep -v "\.dSYM" | head -n 1)
-X86_64_BIN=$(find .build/x86_64 -name "Whiteout" -type f | grep -v "\.dSYM" | head -n 1)
+ARM64_BIN=$(find .build/arm64 -name "${APP_NAME}" -type f | grep -v "\.dSYM" | head -n 1)
+X86_64_BIN=$(find .build/x86_64 -name "${APP_NAME}" -type f | grep -v "\.dSYM" | head -n 1)
 
 if [ -z "$ARM64_BIN" ] || [ -z "$X86_64_BIN" ]; then
   echo "❌ 빌드된 arm64 또는 x86_64 바이너리를 찾을 수 없습니다."
@@ -63,9 +63,9 @@ cat > "${APP_DIR}/Contents/Info.plist" << EOF
   <key>CFBundleIdentifier</key>
   <string>${BUNDLE_ID}</string>
   <key>CFBundleName</key>
-  <string>Whiteout</string>
+  <string>WhiteOut</string>
   <key>CFBundleDisplayName</key>
-  <string>Whiteout</string>
+  <string>WhiteOut</string>
   <key>CFBundleVersion</key>
   <string>${VERSION}</string>
   <key>CFBundleShortVersionString</key>
@@ -95,10 +95,10 @@ echo "💿 DMG 생성 중..."
 rm -f "${DMG_NAME}" temp.dmg
 
 # 1. 임시 DMG 생성 (Read/Write 가능)
-hdiutil create -size 45m -fs HFS+ -volname "Whiteout" -ov temp.dmg
+hdiutil create -size 45m -fs HFS+ -volname "WhiteOut" -ov temp.dmg
 
 # 2. 마운트
-MOUNT_DIR="/Volumes/Whiteout"
+MOUNT_DIR="/Volumes/WhiteOut"
 hdiutil attach temp.dmg -readwrite -mountpoint "${MOUNT_DIR}"
 
 # 3. 파일 복사 및 바로가기 생성
@@ -116,7 +116,7 @@ fi
 echo "🎨 DMG 레이아웃 및 배경 적용 중..."
 osascript <<EOF
 tell application "Finder"
-    tell disk "Whiteout"
+    tell disk "WhiteOut"
         open
         delay 1
         set current view of container window to icon view
@@ -132,7 +132,7 @@ tell application "Finder"
         
         -- 앱 아이콘 및 Applications 심볼릭 링크 위치 정렬
         -- 생성된 백그라운드의 A 로고와 폴더 아이콘에 맞춤
-        set position of item "Whiteout.app" to {150, 310}
+        set position of item "WhiteOut.app" to {150, 310}
         set position of item "Applications" to {450, 310}
         
         close container window

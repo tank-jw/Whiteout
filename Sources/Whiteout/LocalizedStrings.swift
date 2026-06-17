@@ -2,7 +2,7 @@ import Foundation
 
 struct LocalizedStrings {
     static func title(isEN: Bool) -> String {
-        isEN ? "Whiteout" : "화이트아웃"
+        isEN ? "WhiteOut" : "화이트아웃"
     }
     static func statusActive(isEN: Bool, percent: Int) -> String {
         isEN ? "Max White: \(percent)%" : "흰색 최대값 \(percent)%"

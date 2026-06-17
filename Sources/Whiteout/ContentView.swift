@@ -424,7 +424,7 @@ struct ContentView: View {
 
                     VStack(alignment: .leading, spacing: 6) {
                         bulletPoint(
-                            title: isEN ? "Whiteout (GPU Gamma)" : "Whiteout (GPU 감마 조절)",
+                            title: isEN ? "WhiteOut (GPU Gamma)" : "WhiteOut (GPU 감마 조절)",
                             desc: isEN 
                                 ? "Perfectly preserves black levels (0), keeping contrast ratio and OLED blacks intact."
                                 : "검정색(0) 레벨을 100% 보존하여 명암비와 검정색 표현력이 완벽히 유지됩니다."
@@ -465,7 +465,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
                 Circle()
-                    .fill(title.contains("Whiteout") ? Color.orange : Color.secondary)
+                    .fill(title.contains("WhiteOut") ? Color.orange : Color.secondary)
                     .frame(width: 3.5, height: 3.5)
                 Text(title)
                     .font(.system(size: 9.5, weight: .semibold))
