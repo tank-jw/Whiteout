@@ -11,6 +11,9 @@ ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"
 APP_DIR="${APP_NAME}.app"
 
+echo "🧹 이전 빌드 아티팩트 청소 중..."
+rm -rf .build/arm64 .build/x86_64 .build/release
+
 echo "🔨 arm64 Release 빌드 중..."
 swift build -c release -Xswiftc -target -Xswiftc arm64-apple-macosx13.0 --build-path .build/arm64
 
@@ -19,9 +22,17 @@ swift build -c release -Xswiftc -target -Xswiftc x86_64-apple-macosx13.0 --build
 
 echo "💿 유니버셜 바이너리(Universal Binary) 생성 중..."
 mkdir -p .build/release
-lipo -create -output .build/release/Whiteout \
-  .build/arm64/arm64-apple-macosx/release/Whiteout \
-  .build/x86_64/arm64-apple-macosx/release/Whiteout
+
+# 빌드된 바이너리 경로 탐색 (dSYM 제외)
+ARM64_BIN=$(find .build/arm64 -name "Whiteout" -type f | grep -v "\.dSYM" | head -n 1)
+X86_64_BIN=$(find .build/x86_64 -name "Whiteout" -type f | grep -v "\.dSYM" | head -n 1)
+
+if [ -z "$ARM64_BIN" ] || [ -z "$X86_64_BIN" ]; then
+  echo "❌ 빌드된 arm64 또는 x86_64 바이너리를 찾을 수 없습니다."
+  exit 1
+fi
+
+lipo -create -output .build/release/Whiteout "$ARM64_BIN" "$X86_64_BIN"
 
 echo "📦 .app 번들 구조 생성 중..."
 rm -rf "${APP_DIR}"
