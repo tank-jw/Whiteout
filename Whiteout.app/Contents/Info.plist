@@ -12,9 +12,9 @@
   <key>CFBundleDisplayName</key>
   <string>Whiteout</string>
   <key>CFBundleVersion</key>
-  <string>1.6.5</string>
+  <string>1.6.6</string>
   <key>CFBundleShortVersionString</key>
-  <string>1.6.5</string>
+  <string>1.6.6</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleSignature</key>
@@ -27,5 +27,7 @@
   <true/>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
 </dict>
 </plist>
