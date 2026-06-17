@@ -5,14 +5,23 @@ set -e
 
 APP_NAME="Whiteout"
 BUNDLE_ID="com.tankjw.whiteout"
-VERSION="1.6.4"
+VERSION="1.6.5"
 DMG_NAME="${APP_NAME}.dmg"
 ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"
 APP_DIR="${APP_NAME}.app"
 
-echo "🔨 Release 빌드 중..."
-swift build -c release
+echo "🔨 arm64 Release 빌드 중..."
+swift build -c release -Xswiftc -target -Xswiftc arm64-apple-macosx13.0 --build-path .build/arm64
+
+echo "🔨 x86_64 Release 빌드 중..."
+swift build -c release -Xswiftc -target -Xswiftc x86_64-apple-macosx13.0 --build-path .build/x86_64
+
+echo "💿 유니버셜 바이너리(Universal Binary) 생성 중..."
+mkdir -p .build/release
+lipo -create -output .build/release/Whiteout \
+  .build/arm64/arm64-apple-macosx/release/Whiteout \
+  .build/x86_64/arm64-apple-macosx/release/Whiteout
 
 echo "📦 .app 번들 구조 생성 중..."
 rm -rf "${APP_DIR}"
@@ -22,6 +31,12 @@ mkdir -p "${APP_DIR}/Contents/Resources"
 # 실행 파일 복사
 cp "${BUILD_DIR}/${APP_NAME}" "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 chmod +x "${APP_DIR}/Contents/MacOS/${APP_NAME}"
+
+# 의존성 리소스 번들 복사
+if [ -d ".build/arm64/arm64-apple-macosx/release/KeyboardShortcuts_KeyboardShortcuts.bundle" ]; then
+  echo "📦 KeyboardShortcuts 리소스 번들 복사 중..."
+  cp -r ".build/arm64/arm64-apple-macosx/release/KeyboardShortcuts_KeyboardShortcuts.bundle" "${APP_DIR}/Contents/Resources/"
+fi
 
 echo "📝 Info.plist 생성 중..."
 cat > "${APP_DIR}/Contents/Info.plist" << EOF
