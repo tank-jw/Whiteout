@@ -95,10 +95,10 @@ echo "💿 DMG 생성 중..."
 rm -f "${DMG_NAME}" temp.dmg
 
 # 1. 임시 DMG 생성 (Read/Write 가능)
-hdiutil create -size 45m -fs HFS+ -volname "WhiteOut" -ov temp.dmg
+hdiutil create -size 45m -fs HFS+ -volname "WhiteOut Installer" -ov temp.dmg
 
 # 2. 마운트
-MOUNT_DIR="/Volumes/WhiteOut"
+MOUNT_DIR="/Volumes/WhiteOut Installer"
 ATTACH_OUT=$(hdiutil attach temp.dmg -readwrite -mountpoint "${MOUNT_DIR}")
 echo "${ATTACH_OUT}"
 DEV_NODE=$(echo "${ATTACH_OUT}" | grep Apple_HFS | awk '{print $1}')
