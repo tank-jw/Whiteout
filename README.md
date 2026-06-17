@@ -6,6 +6,23 @@
 [![macOS](https://img.shields.io/badge/macOS-13%2B-blue)](https://github.com/tank-jw/Whiteout)
 [![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange)](https://github.com/tank-jw/Whiteout)
 
+## 📱 스크린샷 및 소개
+
+<p align="center">
+  <img src="assets/media__1781458526509.png" width="320" alt="Whiteout UI Screenshot 1" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="assets/media__1781459352094.png" width="320" alt="Whiteout UI Screenshot 2" />
+</p>
+
+### 🌐 공식 웹페이지 & 가이드
+본 프로젝트의 `docs` 디렉토리는 GitHub Pages를 통해 인터랙티브한 웹페이지로 호스팅될 수 있도록 제작되었습니다. GPU 감마 조절의 동작 원리와 대비 비교 슬라이더, 실시간 감마 곡선 시각화 그래프를 제공합니다.
+
+<p align="center">
+  <img src="assets/media__1781620544415.png" width="650" alt="Whiteout Webpage Preview" />
+</p>
+
+---
+
 ## 📥 다운로드
 
 **[→ 최신 버전 DMG 다운로드](https://github.com/tank-jw/Whiteout/releases/latest)**
