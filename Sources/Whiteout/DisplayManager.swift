@@ -316,27 +316,35 @@ class DisplayManager: ObservableObject {
 
     /// Apply the current `reduction` value to active displays.
     func applyReduction() {
-        // If an app rule is currently active, apply the active app rule's settings to all screens
-        if let activeAppName = activeRuleAppName,
-           let rule = appRules.first(where: { $0.appName == activeAppName }) {
-            applyReductionForActiveRule(rule)
-            return
-        }
+        let currentAppName = activeRuleAppName
+        let currentActiveAppRule = currentAppName.flatMap { name in appRules.first(where: { $0.appName == name }) }
 
-        // If a time rule is active, apply the active time rule's settings to all screens
-        if let activeTimeId = activeTimeRuleId,
-           let rule = timeRules.first(where: { $0.id == activeTimeId }) {
-            applyReductionForActiveTimeRule(rule)
-            return
-        }
+        let currentActiveTimeRuleId = activeTimeRuleId
+        let currentActiveTimeRule = currentActiveTimeRuleId.flatMap { id in timeRules.first(where: { $0.id == id }) }
 
-        // Otherwise, apply display-specific settings
         for (displayID, tables) in originalTables {
-            let key = String(displayID)
-            let setting = displaySettings[key] ?? DisplaySetting(displayID: displayID, name: getDisplayName(displayID), reduction: reduction, curveExponent: curveExponent, isEnabled: isEnabled)
+            let targetReduction: Double
+            let targetExponent: Double
+            let targetEnabled: Bool
 
-            guard setting.isEnabled, setting.reduction > 0.001 else {
-                // Restore this display only
+            if let appRule = currentActiveAppRule {
+                targetReduction = appRule.reduction
+                targetExponent = appRule.curveExponent
+                targetEnabled = appRule.isEnabled
+            } else if let timeRule = currentActiveTimeRule {
+                targetReduction = timeRule.reduction
+                targetExponent = curveExponent
+                targetEnabled = isEnabled
+            } else {
+                let key = String(displayID)
+                let setting = displaySettings[key] ?? DisplaySetting(displayID: displayID, name: getDisplayName(displayID), reduction: reduction, curveExponent: curveExponent, isEnabled: isEnabled)
+                targetReduction = setting.reduction
+                targetExponent = setting.curveExponent
+                targetEnabled = setting.isEnabled
+            }
+
+            guard targetEnabled, targetReduction > 0.001 else {
+                // Restore original tables for this display
                 var r = tables.red
                 var g = tables.green
                 var b = tables.blue
@@ -344,64 +352,8 @@ class DisplayManager: ObservableObject {
                 continue
             }
 
-            let maxOutput = CGGammaValue(1.0 - setting.reduction * 0.3)
-            let exp = CGGammaValue(setting.curveExponent)
-
-            var r = [CGGammaValue](repeating: 0, count: tableSize)
-            var g = [CGGammaValue](repeating: 0, count: tableSize)
-            var b = [CGGammaValue](repeating: 0, count: tableSize)
-
-            for i in 0..<tableSize {
-                let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
-                let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
-                r[i] = tables.red[i]   * sf
-                g[i] = tables.green[i] * sf
-                b[i] = tables.blue[i]  * sf
-            }
-            CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
-        }
-    }
-
-    private func applyReductionForActiveRule(_ rule: AppRule) {
-        for (displayID, tables) in originalTables {
-            guard rule.isEnabled, rule.reduction > 0.001 else {
-                var r = tables.red
-                var g = tables.green
-                var b = tables.blue
-                CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
-                continue
-            }
-
-            let maxOutput = CGGammaValue(1.0 - rule.reduction * 0.3)
-            let exp = CGGammaValue(rule.curveExponent)
-
-            var r = [CGGammaValue](repeating: 0, count: tableSize)
-            var g = [CGGammaValue](repeating: 0, count: tableSize)
-            var b = [CGGammaValue](repeating: 0, count: tableSize)
-
-            for i in 0..<tableSize {
-                let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
-                let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
-                r[i] = tables.red[i]   * sf
-                g[i] = tables.green[i] * sf
-                b[i] = tables.blue[i]  * sf
-            }
-            CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
-        }
-    }
-
-    private func applyReductionForActiveTimeRule(_ rule: TimeRule) {
-        for (displayID, tables) in originalTables {
-            guard isEnabled, rule.reduction > 0.001 else {
-                var r = tables.red
-                var g = tables.green
-                var b = tables.blue
-                CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
-                continue
-            }
-
-            let maxOutput = CGGammaValue(1.0 - rule.reduction * 0.3)
-            let exp = CGGammaValue(curveExponent) // Use standard curveExponent
+            let maxOutput = CGGammaValue(1.0 - targetReduction * 0.3)
+            let exp = CGGammaValue(targetExponent)
 
             var r = [CGGammaValue](repeating: 0, count: tableSize)
             var g = [CGGammaValue](repeating: 0, count: tableSize)
@@ -562,14 +514,14 @@ class DisplayManager: ObservableObject {
         if let activeAppName = activeRuleAppName,
            let index = appRules.firstIndex(where: { $0.appName == activeAppName }) {
             appRules[index].reduction = val
-            applyReductionForActiveRule(appRules[index])
+            applyReduction()
             return
         }
 
         if let activeTimeId = activeTimeRuleId,
            let index = timeRules.firstIndex(where: { $0.id == activeTimeId }) {
             timeRules[index].reduction = val
-            applyReductionForActiveTimeRule(timeRules[index])
+            applyReduction()
             return
         }
 
@@ -589,7 +541,7 @@ class DisplayManager: ObservableObject {
         if let activeAppName = activeRuleAppName,
            let index = appRules.firstIndex(where: { $0.appName == activeAppName }) {
             appRules[index].curveExponent = val
-            applyReductionForActiveRule(appRules[index])
+            applyReduction()
             return
         }
 
@@ -609,7 +561,7 @@ class DisplayManager: ObservableObject {
         if let activeAppName = activeRuleAppName,
            let index = appRules.firstIndex(where: { $0.appName == activeAppName }) {
             appRules[index].isEnabled = val
-            applyReductionForActiveRule(appRules[index])
+            applyReduction()
             return
         }
 
