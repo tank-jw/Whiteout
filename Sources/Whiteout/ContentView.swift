@@ -49,6 +49,8 @@ struct ContentView: View {
                 Divider().opacity(0.5)
                 curveSection
                 Divider().opacity(0.5)
+                timeSection
+                Divider().opacity(0.5)
                 footerSection
             }
             .frame(width: 290)
@@ -145,6 +147,24 @@ struct ContentView: View {
                         .font(.system(size: 10))
                         .foregroundStyle(.orange)
                     Text(LocalizedStrings.ruleActiveBanner(isEN: isEN, appName: activeAppName))
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(.orange)
+                    Spacer()
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color.orange.opacity(0.08))
+                .cornerRadius(6)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            } else if let activeTimeId = dm.activeTimeRuleId,
+                      let rule = dm.timeRules.first(where: { $0.id == activeTimeId }) {
+                HStack(spacing: 6) {
+                    Image(systemName: "clock.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(.orange)
+                    let startStr = String(format: "%02d:%02d", rule.startHour, rule.startMinute)
+                    let endStr = String(format: "%02d:%02d", rule.endHour, rule.endMinute)
+                    Text(LocalizedStrings.timeRuleActiveBanner(isEN: isEN, range: "\(startStr) ~ \(endStr)"))
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundStyle(.orange)
                     Spacer()
@@ -875,6 +895,135 @@ struct ContentView: View {
         }
     }
 
+
+    // MARK: - Time Rules Section
+
+    private var timeSection: some View {
+        let isEN = dm.language == "en"
+        return VStack(spacing: 6) {
+            HStack {
+                Text(LocalizedStrings.timeRulesSectionTitle(isEN: isEN))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
+                Spacer()
+                Button {
+                    withAnimation {
+                        dm.addTimeRule()
+                    }
+                } label: {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 13))
+                        .foregroundStyle(dm.isEnabled ? Color.orange : Color.secondary)
+                }
+                .buttonStyle(.plain)
+                .disabled(!dm.isEnabled)
+            }
+
+            if dm.timeRules.isEmpty {
+                Text(isEN ? "No time rules configured." : "설정된 시간별 규칙이 없습니다.")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 4)
+            } else {
+                VStack(spacing: 4) {
+                    ForEach(Array(dm.timeRules.enumerated()), id: \.element.id) { index, rule in
+                        timeRuleRow(index: index, rule: rule, isEN: isEN)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+
+    private func timeRuleRow(index: Int, rule: TimeRule, isEN: Bool) -> some View {
+        let isActive = dm.activeTimeRuleId == rule.id
+        
+        return HStack(spacing: 4) {
+            // Active Indicator or Toggle
+            Toggle("", isOn: Binding(
+                get: { rule.isEnabled },
+                set: { newVal in
+                    dm.timeRules[index].isEnabled = newVal
+                }
+            ))
+            .toggleStyle(.switch)
+            .labelsHidden()
+            .scaleEffect(0.65)
+            .frame(width: 28)
+            .disabled(!dm.isEnabled)
+
+            // Start Date Picker (default compact style on macOS)
+            DatePicker("", selection: Binding(
+                get: { rule.startDate },
+                set: { newVal in
+                    dm.timeRules[index].startDate = newVal
+                }
+            ), displayedComponents: .hourAndMinute)
+            .labelsHidden()
+            .scaleEffect(0.85)
+            .frame(width: 58)
+            .disabled(!dm.isEnabled || !rule.isEnabled)
+
+            Text("~")
+                .font(.system(size: 10))
+                .foregroundStyle(Color.secondary)
+
+            // End Date Picker
+            DatePicker("", selection: Binding(
+                get: { rule.endDate },
+                set: { newVal in
+                    dm.timeRules[index].endDate = newVal
+                }
+            ), displayedComponents: .hourAndMinute)
+            .labelsHidden()
+            .scaleEffect(0.85)
+            .frame(width: 58)
+            .disabled(!dm.isEnabled || !rule.isEnabled)
+
+            Spacer(minLength: 0)
+
+            // Percentage Picker
+            Picker("", selection: Binding(
+                get: { rule.reduction },
+                set: { newVal in
+                    dm.timeRules[index].reduction = newVal
+                }
+            )) {
+                ForEach(0...6, id: \.self) { i in
+                    let pct = i * 5
+                    let val = Double(i) / 6.0
+                    Text("\(pct)%").tag(val)
+                }
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .scaleEffect(0.8)
+            .frame(width: 48)
+            .disabled(!dm.isEnabled || !rule.isEnabled)
+
+            // Trash delete button
+            Button {
+                withAnimation {
+                    dm.deleteTimeRule(at: index)
+                }
+            } label: {
+                Image(systemName: "trash")
+                    .font(.system(size: 10))
+                    .foregroundStyle(dm.isEnabled ? Color.red.opacity(0.8) : Color.secondary)
+            }
+            .buttonStyle(.plain)
+            .disabled(!dm.isEnabled)
+        }
+        .padding(.vertical, 3)
+        .padding(.horizontal, 4)
+        .background(isActive ? Color.orange.opacity(0.06) : Color.clear)
+        .cornerRadius(6)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(isActive ? Color.orange.opacity(0.2) : Color.clear, lineWidth: 0.5)
+        )
+    }
 
     // MARK: - Footer
 

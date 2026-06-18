@@ -33,6 +33,49 @@ struct AppRule: Codable, Identifiable, Equatable {
     var isEnabled: Bool
 }
 
+struct TimeRule: Codable, Identifiable, Equatable {
+    var id = UUID()
+    var startHour: Int
+    var startMinute: Int
+    var endHour: Int
+    var endMinute: Int
+    var reduction: Double
+    var isEnabled: Bool
+
+    // Computed properties for SwiftUI DatePicker binding mapping
+    var startDate: Date {
+        get {
+            let calendar = Calendar.current
+            var components = calendar.dateComponents([.year, .month, .day], from: Date())
+            components.hour = startHour
+            components.minute = startMinute
+            return calendar.date(from: components) ?? Date()
+        }
+        set {
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.hour, .minute], from: newValue)
+            startHour = components.hour ?? 0
+            startMinute = components.minute ?? 0
+        }
+    }
+
+    var endDate: Date {
+        get {
+            let calendar = Calendar.current
+            var components = calendar.dateComponents([.year, .month, .day], from: Date())
+            components.hour = endHour
+            components.minute = endMinute
+            return calendar.date(from: components) ?? Date()
+        }
+        set {
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.hour, .minute], from: newValue)
+            endHour = components.hour ?? 0
+            endMinute = components.minute ?? 0
+        }
+    }
+}
+
 class DisplayManager: ObservableObject {
 
     // MARK: - Published State
@@ -123,6 +166,17 @@ class DisplayManager: ObservableObject {
 
     @Published var activeRuleAppName: String? = nil
 
+    @Published var timeRules: [TimeRule] = [] {
+        didSet {
+            if let data = try? JSONEncoder().encode(timeRules) {
+                UserDefaults.standard.set(data, forKey: Keys.timeRules)
+            }
+            evaluateTimeRules()
+        }
+    }
+
+    @Published var activeTimeRuleId: UUID? = nil
+
     // MARK: - Private / App-tracking properties
 
     private enum Keys {
@@ -136,7 +190,10 @@ class DisplayManager: ObservableObject {
         static let selectedDisplayID = "selectedDisplayID"
         static let displaySettings   = "displaySettings"
         static let appRules          = "appRules"
+        static let timeRules         = "timeRules"
     }
+
+    private var timeRuleTimer: Timer?
 
     private let tableSize = 256
     private var originalTables: [CGDirectDisplayID: GammaTable] = [:]
@@ -171,6 +228,12 @@ class DisplayManager: ObservableObject {
             loadedAppRules = decoded
         }
 
+        var loadedTimeRules: [TimeRule] = []
+        if let data = UserDefaults.standard.data(forKey: Keys.timeRules),
+           let decoded = try? JSONDecoder().decode([TimeRule].self, from: data) {
+            loadedTimeRules = decoded
+        }
+
         self.reduction         = savedReduction
         self.isEnabled         = savedEnabled
         self.curveExponent     = savedExponent
@@ -182,6 +245,7 @@ class DisplayManager: ObservableObject {
         self.selectedDisplayID = savedSelectedDisplay
         self.displaySettings   = loadedDisplaySettings
         self.appRules          = loadedAppRules
+        self.timeRules         = loadedTimeRules
 
         saveOriginalTables()
         syncLaunchAtLogin()
@@ -233,9 +297,18 @@ class DisplayManager: ObservableObject {
             name: NSWorkspace.didActivateApplicationNotification,
             object: nil
         )
+
+        // Evaluate time rules periodically
+        evaluateTimeRules()
+        timeRuleTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.evaluateTimeRules()
+            }
+        }
     }
 
     deinit {
+        timeRuleTimer?.invalidate()
         restoreOriginalTables()
     }
 
@@ -247,6 +320,13 @@ class DisplayManager: ObservableObject {
         if let activeAppName = activeRuleAppName,
            let rule = appRules.first(where: { $0.appName == activeAppName }) {
             applyReductionForActiveRule(rule)
+            return
+        }
+
+        // If a time rule is active, apply the active time rule's settings to all screens
+        if let activeTimeId = activeTimeRuleId,
+           let rule = timeRules.first(where: { $0.id == activeTimeId }) {
+            applyReductionForActiveTimeRule(rule)
             return
         }
 
@@ -294,6 +374,34 @@ class DisplayManager: ObservableObject {
 
             let maxOutput = CGGammaValue(1.0 - rule.reduction * 0.3)
             let exp = CGGammaValue(rule.curveExponent)
+
+            var r = [CGGammaValue](repeating: 0, count: tableSize)
+            var g = [CGGammaValue](repeating: 0, count: tableSize)
+            var b = [CGGammaValue](repeating: 0, count: tableSize)
+
+            for i in 0..<tableSize {
+                let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
+                let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
+                r[i] = tables.red[i]   * sf
+                g[i] = tables.green[i] * sf
+                b[i] = tables.blue[i]  * sf
+            }
+            CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+        }
+    }
+
+    private func applyReductionForActiveTimeRule(_ rule: TimeRule) {
+        for (displayID, tables) in originalTables {
+            guard isEnabled, rule.reduction > 0.001 else {
+                var r = tables.red
+                var g = tables.green
+                var b = tables.blue
+                CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+                continue
+            }
+
+            let maxOutput = CGGammaValue(1.0 - rule.reduction * 0.3)
+            let exp = CGGammaValue(curveExponent) // Use standard curveExponent
 
             var r = [CGGammaValue](repeating: 0, count: tableSize)
             var g = [CGGammaValue](repeating: 0, count: tableSize)
@@ -367,6 +475,85 @@ class DisplayManager: ObservableObject {
         return nil
     }
 
+    func addTimeRule() {
+        let calendar = Calendar.current
+        let now = Date()
+        let hour = calendar.component(.hour, from: now)
+        let endHour = (hour + 1) % 24
+        
+        let newRule = TimeRule(startHour: hour, startMinute: 0, endHour: endHour, endMinute: 0, reduction: 0.1, isEnabled: true)
+        timeRules.append(newRule)
+    }
+
+    func deleteTimeRule(at index: Int) {
+        let rule = timeRules[index]
+        timeRules.remove(at: index)
+
+        if activeTimeRuleId == rule.id {
+            activeTimeRuleId = nil
+            syncSelectedDisplayToGlobalProperties()
+            applyReduction()
+        }
+    }
+
+    func evaluateTimeRules() {
+        guard isEnabled else {
+            if activeTimeRuleId != nil {
+                activeTimeRuleId = nil
+            }
+            return
+        }
+
+        // App rule has precedence. If app rule is active, we don't apply time rules.
+        if activeRuleAppName != nil {
+            return
+        }
+
+        let calendar = Calendar.current
+        let now = Date()
+        let currentHour = calendar.component(.hour, from: now)
+        let currentMinute = calendar.component(.minute, from: now)
+        let currentMinutes = currentHour * 60 + currentMinute
+
+        var matchedRule: TimeRule? = nil
+        for rule in timeRules {
+            guard rule.isEnabled else { continue }
+            let start = rule.startHour * 60 + rule.startMinute
+            let end = rule.endHour * 60 + rule.endMinute
+
+            let isActive: Bool
+            if start <= end {
+                isActive = (currentMinutes >= start && currentMinutes < end)
+            } else {
+                // Crosses midnight
+                isActive = (currentMinutes >= start || currentMinutes < end)
+            }
+
+            if isActive {
+                matchedRule = rule
+                break
+            }
+        }
+
+        if let rule = matchedRule {
+            if activeTimeRuleId != rule.id {
+                activeTimeRuleId = rule.id
+                
+                isSyncingProperties = true
+                self.reduction = rule.reduction
+                isSyncingProperties = false
+                
+                applyReduction()
+            }
+        } else {
+            if activeTimeRuleId != nil {
+                activeTimeRuleId = nil
+                syncSelectedDisplayToGlobalProperties()
+                applyReduction()
+            }
+        }
+    }
+
     // MARK: - Private Helpers
 
     private func handleUserAdjustedReduction(_ val: Double) {
@@ -376,6 +563,13 @@ class DisplayManager: ObservableObject {
            let index = appRules.firstIndex(where: { $0.appName == activeAppName }) {
             appRules[index].reduction = val
             applyReductionForActiveRule(appRules[index])
+            return
+        }
+
+        if let activeTimeId = activeTimeRuleId,
+           let index = timeRules.firstIndex(where: { $0.id == activeTimeId }) {
+            timeRules[index].reduction = val
+            applyReductionForActiveTimeRule(timeRules[index])
             return
         }
 

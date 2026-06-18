@@ -55,6 +55,7 @@
 - ⌨️ **사용자 설정 글로벌 단축키** — 언제 어디서나 키보드 단축키로 온/오프 가능
 - 🖥 **디스플레이별 개별 제어** — 모든 모니터를 일괄 제어하거나 개별 모니터(내장/외장)마다 다른 감소량 및 곡선 지수 개별 적용 지원
 - 🛡 **앱별 자동 설정 규칙** — 사파리, 엑스코드 등 특정 앱이 포커스를 얻을 때 사전에 설정한 감소량 및 곡선이 자동으로 적용되고, 포커스가 빠지면 복원되는 자동화 프리셋 기능
+- ⏰ **시간별 자동 설정 규칙** — 지정된 시간대(예: 야간 17:00 ~ 23:00 등)에 화이트포인트 감소율이 자동으로 조절되는 시간 계획 자동화 프리셋 지원
 - 🔘 **곡선 타입 선택** — 일반(2.5) / 문서·PDF(4.0) / 하이라이트(6.0)로 세분화하여 T값 표기
 - 🔄 **자동 업데이트** — 새 버전 출시 시 팝오버에서 클릭 한 번으로 업데이트
 - 💾 **설정 자동 저장** — 재시작 후에도 유지 (연결 해제된 디스플레이 설정 정보도 유지)
@@ -125,6 +126,7 @@ Sources/Whiteout/
 
 | 버전 | 내용 |
 |---|---|
+| **v1.7.1** | **시간별 화이트포인트 자동 설정 규칙 기능 추가**<br>- 사용자가 지정한 시간 범위(예: 17:00 ~ 23:00)에 맞춰 화이트포인트 감소 강도가 실시간으로 자동 변경되고, 범위를 벗어날 시 원래 설정값으로 자동 복원되는 주기 엔진 및 Time Picker UI 도입 |
 | **v1.7.0** | **디스플레이별 개별 제어 및 앱별 자동화 규칙 대대적 추가**<br>- 연결된 모니터(내장/외장)별 독립적인 화이트포인트 감소량 및 곡선 지수 개별 설정 지원<br>- 특정 앱(예: Safari 등)이 전면에 활성화되면 전용 화이트포인트 프리셋을 자동으로 즉각 적용하고, 다른 앱으로 이동 시 기본값으로 안전 복구하는 자동화 규칙 엔진 추가 |
 | **v1.6.5** | 다른 Mac에서 실행 시 단축키 리소스 누락으로 인한 크래시 해결 및 Intel/Apple Silicon 유니버설 아키텍처 통합 지원 |
 | **v1.6.4** | 로그인 시 자동 실행(Launch at Login) 설정 기능 추가 (macOS 13+ SMAppService API 활용) |
@@ -156,3 +158,49 @@ Sources/Whiteout/
 ## 라이선스
 
 MIT
+
+```
+Reduce_whitepoint
+├─ .claude
+│  └─ settings.local.json
+├─ Package.swift
+├─ README.md
+├─ Sources
+│  └─ Whiteout
+│     ├─ AppDelegate.swift
+│     ├─ ContentView.swift
+│     ├─ DisplayManager.swift
+│     ├─ LocalizedStrings.swift
+│     ├─ ShortcutRecorderView.swift
+│     ├─ Shortcuts.swift
+│     ├─ UpdateChecker.swift
+│     └─ WhiteoutApp.swift
+├─ WhiteOut.app
+│  └─ Contents
+│     ├─ Info.plist
+│     ├─ MacOS
+│     │  └─ WhiteOut
+│     ├─ Resources
+│     │  └─ AppIcon.icns
+│     └─ _CodeSignature
+│        └─ CodeResources
+├─ WhiteOut.zip
+├─ assets
+│  ├─ AppIcon.icns
+│  ├─ AppIcon.png
+│  ├─ dmg_background.png
+│  ├─ media__1781458526509.png
+│  ├─ media__1781458648529.png
+│  ├─ media__1781459352094.png
+│  ├─ media__1781619648112.png
+│  ├─ media__1781620166220.png
+│  └─ media__1781620544415.png
+├─ build_dmg.sh
+├─ docs
+│  ├─ index.html
+│  ├─ script.js
+│  └─ style.css
+├─ generate_assets.sh
+└─ mask_icon.swift
+
+```

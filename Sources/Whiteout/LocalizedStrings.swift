@@ -100,4 +100,10 @@ struct LocalizedStrings {
     static func compareOverlayDesc(isEN: Bool) -> String {
         isEN ? "Draws a dark window, elevating black levels and ruining contrast." : "화면에 검은 막을 씌워 블랙 레벨을 들뜨게 하고 명암비를 손상시킵니다."
     }
+    static func timeRulesSectionTitle(isEN: Bool) -> String {
+        isEN ? "Time-Based Rules" : "시간별 자동 설정"
+    }
+    static func timeRuleActiveBanner(isEN: Bool, range: String) -> String {
+        isEN ? "Time rule active (\(range))" : "시간별 규칙 적용 중 (\(range))"
+    }
 }
