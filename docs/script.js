@@ -462,11 +462,41 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // ==========================================
+    // 6. Fetch Latest Release Version dynamically from GitHub API
+    // ==========================================
+    const fetchLatestVersion = async () => {
+        try {
+            const response = await fetch("https://api.github.com/repos/tank-jw/Whiteout/releases/latest");
+            if (!response.ok) throw new Error("Network response was not ok");
+            const data = await response.json();
+            const rawTag = data.tag_name;
+            if (rawTag) {
+                const version = rawTag.startsWith("v") ? rawTag : `v${rawTag}`;
+                
+                // Update download button
+                const dmgDisplay = document.getElementById("dmg-version-display");
+                if (dmgDisplay) {
+                    dmgDisplay.textContent = `Download DMG (${version})`;
+                }
+                
+                // Update other inline version elements
+                const versionElements = document.querySelectorAll(".app-version-text");
+                versionElements.forEach(el => {
+                    el.textContent = version;
+                });
+            }
+        } catch (error) {
+            console.error("Failed to fetch latest release version from GitHub:", error);
+        }
+    };
+
 
     // --- Init Call ---
     setLanguage(currentLang);
     drawGammaCurve();
     updatePopoverUI();
+    fetchLatestVersion();
 
     // Redraw graph when window resizes
     window.addEventListener("resize", drawGammaCurve);
