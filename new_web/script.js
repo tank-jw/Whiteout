@@ -93,17 +93,56 @@ document.addEventListener('DOMContentLoaded', () => {
     ideContainers.forEach(c => c.innerHTML = '');
     browserContainers.forEach(c => c.innerHTML = '');
     
-    // Helper to generate custom styled elements
-    function createIdeLine(widthPercent, colorClass) {
+    // Helper to generate VS Code styled tokenized lines
+    function createIdeLine(animate = true) {
         const line = document.createElement('div');
-        line.className = `ide-code-line ${colorClass}`;
-        line.style.width = '0';
-        line.style.opacity = '0';
-        // Animates width and opacity smoothly
-        setTimeout(() => {
-            line.style.width = `${widthPercent}%`;
-            line.style.opacity = '1';
-        }, 50);
+        line.className = 'ide-code-line';
+        line.style.opacity = animate ? '0' : '1';
+        
+        // Choose line pattern
+        const rand = Math.random();
+        let tokens = [];
+        if (rand < 0.15) {
+            // Comment line
+            tokens.push({ width: Math.floor(Math.random() * 30) + 40, type: 'token-comment' });
+        } else if (rand < 0.5) {
+            // Declaration: const/let x = value
+            tokens.push({ width: Math.floor(Math.random() * 8) + 12, type: 'token-keyword' });
+            tokens.push({ width: Math.floor(Math.random() * 15) + 18, type: 'token-variable' });
+            tokens.push({ width: 8, type: 'token-operator' });
+            tokens.push({ width: Math.floor(Math.random() * 15) + 15, type: 'token-value' });
+        } else if (rand < 0.8) {
+            // Function call: console.log(x) or method()
+            tokens.push({ width: Math.floor(Math.random() * 12) + 12, type: 'token-variable' });
+            tokens.push({ width: Math.floor(Math.random() * 15) + 20, type: 'token-yellow' });
+            tokens.push({ width: Math.floor(Math.random() * 8) + 8, type: 'token-value' });
+        } else {
+            // Class/Type or Return statement
+            tokens.push({ width: Math.floor(Math.random() * 8) + 12, type: 'token-keyword' });
+            tokens.push({ width: Math.floor(Math.random() * 15) + 15, type: 'token-type' });
+            tokens.push({ width: Math.floor(Math.random() * 10) + 12, type: 'token-variable' });
+        }
+        
+        // Append tokens as spans
+        tokens.forEach(tok => {
+            const span = document.createElement('span');
+            span.className = `code-token ${tok.type}`;
+            span.style.width = animate ? '0%' : `${tok.width}%`;
+            if (animate) {
+                span.style.transition = 'width 0.4s ease-out';
+                setTimeout(() => {
+                    span.style.width = `${tok.width}%`;
+                }, 50);
+            }
+            line.appendChild(span);
+        });
+        
+        if (animate) {
+            setTimeout(() => {
+                line.style.opacity = '1';
+            }, 50);
+        }
+        
         return line;
     }
     
@@ -114,16 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return line;
     }
     
-    // Add initial mock IDE lines
-    for (let i = 0; i < 5; i++) {
-        const width = Math.floor(Math.random() * 50) + 35;
-        const colors = ['w-60', 'w-80', 'w-40'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
+    // Add initial mock IDE lines (rendered instantly)
+    for (let i = 0; i < 7; i++) {
         ideContainers.forEach(container => {
-            const line = document.createElement('div');
-            line.className = `ide-code-line ${color}`;
-            line.style.width = `${width}%`;
-            line.style.opacity = '1';
+            const line = createIdeLine(false);
             container.appendChild(line);
         });
         ideLinesCount++;
@@ -141,20 +174,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function addIdeLine() {
-        const width = Math.floor(Math.random() * 50) + 35;
-        const colors = ['w-60', 'w-80', 'w-40'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        
         // Append identical line to all IDE containers in sync
         ideContainers.forEach(container => {
-            const line = createIdeLine(width, color);
+            const line = createIdeLine(true);
             container.appendChild(line);
         });
         
         ideLinesCount++;
         
-        // Scroll up if we have more than 6 lines
-        if (ideLinesCount > 6) {
+        // Scroll up if we have more than 7 lines
+        if (ideLinesCount > 7) {
             ideScrollY += 14;
             ideContainers.forEach(container => {
                 container.style.transform = `translateY(-${ideScrollY}px)`;

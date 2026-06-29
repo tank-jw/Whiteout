@@ -407,8 +407,10 @@ header {
 }
 
 .half-dark-ide {
-  background: #0f172a;
-  border-right: 1px solid #1e293b;
+  background: #1e1e1e; /* VS Code dark theme background */
+  border-right: 1px solid #2d2d2d;
+  justify-content: flex-start; /* Aligns content from the top to prevent scroll drift */
+  padding-top: 1rem;
 }
 
 .ide-code-scroll {
@@ -420,16 +422,29 @@ header {
 
 .ide-code-line {
   height: 6px;
-  background: rgba(255, 255, 255, 0.1);
   margin-bottom: 0.5rem;
-  border-radius: 2px;
-  width: 0;
+  width: 100%;
   opacity: 0;
-  transition: width 0.4s ease-out, opacity 0.4s ease-out;
+  display: flex;
+  align-items: center;
+  transition: opacity 0.4s ease-out;
 }
-.ide-code-line.w-60 { background: rgba(56, 189, 248, 0.2); }
-.ide-code-line.w-80 { background: rgba(16, 185, 129, 0.2); }
-.ide-code-line.w-40 { background: rgba(245, 158, 11, 0.2); }
+
+/* VS Code Token Highlights */
+.code-token {
+  display: inline-block;
+  height: 6px;
+  border-radius: 2px;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+.token-keyword { background: #569cd6; } /* Blue */
+.token-variable { background: #9cdcfe; } /* Light Blue */
+.token-operator { background: #d4d4d4; } /* White/Gray */
+.token-value { background: #ce9178; } /* Orange/Red */
+.token-type { background: #4ec9b0; } /* Teal */
+.token-comment { background: #6a9955; } /* Green */
+.token-yellow { background: #dcdcaa; } /* Yellow */
 
 .half-light-browser {
   transition: var(--transition-smooth);
