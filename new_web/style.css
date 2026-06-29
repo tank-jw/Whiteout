@@ -473,6 +473,9 @@ header {
   width: 100%;
   overflow: hidden;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center the text vertically */
 }
 
 .browser-content-mock {
@@ -491,8 +494,8 @@ header {
 
 @keyframes browserScroll {
   0%, 45.8% { transform: translateY(0); }
-  66.6%, 75% { transform: translateY(-38px); }
-  91.6%, 100% { transform: translateY(0); }
+  66.6%, 95% { transform: translateY(-35px); } /* Scrolls down (text moves up) */
+  98%, 100% { transform: translateY(0); } /* Snaps back to start instantly */
 }
 
 /* OFF State: Blinding white screen with flashbang glare */
