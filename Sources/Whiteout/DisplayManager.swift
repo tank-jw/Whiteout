@@ -15,67 +15,6 @@ private typealias GammaTable = (red: [CGGammaValue], green: [CGGammaValue], blue
 ///   - Applies to ALL active displays (multi-monitor support)
 ///   - Responds to display connect/disconnect at runtime
 ///   - The original gamma table is saved on init and restored on quit / reset
-struct DisplaySetting: Codable, Identifiable, Equatable {
-    var id: String { String(displayID) }
-    let displayID: CGDirectDisplayID
-    let name: String
-    var reduction: Double
-    var curveExponent: Double
-    var isEnabled: Bool
-}
-
-struct AppRule: Codable, Identifiable, Equatable {
-    var id: String { bundleIdentifier }
-    let bundleIdentifier: String
-    let appName: String
-    var reduction: Double
-    var curveExponent: Double
-    var isEnabled: Bool
-}
-
-struct TimeRule: Codable, Identifiable, Equatable {
-    var id = UUID()
-    var startHour: Int
-    var startMinute: Int
-    var endHour: Int
-    var endMinute: Int
-    var reduction: Double
-    var isEnabled: Bool
-
-    // Computed properties for SwiftUI DatePicker binding mapping
-    var startDate: Date {
-        get {
-            let calendar = Calendar.current
-            var components = calendar.dateComponents([.year, .month, .day], from: Date())
-            components.hour = startHour
-            components.minute = startMinute
-            return calendar.date(from: components) ?? Date()
-        }
-        set {
-            let calendar = Calendar.current
-            let components = calendar.dateComponents([.hour, .minute], from: newValue)
-            startHour = components.hour ?? 0
-            startMinute = components.minute ?? 0
-        }
-    }
-
-    var endDate: Date {
-        get {
-            let calendar = Calendar.current
-            var components = calendar.dateComponents([.year, .month, .day], from: Date())
-            components.hour = endHour
-            components.minute = endMinute
-            return calendar.date(from: components) ?? Date()
-        }
-        set {
-            let calendar = Calendar.current
-            let components = calendar.dateComponents([.hour, .minute], from: newValue)
-            endHour = components.hour ?? 0
-            endMinute = components.minute ?? 0
-        }
-    }
-}
-
 class DisplayManager: ObservableObject {
 
     // MARK: - Published State
@@ -161,10 +100,16 @@ class DisplayManager: ObservableObject {
             if let data = try? JSONEncoder().encode(appRules) {
                 UserDefaults.standard.set(data, forKey: Keys.appRules)
             }
+            // Update cached active app rule if current application matches
+            updateActiveAppRuleCachedPointer()
         }
     }
 
-    @Published var activeRuleAppName: String? = nil
+    @Published var activeRuleAppName: String? = nil {
+        didSet {
+            updateActiveAppRuleCachedPointer()
+        }
+    }
 
     @Published var timeRules: [TimeRule] = [] {
         didSet {
@@ -175,7 +120,15 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    @Published var activeTimeRuleId: UUID? = nil
+    @Published var activeTimeRuleId: UUID? = nil {
+        didSet {
+            updateActiveTimeRuleCachedPointer()
+        }
+    }
+
+    // MARK: - Cached Rule Pointers (O(1) Access)
+    private var activeAppRule: AppRule? = nil
+    private var activeTimeRule: TimeRule? = nil
 
     // MARK: - Private / App-tracking properties
 
@@ -247,6 +200,9 @@ class DisplayManager: ObservableObject {
         self.appRules          = loadedAppRules
         self.timeRules         = loadedTimeRules
 
+        updateActiveAppRuleCachedPointer()
+        updateActiveTimeRuleCachedPointer()
+
         saveOriginalTables()
         syncLaunchAtLogin()
 
@@ -301,9 +257,7 @@ class DisplayManager: ObservableObject {
         // Evaluate time rules periodically
         evaluateTimeRules()
         timeRuleTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
-            DispatchQueue.main.async {
-                self?.evaluateTimeRules()
-            }
+            self?.evaluateTimeRules()
         }
     }
 
@@ -316,11 +270,8 @@ class DisplayManager: ObservableObject {
 
     /// Apply the current `reduction` value to active displays.
     func applyReduction() {
-        let currentAppName = activeRuleAppName
-        let currentActiveAppRule = currentAppName.flatMap { name in appRules.first(where: { $0.appName == name }) }
-
-        let currentActiveTimeRuleId = activeTimeRuleId
-        let currentActiveTimeRule = currentActiveTimeRuleId.flatMap { id in timeRules.first(where: { $0.id == id }) }
+        let currentActiveAppRule = activeAppRule
+        let currentActiveTimeRule = activeTimeRule
 
         for (displayID, tables) in originalTables {
             let targetReduction: Double
@@ -635,7 +586,7 @@ class DisplayManager: ObservableObject {
         return ids
     }
 
-    /// 모든 활성 디스플레이의 원본 감마 테이블 저장
+    /// 모든 활성 디스플레이의 원본 감마 테이블 저장 (왜곡 방지 가드 포함)
     private func saveOriginalTables() {
         for displayID in activeDisplayIDs() {
             var r = [CGGammaValue](repeating: 0, count: tableSize)
@@ -643,7 +594,13 @@ class DisplayManager: ObservableObject {
             var b = [CGGammaValue](repeating: 0, count: tableSize)
             var count: UInt32 = 0
             CGGetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b, &count)
-            originalTables[displayID] = (red: r, green: g, blue: b)
+
+            if isTableDistorted(red: r, green: g, blue: b) {
+                print("⚠️ Warning: Display \(displayID) gamma is already distorted. Initializing with Linear Table.")
+                originalTables[displayID] = generateLinearTable()
+            } else {
+                originalTables[displayID] = (red: r, green: g, blue: b)
+            }
         }
     }
 
@@ -670,7 +627,13 @@ class DisplayManager: ObservableObject {
             var b = [CGGammaValue](repeating: 0, count: tableSize)
             var count: UInt32 = 0
             CGGetDisplayTransferByTable(id, UInt32(tableSize), &r, &g, &b, &count)
-            originalTables[id] = (red: r, green: g, blue: b)
+
+            if isTableDistorted(red: r, green: g, blue: b) {
+                print("⚠️ Warning: Newly connected Display \(id) gamma is distorted. Initializing with Linear Table.")
+                originalTables[id] = generateLinearTable()
+            } else {
+                originalTables[id] = (red: r, green: g, blue: b)
+            }
 
             let key = String(id)
             if displaySettings[key] == nil {
@@ -705,5 +668,46 @@ class DisplayManager: ObservableObject {
                 }
             }
         }
+    }
+
+    // MARK: - Private Refactoring Helpers
+
+    private func updateActiveAppRuleCachedPointer() {
+        if let activeAppName = activeRuleAppName {
+            activeAppRule = appRules.first(where: { $0.appName == activeAppName })
+        } else {
+            activeAppRule = nil
+        }
+    }
+
+    private func updateActiveTimeRuleCachedPointer() {
+        if let activeTimeId = activeTimeRuleId {
+            activeTimeRule = timeRules.first(where: { $0.id == activeTimeId })
+        } else {
+            activeTimeRule = nil
+        }
+    }
+
+    private func isTableDistorted(red: [CGGammaValue], green: [CGGammaValue], blue: [CGGammaValue]) -> Bool {
+        guard red.count == tableSize, green.count == tableSize, blue.count == tableSize else { return true }
+        let rLast = red[tableSize - 1]
+        let gLast = green[tableSize - 1]
+        let bLast = blue[tableSize - 1]
+        
+        // 마지막 화이트포인트 값이 0.9 미만으로 감소되어 있으면 이미 조절된 왜곡 상태로 판단
+        return rLast < 0.9 || gLast < 0.9 || bLast < 0.9
+    }
+
+    private func generateLinearTable() -> GammaTable {
+        var r = [CGGammaValue](repeating: 0, count: tableSize)
+        var g = [CGGammaValue](repeating: 0, count: tableSize)
+        var b = [CGGammaValue](repeating: 0, count: tableSize)
+        for i in 0..<tableSize {
+            let val = CGGammaValue(i) / CGGammaValue(tableSize - 1)
+            r[i] = val
+            g[i] = val
+            b[i] = val
+        }
+        return (red: r, green: g, blue: b)
     }
 }

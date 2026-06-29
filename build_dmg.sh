@@ -43,13 +43,8 @@ mkdir -p "${APP_DIR}/Contents/Resources"
 cp "${BUILD_DIR}/${APP_NAME}" "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 chmod +x "${APP_DIR}/Contents/MacOS/${APP_NAME}"
 
-# 아이콘 자원 복사
-if [ -f "assets/AppIcon.icns" ]; then
-  echo "🎨 AppIcon.icns 복사 중..."
-  cp assets/AppIcon.icns "${APP_DIR}/Contents/Resources/AppIcon.icns"
-else
-  echo "⚠️ 경고: assets/AppIcon.icns 파일이 없습니다! 아이콘 없이 빌드됩니다."
-fi
+# 앱 아이콘 리소스 복사
+cp assets/AppIcon.icns "${APP_DIR}/Contents/Resources/AppIcon.icns"
 
 echo "📝 Info.plist 생성 중..."
 cat > "${APP_DIR}/Contents/Info.plist" << EOF
@@ -58,6 +53,8 @@ cat > "${APP_DIR}/Contents/Info.plist" << EOF
   "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon.icns</string>
   <key>CFBundleExecutable</key>
   <string>${APP_NAME}</string>
   <key>CFBundleIdentifier</key>
