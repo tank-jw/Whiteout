@@ -1,13 +1,45 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- SEO Meta Tags -->
-    <title>WhiteOut - GPU 가속 기반 과학적 눈 보호 솔루션</title>
-    <meta name="description" content="단순 밝기 조절이 아닙니다. 대비 감도를 100% 보존하면서 눈의 동공 조절 피로를 해소하고 트루 블랙을 지키는 과학적인 화이트포인트 관리 유틸리티, WhiteOut.">
-    <meta name="keywords" content="화이트포인트, 눈 피로, 안구 피로, 맥북 눈 보호, 맥 밝기 조절, 대비 감도, 모양체근 피로, 동공괄약근">
+    <!-- Dynamic Language Detection & Meta Setup -->
+    <script>
+        (function() {
+            const userLang = navigator.language || navigator.userLanguage || '';
+            const isKorean = userLang.startsWith('ko');
+            if (isKorean) {
+                document.documentElement.classList.add('lang-korean');
+                document.documentElement.lang = 'ko';
+                document.title = "WhiteOut - GPU 가속 기반 과학적 눈 보호 솔루션";
+            } else {
+                document.documentElement.lang = 'en';
+                document.title = "WhiteOut - Scientific Eye Protection via GPU Hardware Acceleration";
+            }
+            
+            window.addEventListener('DOMContentLoaded', () => {
+                const metaDesc = document.querySelector('meta[name="description"]');
+                const metaKeywords = document.querySelector('meta[name="keywords"]');
+                if (metaDesc) {
+                    metaDesc.setAttribute('content', isKorean 
+                        ? "단순 밝기 조절이 아닙니다. 대비 감도를 100% 보존하면서 눈의 동공 조절 피로를 해소하고 트루 블랙을 지키는 과학적인 화이트포인트 관리 유틸리티, WhiteOut."
+                        : "Don't ruin your premium MacBook screen with cheap overlay filters. WhiteOut controls the photon energy of the white point directly at the GPU hardware level. Preserve absolute contrast and true blacks while eliminating digital eye strain."
+                    );
+                }
+                if (metaKeywords) {
+                    metaKeywords.setAttribute('content', isKorean
+                        ? "화이트포인트, 눈 피로, 안구 피로, 맥북 눈 보호, 맥 밝기 조절, 대비 감도, 모양체근 피로, 동공괄약근"
+                        : "white point, eye strain, macbook eye comfort, mac brightness control, contrast sensitivity, ciliary muscle, pupillary sphincter"
+                    );
+                }
+            });
+        })();
+    </script>
+    
+    <!-- SEO Meta Tags (updated dynamically above, fallbacks defined here) -->
+    <meta name="description" content="Don't ruin your premium MacBook screen with cheap overlay filters. WhiteOut controls the photon energy of the white point directly at the GPU hardware level. Preserve absolute contrast and true blacks while eliminating digital eye strain.">
+    <meta name="keywords" content="white point, eye strain, macbook eye comfort, mac brightness control, contrast sensitivity, ciliary muscle, pupillary sphincter">
     
     <!-- Unique ID for testing -->
     <meta name="app-id" content="whiteout-health-landing-page">
@@ -32,12 +64,35 @@
                 WhiteOut
             </a>
             <ul class="nav-links">
-                <li><a href="#science">의학적 근거</a></li>
-                <li><a href="#contrast">대비 보존 기술</a></li>
-                <li><a href="#compare">비교 분석</a></li>
-                <li><a href="#download">다운로드</a></li>
+                <li>
+                    <a href="#science">
+                        <span class="lang-en">Science</span>
+                        <span class="lang-ko">의학적 근거</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#contrast">
+                        <span class="lang-en">Technology</span>
+                        <span class="lang-ko">대비 보존 기술</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#compare">
+                        <span class="lang-en">Comparison</span>
+                        <span class="lang-ko">비교 분석</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#download">
+                        <span class="lang-en">Download</span>
+                        <span class="lang-ko">다운로드</span>
+                    </a>
+                </li>
             </ul>
-            <a href="#download" class="nav-cta">무료 체험하기</a>
+            <a href="#download" class="nav-cta">
+                <span class="lang-en">Try Free</span>
+                <span class="lang-ko">무료 체험하기</span>
+            </a>
         </div>
     </header>
 
@@ -47,24 +102,27 @@
             <div class="hero-content">
                 <div class="badge">
                     <div class="badge-dot"></div>
-                    안구 생리학 기반의 디스플레이 해킹
+                    <span class="lang-en">Ocular Physiology-Based Display Hack</span>
+                    <span class="lang-ko">안구 생리학 기반의 디스플레이 해킹</span>
                 </div>
                 <h1 class="hero-title">
-                    밝기만 낮추는 것은<br>
-                    <span class="highlight-tech">해결책이 아닙니다.</span><br>
-                    <span class="highlight-health">눈의 근육을 쉬게 하세요.</span>
+                    <span class="lang-en">Simply dimming your screen is not the cure.<br><span class="highlight-health">Give your eye muscles a break.</span></span>
+                    <span class="lang-ko">밝기만 낮추는 것은<br><span class="highlight-tech">해결책이 아닙니다.</span><br><span class="highlight-health">눈의 근육을 쉬게 하세요.</span></span>
                 </h1>
                 <p class="hero-desc">
-                    수백만 원짜리 맥북의 선명한 디스플레이 화질을 소프트웨어 레이어 필터로 망치지 마세요. 
-                    WhiteOut은 GPU 하드웨어 레벨에서 화이트포인트의 광자 에너지만을 비선형으로 제어하여, 
-                    <strong>완벽한 명암비와 리얼 블랙을 보존</strong>하면서 안구의 조절 스트레스를 예방합니다.
+                    <span class="lang-en">Don't ruin your premium MacBook screen with cheap overlay filters. WhiteOut controls the photon energy of the white point directly at the GPU hardware level. Preserve absolute contrast and true blacks while eliminating digital eye strain.</span>
+                    <span class="lang-ko">수백만 원짜리 맥북의 선명한 디스플레이 화질을 소프트웨어 레이어 필터로 망치지 마세요. WhiteOut은 GPU 하드웨어 레벨에서 화이트포인트의 광자 에너지만을 비선형으로 제어하여, <strong>완벽한 명암비와 리얼 블랙을 보존</strong>하면서 안구의 조절 스트레스를 예방합니다.</span>
                 </p>
                 <div class="hero-ctas">
                     <a href="#download" class="btn btn-primary">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        WhiteOut 다운로드 (macOS)
+                        <span class="lang-en">Download WhiteOut (macOS)</span>
+                        <span class="lang-ko">WhiteOut 다운로드 (macOS)</span>
                     </a>
-                    <a href="#science" class="btn btn-secondary">과학적 원리 보기</a>
+                    <a href="#science" class="btn btn-secondary">
+                        <span class="lang-en">Explore the Science</span>
+                        <span class="lang-ko">과학적 원리 보기</span>
+                    </a>
                 </div>
             </div>
             
@@ -139,7 +197,10 @@
                             </div>
                             <div class="laptop-base"></div>
                         </div>
-                        <span class="slider-label label-before">WhiteOut OFF (순정 화면 - 눈부심 최대)</span>
+                        <span class="slider-label label-before">
+                            <span class="lang-en">WhiteOut OFF (Blinding glare)</span>
+                            <span class="lang-ko">WhiteOut OFF (순정 화면 - 눈부심 최대)</span>
+                        </span>
                     </div>
                 </div>
                 
@@ -174,7 +235,8 @@
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" xmlns="http://www.w3.org/2000/svg">
                                             <polyline points="20 6 9 17 4 12"/>
                                         </svg>
-                                        눈 보호 작동중
+                                        <span class="lang-en">Protection Active</span>
+                                        <span class="lang-ko">눈 보호 작동중</span>
                                     </div>
                                     <div class="browser-scroll-container">
                                         <div class="browser-content-mock">
@@ -202,7 +264,10 @@
                             </div>
                             <div class="laptop-base"></div>
                         </div>
-                        <span class="slider-label label-after">WhiteOut ON (화이트포인트 감소 - 눈 편안함)</span>
+                        <span class="slider-label label-after">
+                            <span class="lang-en">WhiteOut ON (Dimmed comfort)</span>
+                            <span class="lang-ko">WhiteOut ON (화이트포인트 감소 - 눈 편안함)</span>
+                        </span>
                     </div>
                 </div>
                 
@@ -223,9 +288,13 @@
         <div class="container">
             <div class="section-header">
                 <div class="badge" style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.3); color: #ef4444">The Empathy Gap</div>
-                <h2 class="section-title">다크 모드를 켰는데도<br>피할 수 없는 '눈뽕'의 순간들</h2>
+                <h2 class="section-title">
+                    <span class="lang-en">Unavoidable Blinding Moments<br>Even in Dark Mode</span>
+                    <span class="lang-ko">다크 모드를 켰는데도<br>피할 수 없는 '눈뽕'의 순간들</span>
+                </h2>
                 <p class="section-subtitle">
-                    맥북과 주요 개발 툴은 어둡게 설정했지만, 작업 중 불쑥 마주치는 새하얀 화면 테러에 고통받은 경험이 있으신가요?
+                    <span class="lang-en">You configured your macOS and IDE to dark mode, but what happens when you hit a white wall of pixels in your night shift?</span>
+                    <span class="lang-ko">맥북과 주요 개발 툴은 어둡게 설정했지만, 작업 중 불쑥 마주치는 새하얀 화면 테러에 고통받은 경험이 있으신가요?</span>
                 </p>
             </div>
             
@@ -246,9 +315,13 @@
                             <path d="M140,60 L145,50 L155,47 L145,44 L140,34 L135,44 L125,47 L135,50 Z" fill="#f59e0b" class="flashbang-anim"/>
                         </svg>
                     </div>
-                    <h3 class="pain-card-title">1. 구글링 / 레퍼런스 문서 습격</h3>
+                    <h3 class="pain-card-title">
+                        <span class="lang-en">1. The Flashbang of Reference Docs</span>
+                        <span class="lang-ko">1. 구글링 / 레퍼런스 문서 습격</span>
+                    </h3>
                     <p class="pain-card-desc">
-                        개발 툴은 다크 모드로 설정하여 편안하게 코딩하고 있었는데, 코드 에러 해결을 위해 구글링을 하거나 라이브러리 공식 Docs, 위키피디아 등을 여는 순간 **밤하늘의 섬광탄처럼 눈을 강타하는 흰색 화면**을 마주합니다.
+                        <span class="lang-en">You're coding comfortably in dark mode, but the second you open Google, official docs, or Wikipedia, a blinding white screen hits your eyes like a flashbang in the dark.</span>
+                        <span class="lang-ko">개발 툴은 다크 모드로 설정하여 편안하게 코딩하고 있었는데, 코드 에러 해결을 위해 구글링을 하거나 라이브러리 공식 Docs, 위키피디아 등을 여는 순간 밤하늘의 섬광탄처럼 눈을 강타하는 흰색 화면을 마주합니다.</span>
                     </p>
                 </div>
                 
@@ -273,9 +346,13 @@
                             </defs>
                         </svg>
                     </div>
-                    <h3 class="pain-card-title">2. 다크 모드가 없는 웹 앱 / 대시보드</h3>
+                    <h3 class="pain-card-title">
+                        <span class="lang-en">2. No-Dark-Mode Dashboards</span>
+                        <span class="lang-ko">2. 다크 모드가 없는 웹 앱 / 대시보드</span>
+                    </h3>
                     <p class="pain-card-desc">
-                        사내 인프라 모니터링 대시보드, 스프레드시트(Excel), 혹은 Notion 페이지 등 **기본적으로 밝은 백색 바탕만 제공하는 생산성 툴**을 야간에 장시간 사용해야 할 때 눈의 피로는 걷잡을 수 없이 증폭됩니다.
+                        <span class="lang-en">Working late on internal analytics, spreadsheets, or dashboards that only offer high-contrast light modes? Your eye strain multiplies exponentially.</span>
+                        <span class="lang-ko">사내 인프라 모니터링 대시보드, 스프레드시트(Excel), 혹은 Notion 페이지 등 기본적으로 밝은 백색 바탕만 제공하는 생산성 툴을 야간에 장시간 사용해야 할 때 눈의 피로는 걷잡을 수 없이 증폭됩니다.</span>
                     </p>
                 </div>
                 
@@ -297,9 +374,13 @@
                             </defs>
                         </svg>
                     </div>
-                    <h3 class="pain-card-title">3. 듀얼 모니터 시선 전환의 피로</h3>
+                    <h3 class="pain-card-title">
+                        <span class="lang-en">3. Dual-Monitor Focus Shift</span>
+                        <span class="lang-ko">3. 듀얼 모니터 시선 전환의 피로</span>
+                    </h3>
                     <p class="pain-card-desc">
-                        한쪽 모니터에는 어두운 테마의 코드를 띄우고, 다른 쪽 모니터에는 흰 배경의 기획서나 PDF를 띄워두었을 때, **양쪽을 번갈아 볼 때마다 동공 조절근이 급격히 수축과 이완을 반복**하여 실시간으로 무리를 줍니다.
+                        <span class="lang-en">Looking back and forth between a dark IDE on one screen and a bright PDF on the other forces your pupils to rapidly constrict and dilate, causing cumulative visual fatigue.</span>
+                        <span class="lang-ko">한쪽 모니터에는 어두운 테마의 코드를 띄우고, 다른 쪽 모니터에는 흰 배경의 기획서나 PDF를 띄워두었을 때, 양쪽을 번갈아 볼 때마다 동공 조절근이 급격히 수축과 이완을 반복하여 실시간으로 무리를 줍니다.</span>
                     </p>
                 </div>
             </div>
@@ -310,10 +391,13 @@
     <section id="science">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">눈의 피로를 유발하는 안구 해부학적 원인</h2>
+                <h2 class="section-title">
+                    <span class="lang-en">Ocular Anatomy Behind Eye Strain</span>
+                    <span class="lang-ko">눈의 피로를 유발하는 안구 해부학적 원인</span>
+                </h2>
                 <p class="section-subtitle">
-                    모니터를 오래 볼 때 눈이 침침하고 머리가 아픈 것은 생리학적 원인이 존재하기 때문입니다. 
-                    화이트아웃은 증상을 가리는 것이 아니라 원인을 예방합니다.
+                    <span class="lang-en">Long hours in front of screens cause headaches and blurred vision due to physical fatigue of pupillary and ciliary muscles. WhiteOut targets the root physiological causes.</span>
+                    <span class="lang-ko">모니터를 오래 볼 때 눈이 침침하고 머리가 아픈 것은 생리학적 원인이 존재하기 때문입니다. 화이트아웃은 증상을 가리는 것이 아니라 원인을 예방합니다.</span>
                 </p>
             </div>
             
@@ -328,16 +412,19 @@
                             <path d="M12 2v2M12 20v2M2 12h2M20 12h2M5.6 5.6l1.4 1.4M17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4"/>
                         </svg>
                     </div>
-                    <h3 class="card-title">동공괄약근 긴장 완화</h3>
+                    <h3 class="card-title">
+                        <span class="lang-en">Pupillary Muscle Relief</span>
+                        <span class="lang-ko">동공괄약근 긴장 완화</span>
+                    </h3>
                     <p class="card-desc">
-                        어두운 환경에서 디스플레이의 강렬한 흰색광(화이트포인트)을 마주하면, 
-                        망막을 보호하기 위해 홍채 내부의 <strong>동공괄약근(Pupillary Sphincter Muscle)</strong>이 쉬지 않고 수축합니다. 
-                        이 근육의 장시간 긴장은 안구 통증뿐만 아니라 편두통의 주원인이 됩니다.
+                        <span class="lang-en">In the dark, bright white screens force your pupillary sphincter muscles to constrict constantly to protect the retina. This continuous tension is a primary trigger for eye strain and screen-induced migraines.</span>
+                        <span class="lang-ko">어두운 환경에서 디스플레이의 강렬한 흰색광(화이트포인트)을 마주하면, 망막을 보호하기 위해 홍채 내부의 동공괄약근(Pupillary Sphincter Muscle)이 쉬지 않고 수축합니다. 이 근육의 장시간 긴장은 안구 통증뿐만 아니라 편두통의 주원인이 됩니다.</span>
                     </p>
                     <div class="card-evidence">
                         <span class="evidence-label">Mechanism</span>
                         <p class="evidence-text">
-                            피크 화이트(Peak White)의 광자 에너지만 타겟팅 압축하여 동공 조절근의 반사적 수축 스트레스를 원천 예방합니다.
+                            <span class="lang-en">Compresses the absolute photon energy of peak white to prevent pupillary muscle overexertion.</span>
+                            <span class="lang-ko">피크 화이트(Peak White)의 광자 에너지만 타겟팅 압축하여 동공 조절근의 반사적 수축 스트레스를 원천 예방합니다.</span>
                         </p>
                     </div>
                 </div>
@@ -352,16 +439,19 @@
                             <path d="M12 2v20"/>
                         </svg>
                     </div>
-                    <h3 class="card-title">모양체근 조절 피로 차단</h3>
+                    <h3 class="card-title">
+                        <span class="lang-en">Ciliary Muscle Fatigue Prevention</span>
+                        <span class="lang-ko">모양체근 조절 피로 차단</span>
+                    </h3>
                     <p class="card-desc">
-                        시중의 소프트웨어 디머(Dimmer) 앱들은 화면 위에 반투명한 검은색 레이어를 띄웁니다. 
-                        이로 인해 블랙이 흐려지고 글자 명암비(Contrast)가 망가지면, 우리 눈의 <strong>모양체근(Ciliary Muscle)</strong>은 
-                        글자 초점을 맞추기 위해 무리하게 수정을 반복하여 극심한 초점 피로에 시달립니다.
+                        <span class="lang-en">Standard software dimmers draw a semi-transparent black overlay, washing out blacks and ruining contrast. This forces your ciliary muscles to constantly work to focus on blurry text. WhiteOut preserves 100% of contrast, allowing effortless reading.</span>
+                        <span class="lang-ko">시중의 소프트웨어 디머(Dimmer) 앱들은 화면 위에 반투명한 검은색 레이어를 띄웁니다. 이로 인해 블랙이 흐려지고 글자 명암비(Contrast)가 망가지면, 우리 눈의 모양체근(Ciliary Muscle)은 글자 초점을 맞추기 위해 무리하게 수정을 반복하여 극심한 초점 피로에 시달립니다.</span>
                     </p>
                     <div class="card-evidence">
                         <span class="evidence-label">Weber Contrast</span>
                         <p class="evidence-text">
-                            화질 명암비 손실을 0%로 완벽 보존하여 시각 처리 피질이 추가적인 조절 노력 없이도 글자를 또렷하게 인지하게 돕습니다.
+                            <span class="lang-en">Maintains absolute native contrast so the visual cortex processes characters instantly without strain.</span>
+                            <span class="lang-ko">화질 명암비 손실을 0%로 완벽 보존하여 시각 처리 피질이 추가적인 조절 노력 없이도 글자를 또렷하게 인지하게 돕습니다.</span>
                         </p>
                     </div>
                 </div>
@@ -375,16 +465,19 @@
                             <path d="M19 3v4M21 5h-4" stroke-width="1.5"/>
                         </svg>
                     </div>
-                    <h3 class="card-title">생체 생리 리듬 및 수면 보호</h3>
+                    <h3 class="card-title">
+                        <span class="lang-en">Circadian Rhythm Preservation</span>
+                        <span class="lang-ko">생체 생리 리듬 및 수면 보호</span>
+                    </h3>
                     <p class="card-desc">
-                        인공적인 고에너지 백색광 파장은 망막의 감각 신경 세포를 자극하여 밤을 낮으로 인식하게 만듭니다. 
-                        이는 수면을 유도하는 천연 호르몬인 멜라토닌(Melatonin) 분비를 억제하여 
-                        수면 주기를 교란시키고 야간 생체 리듬을 완전히 파괴합니다.
+                        <span class="lang-en">Intense artificial white point light suppresses melatonin secretion, tricking your brain into thinking it's daylight. Our hardware-level control reduces the absolute photon energy of white light, helping you fall asleep naturally after late-night work.</span>
+                        <span class="lang-ko">인공적인 고에너지 백색광 파장은 망막의 감각 신경 세포를 자극하여 밤을 낮으로 인식하게 만듭니다. 이는 수면을 유도하는 천연 호르몬인 멜라토닌(Melatonin) 분비를 억제하여 수면 주기를 교란시키고 야간 생체 리듬을 완전히 파괴합니다.</span>
                     </p>
                     <div class="card-evidence">
                         <span class="evidence-label">Biological Clock</span>
                         <p class="evidence-text">
-                            GPU 레벨의 하드웨어 감마 제어로 망막에 닿는 백색광 자극의 절대 에너지를 감소시켜 밤샘 작업 후에도 빠르고 깊은 수면을 유도합니다.
+                            <span class="lang-en">Reduces retinal white-point photon exposure via hardware gamma tables, maintaining a natural melatonin onset.</span>
+                            <span class="lang-ko">GPU 레벨의 하드웨어 감마 제어로 망막에 닿는 백색광 자극의 절대 에너지를 감소시켜 밤샘 작업 후에도 빠르고 깊은 수면을 유도합니다.</span>
                         </p>
                     </div>
                 </div>
@@ -402,40 +495,53 @@
                         <span style="border-top:1px solid currentColor; padding-top:2px">L<sub>b</sub></span>
                     </span>
                 </div>
-                <h4 style="font-size:1.15rem; margin-bottom:0.75rem; text-align:center;">웨버 대비 공식 (Weber Contrast Formula)</h4>
+                <h4 style="font-size:1.15rem; margin-bottom:0.75rem; text-align:center;">
+                    <span class="lang-en">Weber Contrast Formula</span>
+                    <span class="lang-ko">웨버 대비 공식 (Weber Contrast Formula)</span>
+                </h4>
                 <p class="math-desc">
-                    텍스트의 인지 성능을 좌우하는 것은 배경 휘도(\(L_b\))와 텍스트 휘도(\(L_t\))의 비율 차이인 **Weber Contrast**입니다. 
-                    기존 오버레이 앱은 \(L_b\)와 \(L_t\)를 불균등하게 뭉개 검은색 영역까지 밝은 회색으로 밀어 올려 대비값을 붕괴시킵니다. 
-                    화이트아웃은 비선형 감마 보정 곡선 알고리즘을 사용해 대비 지수(\(W\))의 완벽한 100% 유지를 지향합니다.
+                    <span class="lang-en">Text legibility is governed by <strong>Weber Contrast</strong>—the proportional ratio between background luminance (<i>L</i><sub>b</sub>) and text luminance (<i>L</i><sub>t</sub>). Common overlay apps muddy both <i>L</i><sub>b</sub> and <i>L</i><sub>t</sub> unequally, elevating black to gray and destroying contrast. WhiteOut maintains the absolute contrast ratio (<i>W</i>) by utilizing a hardware-based non-linear gamma curve.</span>
+                    <span class="lang-ko">텍스트의 인지 성능을 좌우하는 것은 배경 휘도(<i>L</i><sub>b</sub>)와 텍스트 휘도(<i>L</i><sub>t</sub>)의 비율 차이인 <strong>Weber Contrast</strong>입니다. 기존 오버레이 앱은 <i>L</i><sub>b</sub>와 <i>L</i><sub>t</sub>를 불균등하게 뭉개 검은색 영역까지 밝은 회색으로 밀어 올려 대비값을 붕괴시킵니다. 화이트아웃은 비선형 감마 보정 곡선 알고리즘을 사용해 대비 지수(<i>W</i>)의 완벽한 100% 유지를 지향합니다.</span>
                 </p>
             </div>
             
             <div class="tech-explanation">
                 <div class="badge">Technical Precision</div>
-                <h2 style="font-size:2.25rem; margin-bottom:1.5rem;">디스플레이 화질 보존을 위한 독보적인 GPU 감마 제어</h2>
+                <h2 style="font-size:2.25rem; margin-bottom:1.5rem;">
+                    <span class="lang-en">Uncompromising GPU Gamma Control for True Display Quality</span>
+                    <span class="lang-ko">디스플레이 화질 보존을 위한 독보적인 GPU 감마 제어</span>
+                </h2>
                 <p style="margin-bottom:1.5rem;">
-                    대부분의 눈 보호 앱들은 편의성을 위해 화면 위에 단순 회색 레이어를 얹는 방식으로 눈을 속입니다. 
-                    이러한 쉐도우 오버레이는 수백만 원 가치의 고성능 레티나 디스플레이의 트루 블랙(True Black) 표현력을 전부 휴지조각으로 만들어 버립니다.
+                    <span class="lang-en">Most eye protection utilities cheat by placing a translucent grey overlay over the screen. This shadow overlay completely destroys the contrast and turns the deep, rich blacks of your high-performance Retina display into washed-out gray.</span>
+                    <span class="lang-ko">대부분의 눈 보호 앱들은 편의성을 위해 화면 위에 단순 회색 레이어를 얹는 방식으로 눈을 속입니다. 이러한 쉐도우 오버레이는 수백만 원 가치의 고성능 레티나 디스플레이의 트루 블랙(True Black) 표현력을 전부 휴지조각으로 만들어 버립니다.</span>
                 </p>
                 <ul class="bullet-list">
                     <li class="bullet-item">
-                        <!-- Check Icon SVG -->
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143z" clip-rule="evenodd" />
                         </svg>
-                        <span><strong>하드웨어 레벨 감마 변조</strong>: 모니터 전원 및 GPU 출력 감마 테이블에 직접 명령을 내려 명암 손실 없이 고휘도 에너지 파장만 골라냅니다.</span>
+                        <span>
+                            <span class="lang-en"><strong>Hardware-Level Gamma Modulations</strong>: Direct registers changes on the GPU output lookup tables (LUTs) to suppress only high-energy peak whites without losing shadow detail.</span>
+                            <span class="lang-ko"><strong>하드웨어 레벨 감마 변조</strong>: 모니터 전원 및 GPU 출력 감마 테이블에 직접 명령을 내려 명암 손실 없이 고휘도 에너지 파장만 골라냅니다.</span>
+                        </span>
                     </li>
                     <li class="bullet-item">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143z" clip-rule="evenodd" />
                         </svg>
-                        <span><strong>비선형 커브 압축</strong>: 중간 명조 영역의 색 왜곡을 예방하기 위해 알고리즘에 기반한 완만한 비선형 커브 억제를 실행합니다.</span>
+                        <span>
+                            <span class="lang-en"><strong>Non-linear Compression Curves</strong>: Employs a non-linear algorithmic curve to avoid chromatic distortion in midtones.</span>
+                            <span class="lang-ko"><strong>비선형 커브 압축</strong>: 중간 명조 영역의 색 왜곡을 예방하기 위해 알고리즘에 기반한 완만한 비선형 커브 억제를 실행합니다.</span>
+                        </span>
                     </li>
                     <li class="bullet-item">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143z" clip-rule="evenodd" />
                         </svg>
-                        <span><strong>멀티 디스플레이 동기화</strong>: 듀얼, 트리플 모니터 사용 환경에서도 시선이 이동할 때 발생하는 동공의 급격한 재적응 충격을 방지하기 위해 연결된 모든 디스플레이의 값을 정밀하게 동기화합니다.</span>
+                        <span>
+                            <span class="lang-en"><strong>Multi-Display Synchronization</strong>: Instantly synchronizes gamma changes across all connected external displays, preventing pupil constriction shocks when shifting focus.</span>
+                            <span class="lang-ko"><strong>멀티 디스플레이 동기화</strong>: 듀얼, 트리플 모니터 사용 환경에서도 시선이 이동할 때 발생하는 동공의 급격한 재적응 충격을 방지하기 위해 연결된 모든 디스플레이의 값을 정밀하게 동기화합니다.</span>
+                        </span>
                     </li>
                 </ul>
             </div>
@@ -446,50 +552,128 @@
     <section id="compare">
         <div class="container">
             <div class="section-header">
-                <h2 class="section-title">눈 건강 지표 및 기술적 비교</h2>
-                <p class="section-subtitle">시중의 일반 필터 앱과 WhiteOut의 의학적·성능적 차이를 직관적으로 확인하세요.</p>
+                <h2 class="section-title">
+                    <span class="lang-en">Clinical and Technical Comparison</span>
+                    <span class="lang-ko">눈 건강 지표 및 기술적 비교</span>
+                </h2>
+                <p class="section-subtitle">
+                    <span class="lang-en">See the medical and functional differences between cheap software overlays and WhiteOut's hardware control.</span>
+                    <span class="lang-ko">시중의 일반 필터 앱과 WhiteOut의 의학적·성능적 차이를 직관적으로 확인하세요.</span>
+                </p>
             </div>
             
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th>비교 지표</th>
-                            <th>일반 소프트웨어 오버레이 앱</th>
-                            <th class="col-featured">TrueBlack WhitePoint (화이트아웃)</th>
-                            <th>눈 건강에 미치는 생리학적 영향</th>
+                            <th>
+                                <span class="lang-en">Metric</span>
+                                <span class="lang-ko">비교 지표</span>
+                            </th>
+                            <th>
+                                <span class="lang-en">Software Overlay Apps</span>
+                                <span class="lang-ko">일반 소프트웨어 오버레이 앱</span>
+                            </th>
+                            <th class="col-featured">
+                                <span class="lang-en">TrueBlack WhitePoint (WhiteOut)</span>
+                                <span class="lang-ko">TrueBlack WhitePoint (화이트아웃)</span>
+                            </th>
+                            <th>
+                                <span class="lang-en">Physiological Impact</span>
+                                <span class="lang-ko">눈 건강에 미치는 생리학적 영향</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>문서 명암비 (Contrast)</strong></td>
-                            <td><span class="status-badge status-negative">심각한 손상 (회색조화)</span></td>
-                            <td class="col-featured"><span class="status-badge status-positive">100% 완벽 보존 (리얼 블랙)</span></td>
-                            <td>모양체근 초점 피로(조절 피로) 원천 방지</td>
+                            <td>
+                                <span class="lang-en"><strong>Document Contrast</strong></span>
+                                <span class="lang-ko"><strong>문서 명암비 (Contrast)</strong></span>
+                            </td>
+                            <td>
+                                <span class="lang-en"><span class="status-badge status-negative">Severe Degradation (Gray blacks)</span></span>
+                                <span class="lang-ko"><span class="status-badge status-negative">심각한 손상 (회색조화)</span></span>
+                            </td>
+                            <td class="col-featured">
+                                <span class="lang-en"><span class="status-badge status-positive">100% Perfect (True black)</span></span>
+                                <span class="lang-ko"><span class="status-badge status-positive">100% 완벽 보존 (리얼 블랙)</span></span>
+                            </td>
+                            <td>
+                                <span class="lang-en">Eliminates ciliary muscle over-focusing strain</span>
+                                <span class="lang-ko">모양체근 초점 피로(조절 피로) 원천 방지</span>
+                            </td>
                         </tr>
                         <tr>
-                            <td><strong>백색광 자극 (Glare Energy)</strong></td>
-                            <td>불균형하고 거친 임시 감소</td>
-                            <td class="col-featured"><span class="status-badge status-positive">곡선형 정밀 압축 (최대 30%)</span></td>
-                            <td>동공괄약근 긴장 완화 및 안구 통증 예방</td>
+                            <td>
+                                <span class="lang-en"><strong>Peak White Stimulation</strong></span>
+                                <span class="lang-ko"><strong>백색광 자극 (Glare Energy)</strong></span>
+                            </td>
+                            <td>
+                                <span class="lang-en">Uncontrolled crude dimming</span>
+                                <span class="lang-ko">불균형하고 거친 임시 감소</span>
+                            </td>
+                            <td class="col-featured">
+                                <span class="lang-en"><span class="status-badge status-positive">Non-linear hardware compression (Up to 30%)</span></span>
+                                <span class="lang-ko"><span class="status-badge status-positive">곡선형 정밀 압축 (최대 30%)</span></span>
+                            </td>
+                            <td>
+                                <span class="lang-en">Relieves pupillary sphincter spasms and migraines</span>
+                                <span class="lang-ko">동공괄약근 긴장 완화 및 안구 통증 예방</span>
+                            </td>
                         </tr>
                         <tr>
-                            <td><strong>멀티 모니터 대응</strong></td>
-                            <td>반응이 없거나 화면 일부 깜빡임 발생</td>
-                            <td class="col-featured"><span class="status-badge status-positive">모든 디스플레이 즉시 실시간 동기화</span></td>
-                            <td>시선 이동 시 동공의 급격한 피로 충격 차단</td>
+                            <td>
+                                <span class="lang-en"><strong>Multi-Monitor Sync</strong></span>
+                                <span class="lang-ko"><strong>멀티 모니터 대응</strong></span>
+                            </td>
+                            <td>
+                                <span class="lang-en">Unsupported or causes screen flickers</span>
+                                <span class="lang-ko">반응이 없거나 화면 일부 깜빡임 발생</span>
+                            </td>
+                            <td class="col-featured">
+                                <span class="lang-en"><span class="status-badge status-positive">Instant real-time multi-display sync</span></span>
+                                <span class="lang-ko"><span class="status-badge status-positive">모든 디스플레이 즉시 실시간 동기화</span></span>
+                            </td>
+                            <td>
+                                <span class="lang-en">Prevents rapid pupil dilation stress during focus shift</span>
+                                <span class="lang-ko">시선 이동 시 동공의 급격한 피로 충격 차단</span>
+                            </td>
                         </tr>
                         <tr>
-                            <td><strong>GPU 가속 & 리소스 점유</strong></td>
-                            <td>CPU 및 메모리 점유율 다소 높음</td>
-                            <td class="col-featured"><span class="status-badge status-positive">GPU 하드웨어 레벨 연산 (점유율 0%)</span></td>
-                            <td>맥북 발열 방지 및 부드러운 시스템 프레임 유지</td>
+                            <td>
+                                <span class="lang-en"><strong>GPU Acceleration & Overhead</strong></span>
+                                <span class="lang-ko"><strong>GPU 가속 & 리소스 점유</strong></span>
+                            </td>
+                            <td>
+                                <span class="lang-en">Noticeable CPU and RAM consumption</span>
+                                <span class="lang-ko">CPU 및 메모리 점유율 다소 높음</span>
+                            </td>
+                            <td class="col-featured">
+                                <span class="lang-en"><span class="status-badge status-positive">Hardware LUT modification (0% CPU/RAM)</span></span>
+                                <span class="lang-ko"><span class="status-badge status-positive">GPU 하드웨어 레벨 연산 (점유율 0%)</span></span>
+                            </td>
+                            <td>
+                                <span class="lang-en">No thermal throttling; smooth system-wide framerates</span>
+                                <span class="lang-ko">맥북 발열 방지 및 부드러운 시스템 프레임 유지</span>
+                            </td>
                         </tr>
                         <tr>
-                            <td><strong>멜라토닌 파괴 방지</strong></td>
-                            <td><span class="status-badge status-warning">효과가 부분적임</span></td>
-                            <td class="col-featured"><span class="status-badge status-positive">고밀도 광자 제어로 우수한 효과</span></td>
-                            <td>생체 생리 리듬 및 수면 주기 정상 수호</td>
+                            <td>
+                                <span class="lang-en"><strong>Melatonin Preservation</strong></span>
+                                <span class="lang-ko"><strong>멜라토닌 파괴 방지</strong></span>
+                            </td>
+                            <td>
+                                <span class="lang-en"><span class="status-badge status-warning">Marginal effect</span></span>
+                                <span class="lang-ko"><span class="status-badge status-warning">효과가 부분적임</span></span>
+                            </td>
+                            <td class="col-featured">
+                                <span class="lang-en"><span class="status-badge status-positive">Excellent due to high-energy photon reduction</span></span>
+                                <span class="lang-ko"><span class="status-badge status-positive">고밀도 광자 제어로 우수한 효과</span></span>
+                            </td>
+                            <td>
+                                <span class="lang-en">Maintains natural circadian rhythms and sleep cycles</span>
+                                <span class="lang-ko">생체 생리 리듬 및 수면 주기 정상 수호</span>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -501,26 +685,34 @@
     <section class="cta" id="download">
         <div class="container">
             <div class="cta-box">
-                <h2 class="cta-title">매일 마주하는 디스플레이, 당신의 안구 건강을 위한 바이오해킹</h2>
+                <h2 class="cta-title">
+                    <span class="lang-en">Your Screen is Your Environment.<br>Biohack Your Vision Today.</span>
+                    <span class="lang-ko">매일 마주하는 디스플레이,<br>당신의 안구 건강을 위한 바이오해킹</span>
+                </h2>
                 <p class="cta-desc">
-                    눈 건강 보조제를 섭취하는 것도 좋지만, 매일 8시간 넘게 눈을 혹사시키는 모니터의 유해 백색광을 직접 줄여주는 것이 가장 효과적인 눈 근육 해킹입니다. 
-                    지금 바로 다운로드하여 7일간의 편안함을 직접 경험해 보세요.
+                    <span class="lang-en">Taking visual supplements is only a patch. Relieving the absolute photon pressure that hit your eyes for 8+ hours a day is the ultimate display hack. Try WhiteOut free for 7 days—no credit card required.</span>
+                    <span class="lang-ko">눈 건강 보조제를 섭취하는 것도 좋지만, 매일 8시간 넘게 눈을 혹사시키는 모니터의 유해 백색광을 직접 줄여주는 것이 가장 효과적인 눈 근육 해킹입니다. 지금 바로 다운로드하여 7일간의 편안함을 직접 경험해 보세요.</span>
                 </p>
                 
                 <div class="price-card">
                     <span class="price-period">Lifetime License</span>
                     <span class="price-val">$2.99</span>
-                    <span class="price-badge">7일간 무료 체험 (카드 필요 없음)</span>
+                    <span class="price-badge">
+                        <span class="lang-en">7-day free trial (no card required)</span>
+                        <span class="lang-ko">7일간 무료 체험 (카드 필요 없음)</span>
+                    </span>
                 </div>
                 
                 <div style="margin-top: 1rem;">
                     <a href="https://github.com/tank-jw/Whiteout/releases/download/v1.0.0/WhiteOut.dmg" class="btn btn-primary" style="padding: 1.2rem 3rem; font-size:1.15rem;">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        WhiteOut 무료 다운로드 (macOS 12.0+)
+                        <span class="lang-en">Download WhiteOut for Mac (macOS 12.0+)</span>
+                        <span class="lang-ko">WhiteOut 무료 다운로드 (macOS 12.0+)</span>
                     </a>
                 </div>
                 <p style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--text-muted);">
-                    App Store의 엄격한 보안 심사를 통과하여 안심하고 설치하셔도 좋습니다.
+                    <span class="lang-en">Notarized by Apple. Passed Apple's Gatekeeper security check for safe installation.</span>
+                    <span class="lang-ko">Apple 공증 통과. macOS Gatekeeper의 보안 검사를 마쳐 안심하고 설치하셔도 좋습니다.</span>
                 </p>
             </div>
         </div>
@@ -531,8 +723,14 @@
         <div class="container footer-container">
             <p>&copy; 2026 WhiteOut App. All rights reserved. Designed for professional Mac developers and designers.</p>
             <p>
-                <a href="#science" style="margin-right:1rem;">의학적 근거</a>
-                <a href="#download">다운로드</a>
+                <a href="#science" style="margin-right:1rem;">
+                    <span class="lang-en">Science</span>
+                    <span class="lang-ko">의학적 근거</span>
+                </a>
+                <a href="#download">
+                    <span class="lang-en">Download</span>
+                    <span class="lang-ko">다운로드</span>
+                </a>
             </p>
         </div>
     </footer>

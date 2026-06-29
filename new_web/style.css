@@ -1352,3 +1352,24 @@ footer {
     display: none;
   }
 }
+
+/* Language Switch System */
+.lang-ko {
+  display: none !important;
+}
+.lang-en {
+  display: inline;
+}
+div.lang-en, p.lang-en, h1.lang-en, h2.lang-en, h3.lang-en, h4.lang-en, ul.lang-en, li.lang-en, section.lang-en {
+  display: block;
+}
+
+html.lang-korean .lang-en {
+  display: none !important;
+}
+html.lang-korean .lang-ko {
+  display: inline;
+}
+html.lang-korean div.lang-ko, html.lang-korean p.lang-ko, html.lang-korean h1.lang-ko, html.lang-korean h2.lang-ko, html.lang-korean h3.lang-ko, html.lang-korean h4.lang-ko, html.lang-korean ul.lang-ko, html.lang-korean li.lang-ko, html.lang-korean section.lang-ko {
+  display: block;
+}
