@@ -414,8 +414,7 @@ header {
 .ide-code-scroll {
   display: flex;
   flex-direction: column;
-  transition: transform 0.5s ease-in-out;
-  animation: ideScroll 12s infinite;
+  transition: transform 0.4s ease-in-out;
   width: 100%;
 }
 
@@ -426,42 +425,11 @@ header {
   border-radius: 2px;
   width: 0;
   opacity: 0;
+  transition: width 0.4s ease-out, opacity 0.4s ease-out;
 }
 .ide-code-line.w-60 { background: rgba(56, 189, 248, 0.2); }
 .ide-code-line.w-80 { background: rgba(16, 185, 129, 0.2); }
 .ide-code-line.w-40 { background: rgba(245, 158, 11, 0.2); }
-
-.line-1 { animation: typeLine1 12s infinite; }
-.line-2 { animation: typeLine2 12s infinite; }
-.line-3 { animation: typeLine3 12s infinite; }
-.line-4 { animation: typeLine4 12s infinite; }
-.line-5 { animation: typeLine5 12s infinite; }
-
-@keyframes typeLine1 {
-  0% { width: 0; opacity: 0; }
-  8%, 100% { width: 60%; opacity: 1; }
-}
-@keyframes typeLine2 {
-  0%, 8% { width: 0; opacity: 0; }
-  16%, 100% { width: 80%; opacity: 1; }
-}
-@keyframes typeLine3 {
-  0%, 16% { width: 0; opacity: 0; }
-  24%, 100% { width: 40%; opacity: 1; }
-}
-@keyframes typeLine4 {
-  0%, 24% { width: 0; opacity: 0; }
-  32%, 100% { width: 50%; opacity: 1; }
-}
-@keyframes typeLine5 {
-  0%, 36% { width: 0; opacity: 0; }
-  44%, 100% { width: 70%; opacity: 1; }
-}
-
-@keyframes ideScroll {
-  0%, 33.3% { transform: translateY(0); }
-  37.5%, 100% { transform: translateY(-12px); }
-}
 
 .half-light-browser {
   transition: var(--transition-smooth);
@@ -479,22 +447,17 @@ header {
 .browser-content-mock {
   opacity: 0.3;
   width: 100%;
-  animation: browserScroll 12s infinite ease-in-out;
+  transition: transform 0.4s ease-in-out;
 }
 
 .browser-line {
   height: 6px;
   border-radius: 2px;
   margin-bottom: 0.5rem;
+  transition: opacity 0.4s ease-out;
 }
 .browser-line.w-80 { width: 80%; }
 .browser-line.w-50 { width: 50%; }
-
-@keyframes browserScroll {
-  0%, 45.8% { transform: translateY(0); }
-  66.6%, 95% { transform: translateY(-70px); } /* Scrolls down 5 full lines (text slides up) */
-  98%, 100% { transform: translateY(0); } /* Snaps back instantly */
-}
 
 /* OFF State: Blinding white screen with flashbang glare */
 .browser-glaring {
