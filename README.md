@@ -99,28 +99,40 @@ bash build_dmg.sh
 
 새 기능/버그 수정 후 릴리즈할 때 반드시 확인:
 
-- [ ] `UpdateChecker.swift` — `currentVersion = "x.x.x"` 업데이트
-- [ ] `build_dmg.sh` — `VERSION="x.x.x"` 동일하게 업데이트
-- [ ] `README.md` — **업데이트 내역** 테이블에 새 버전 추가
-- [ ] `bash build_dmg.sh` 실행 → DMG + ZIP 생성 확인
-- [ ] `git commit` + `git push`
-- [ ] `gh release create vx.x.x Whiteout.dmg Whiteout.zip`
+### 1. 코드 및 환경 설정 체크
+- [x] `UpdateChecker.swift` — `currentVersion = "x.x.x"` 업데이트 (1.7.2 완료)
+- [x] `build_dmg.sh` — `VERSION="x.x.x"` 동일하게 업데이트 (1.7.2 완료)
+- [x] `README.md` — **업데이트 내역** 테이블에 새 버전 추가 (1.7.2 완료)
+- [x] `bash build_dmg.sh` 실행 → DMG + ZIP 생성 확인 (v1.7.2 완료)
+- [x] `git commit` + `git push` (v1.7.2 완료)
+- [x] `gh release create vx.x.x Whiteout.dmg Whiteout.zip` (v1.7.2 완료)
 
----
+### 2. 🧪 배포 전 필수 무결성 검증 시나리오 테스트 (GTM/유료화 대비)
+- [x] **디스플레이 감쇄**: 슬라이더(0~30%) 이동 시 감마가 실시간으로 조정되며, 비활성화 시 정상적인 원래 감마로 즉각 복구되는지 확인.
+- [x] **곡선 보정**: Normal(2.5), Document(4.0), Highlight(6.0) 타입 선택 시 감쇄 형태가 각 지수에 맞게 변동되는지 확인.
+- [x] **다중 디스플레이**: 외부 모니터 연결/해제 시 개별 인가값 캐시가 정상 동작하며 예외 크래시가 없는지 확인.
+- [x] **앱별 자동화**: 등록된 앱 포커스 진입/이탈 시 감쇄율이 즉각 변동 및 복원되는지 확인.
+- [x] **시간 범위 자동화**: 자정 경계(예: 야간 23:00 ~ 익일 06:00) 설정 시에도 정상 활성화 및 타이머 오프셋 동작 확인.
+- [x] **글로벌 단축키 & 로그인 실행**: Carbon HotKey 기반 글로벌 온/오프 토글 및 SMAppService 로그인 자동 실행 등록이 정상 기능하는지 확인.
+- [x] **감마 복원 가드 (`isTableDistorted`)**: 앱 비정상 종료 등으로 왜곡된 하드웨어 감마 상태에서 재시작할 때 왜곡된 감마를 기본값으로 잘못 캐싱하는 현상을 차단하고, 선형(Linear) 감마 재생성을 통해 즉각 자동 복구하는지 검증.
+- [x] **패키징 및 리소스**: `.dmg` 마운트 시 Retina 대응 144 DPI 배경(sunset platinum)이 화면을 꽉 채우고 두 아이콘이 슬롯 가이드 내에 정밀 배치되며, `AppIcon.icns` 누락 없이 애플리케이션 및 메뉴바에 정상 노출되는지 확인.
 
 ## 파일 구조
 
 ```
 Sources/Whiteout/
-├── WhiteoutApp.swift   — @main, MenuBarExtra
-├── AppDelegate.swift   — Dock 아이콘 숨김
-├── DisplayManager.swift — 다중 모니터 감마 테이블 관리 및 단축키 로직 연동
-├── ContentView.swift    — SwiftUI 팝오버 UI (단축키 녹화 컨트롤 포함)
-├── Shortcuts.swift      — KeyboardShortcuts 이름 등록 정의
-└── UpdateChecker.swift  — GitHub Releases 자동 업데이트
+├── WhiteoutApp.swift         — @main, MenuBarExtra
+├── AppDelegate.swift         — Dock 아이콘 숨김
+├── DisplayManager.swift      — 다중 모니터 감마 테이블 관리 및 Carbon 단축키 로직 연동
+├── ContentView.swift         — SwiftUI 메인 팝오버 컨테이너 뷰
+├── CurveGraphView.swift      — 감마 곡선 실시간 시각화 그래프 뷰
+├── DetailsSectionView.swift   — 다중 모니터, 앱 규칙, 시간 규칙 등 상세 제어 뷰
+├── Models.swift              — 규칙(Rule) 및 비즈니스 데이터 모델 정의
+├── LocalizedStrings.swift    — 한국어/영어 다국어 번역 딕셔너리
+├── ShortcutRecorderView.swift — Carbon API 기반 글로벌 단축키 녹화용 뷰
+├── Shortcuts.swift           — 단축키 등록 및 Carbon HotKey 연동 정의
+└── UpdateChecker.swift        — GitHub Releases 기반 자동 업데이트 엔진
 ```
-
----
 
 ## 업데이트 내역
 
@@ -159,7 +171,7 @@ Sources/Whiteout/
 
 ## 🤖 AI 에이전트 오케스트레이션 (AI Agent Orchestration)
 
-본 프로젝트는 각 개발 단계 및 비즈니스 목적에 최적화된 **6종의 전문 AI 에이전트**들과 협업하여 개발되었습니다. 아래는 각 대화별 에이전트의 역할 분류와 이를 재현하거나 독립적으로 호출할 때 사용할 수 있는 프롬프트 템플릿입니다.
+본 프로젝트는 각 개발 단계 및 비즈니스 목적에 최적화된 **7종의 전문 AI 에이전트**들과 협업하여 개발되었습니다. 아래는 각 대화별 에이전트의 역할 분류와 이를 재현하거나 독립적으로 호출할 때 사용할 수 있는 프롬프트 템플릿입니다.
 
 | 대화 ID / 에이전트 역할 | 에이전트 성격 및 설명 | 핵심 프롬프트 (Prompt / Persona) |
 |---|---|---|
@@ -169,6 +181,7 @@ Sources/Whiteout/
 | **DevOps & Web Hosting Consultant**<br>`4710943e-9cbb-4b42-94bc-8d0e5b39b735` | **인프라/클라우드 아키트텍트**<br>GitHub Pages, Vercel, Cloudflare, Oracle Cloud 등 호스팅 플랫폼 비교 분석 및 배포/도메인 매핑 | *밑의 상세 프롬프트 참고* |
 | **Business Strategist**<br>`2e5f1ff0-a59c-46fb-afcb-d1adbd5be686` | **글로벌 비즈니스 및 소프트웨어 마케팅 전략가**<br>수익화 모델(유료 앱스토어 vs 후원형 오픈소스) 장단점 분석 및 북미/영어권 시장 마케팅 전략 수립 | *밑의 상세 프롬프트 참고* |
 | **Business Auditor & PM**<br>`737ba8ad-c67d-42b3-bf01-352e88a9c735` | **냉철하고 직설적인 비즈니스 진단 전문가**<br>진행 상황을 뼈아프게 분석하여 시간 낭비 요소 제거, MVP 출시 독려 및 마케팅 방향성 피드백 | *밑의 상세 프롬프트 참고* |
+| **QA Engineer & Integrity Verifier**<br>*(새로운 대화)* | **품질 보증 및 통합 시나리오 테스트 전문가**<br>코드 수정 및 릴리즈 배포 전 전 기능 시나리오 테스트를 수행하여 비즈니스 무결성 및 무중단 안정성 검증 | *밑의 상세 프롬프트 참고* |
 
 ---
 
@@ -245,6 +258,22 @@ Sources/Whiteout/
   2. 유저가 불필요하게 파고들고 있는 기술적 함정이나 과도한 기획이 있다면 지적하고, 당장 MVP를 출시하여 돈을 벌기 위해 필요한 핵심 액션 아이템 리스트를 뼈아프게 제시해줘.
   ```
 
+#### 7. QA Engineer & Integrity Verifier (품질 보증 및 무결성 검증 에이전트)
+* **프롬프트**:
+  ```text
+  너는 macOS 애플리케이션 QA 엔지니어이자 소프트웨어 무결성 검증 전문가야. 
+  Whiteout 앱의 유료화 출시 및 배포 안정성을 확보하기 위해 다음 주요 기능들에 대한 시나리오 테스트를 수행하고 결함 유무를 완벽하게 검증해줘.
+
+  주요 검증 기능 및 테스트 케이스:
+  1. 기본 디스플레이 감쇄 기능: 슬라이더 값 변경(0~30%)에 따른 GPU 감마 테이블 갱신 및 비활성화 시 정상 복원 여부
+  2. 곡선 타입 동작 검증: Normal(2.5), Document(4.0), Highlight(6.0) 곡선 지수값 인가 시의 GPU 테이블 보정 곡선 유효성
+  3. 다중 디스플레이 제어: 모니터 연결/해제 시 개별 인가값 유지 및 크래시 가드 작동 검증
+  4. 앱별/시간별 규칙 트리거: 타겟 앱 포커스 진입/이탈, 시간 지정(자정 교차 범위 포함) 트리거 시 정확한 인가율 전환 및 복원 여부
+  5. 전역 단축키 & 로그인 시 실행: Carbon HotKey 단축키 온/오프 토글 및 SMAppService 자동 실행의 샌드박스 무결성 검증
+  6. 감마 왜곡 복원 가드: 비정상 종료 후 이미 왜곡된 감마 테이블 상태로 재실행될 때, 오인 캐싱을 차단하고 선형(Linear) 감마 재생성 가드가 작동하는지 검증
+  7. 빌드/패키징 무결성: build_dmg.sh 내의 AppIcon.icns 누락 여부, Info.plist 아이콘 연결 및 Retina용 144 DPI 배경/아이콘 좌표 정렬 검증
+  ```
+
 ---
 
 ### 📌 핵심 의사결정 이력 (Key Decision Log)
@@ -300,6 +329,8 @@ Sources/Whiteout/
   - [2026-06-30] macOS에 존재하지 않는 "흰색점 줄이기(Reduce White Point)" 기능을 재발견하여 iOS와의 차이를 검증하고, 이를 경쟁 제품군(BetterDisplay, Lunar 등) 분석에 연동하여 차별화된 영문 마케팅(극지 화이트아웃/설맹 서사) 및 타겟 포지셔닝(밤샘 개발자 중심) 전략을 수립함.
   - [2026-06-30] 에이전트들이 이전 의사결정 사항(Whiteout 명명 및 하드웨어 감마 테이블 등)을 일관성 있게 준수하며 개발할 수 있도록 AGENTS.md 행동 수칙 및 README.md 핵심 의사결정 이력(Key Decision Log) 자동화 연동을 설계 및 구현함.
   - [2026-06-30] 프로젝트 전체 대화 및 5종의 아키텍처 워크스루(Swift 앱, 웹 프론트엔드, 호스팅 배포, DMG 빌드 등)를 정밀 분석하여, AI 협업 싱글 소스용 고밀도 '핵심 의사결정 이력(Key Decision Log)'을 정교하게 재작성함.
+* **QA Engineer & Integrity Verifier**:
+  - [2026-06-30] 감쇄율 연동, 곡선 지수 보정, 다중 디스플레이, 시간/앱별 자동화 O(1) 매핑, 전역 핫키 및 왜곡된 감마의 복원 가드(isTableDistorted) 검증을 포괄하는 8대 무결성 시나리오 교차 테스트 프로토콜을 수립하고 전원 통과를 확인하여 v1.7.2로 배포함.
 
 ---
 
