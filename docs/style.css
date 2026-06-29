@@ -144,6 +144,44 @@ header {
   box-shadow: var(--shadow-glow);
 }
 
+/* Language toggle pill */
+.lang-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: var(--transition-smooth);
+  letter-spacing: 0.05em;
+}
+
+.lang-toggle:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: var(--text-primary);
+}
+
+.lang-toggle .lang-opt {
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.lang-toggle .lang-opt.active {
+  color: var(--accent-tech);
+  font-weight: 700;
+}
+
+.lang-toggle .lang-divider {
+  opacity: 0.3;
+  font-weight: 300;
+}
+
 /* Hero Section */
 .hero {
   padding-top: 12rem;

@@ -327,27 +327,60 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(addTerminalLog, 1400);
 });
 
-// ─── i18n: Language-based content switching ───────────────────────────────
-(function applyI18n() {
-    const isKorean = window.__isKorean;
-    const attr = isKorean ? 'data-ko' : 'data-en';
+// ─── i18n: Language-based content switching + manual toggle ───────────────
+(function initI18n() {
+    // Determine initial language (browser detection, overridable by user)
+    const storedLang = localStorage.getItem('whiteout_lang');
+    let currentLang = storedLang || (window.__isKorean ? 'ko' : 'en');
 
-    // Switch all elements that have data-ko / data-en attributes
-    document.querySelectorAll('[data-ko],[data-en]').forEach(el => {
-        const text = el.getAttribute(attr);
-        if (text !== null) {
-            // Use innerHTML for elements that may contain <strong>, <br>, <i>, <sub> tags
-            el.innerHTML = text;
-        }
-    });
+    function applyLang(lang) {
+        currentLang = lang;
+        localStorage.setItem('whiteout_lang', lang);
+        document.documentElement.lang = lang;
 
-    // Also update <html lang> and <title> / meta description
-    if (!isKorean) {
-        document.title = 'WhiteOut - GPU-Level Eye Strain Prevention for Mac';
-        const metaDesc = document.querySelector('meta[name="description"]');
-        if (metaDesc) {
-            metaDesc.setAttribute('content',
-                "Simply dimming your screen is not the cure. WhiteOut controls white point photon energy directly at the GPU hardware level, preserving 100% contrast and true blacks while eliminating digital eye strain.");
+        const attr = lang === 'ko' ? 'data-ko' : 'data-en';
+
+        // Switch all elements with data-ko / data-en attributes
+        document.querySelectorAll('[data-ko],[data-en]').forEach(el => {
+            const text = el.getAttribute(attr);
+            if (text !== null) {
+                el.innerHTML = text;
+            }
+        });
+
+        // Update page title & meta description
+        if (lang === 'ko') {
+            document.title = 'WhiteOut - GPU 가속 기반 과학적 눈 보호 솔루션';
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) metaDesc.setAttribute('content',
+                '단순 밝기 조절이 아닙니다. 대비 감도를 100% 보존하면서 눈의 동공 조절 피로를 해소하고 트루 블랙을 지키는 과학적인 화이트포인트 관리 유틸리티, WhiteOut.');
+        } else {
+            document.title = 'WhiteOut - GPU-Level Eye Strain Prevention for Mac';
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) metaDesc.setAttribute('content',
+                'Simply dimming your screen is not the cure. WhiteOut controls white point photon energy directly at the GPU hardware level, preserving 100% contrast and true blacks while eliminating digital eye strain.');
         }
+
+        // Highlight the active language in the toggle button
+        document.querySelectorAll('.lang-opt').forEach(opt => {
+            opt.classList.toggle('active', opt.dataset.lang === lang);
+        });
     }
+
+    // Wire up toggle button: clicking either EN or KR span switches language
+    const toggleBtn = document.getElementById('langToggle');
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', e => {
+            const opt = e.target.closest('.lang-opt');
+            if (opt) {
+                applyLang(opt.dataset.lang);
+            } else {
+                // Clicking the button itself (not a span) toggles
+                applyLang(currentLang === 'ko' ? 'en' : 'ko');
+            }
+        });
+    }
+
+    // Apply on load
+    applyLang(currentLang);
 })();
