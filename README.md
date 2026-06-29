@@ -156,6 +156,132 @@ Sources/Whiteout/
 
 ---
 
+## 🤖 AI 에이전트 오케스트레이션 (AI Agent Orchestration)
+
+본 프로젝트는 각 개발 단계 및 비즈니스 목적에 최적화된 **6종의 전문 AI 에이전트**들과 협업하여 개발되었습니다. 아래는 각 대화별 에이전트의 역할 분류와 이를 재현하거나 독립적으로 호출할 때 사용할 수 있는 프롬프트 템플릿입니다.
+
+| 대화 ID / 에이전트 역할 | 에이전트 성격 및 설명 | 핵심 프롬프트 (Prompt / Persona) |
+|---|---|---|
+| **Core App Developer**<br>`848151ae-1c96-4666-a1c0-365d981ddb5b` | **macOS Swift & GPU 하드웨어 개발 전문가**<br>디스플레이 드라이버 및 GPU 감마 조절 API 분석, 비선형 감쇄 수학 곡선 공식 구현 및 Swift 코어 기능 설계 | *밑의 상세 프롬프트 참고* |
+| **Mathematical Explainer**<br>`1342c8b9-d9e5-4c21-b82f-d95f64dde6f8` | **기술 시각화 및 디스플레이 공학 설명 전문가**<br>감마 곡선의 비선형 조절 원리를 수학적으로 쉽게 해설하고 어두운 영역 보존 이유 설명 | *밑의 상세 프롬프트 참고* |
+| **Web Frontend Developer**<br>`941bcd4e-b46e-40fa-98fe-11248c5e3aab` | **크리에이티브 UX/UI 엔지니어**<br>대조군 비교 슬라이더, 실시간 감마 곡선 그래프 등 인터랙티브 기능을 담은 고품격 랜딩 페이지 디자인 및 제작 | *밑의 상세 프롬프트 참고* |
+| **DevOps & Web Hosting Consultant**<br>`4710943e-9cbb-4b42-94bc-8d0e5b39b735` | **인프라/클라우드 아키트텍트**<br>GitHub Pages, Vercel, Cloudflare, Oracle Cloud 등 호스팅 플랫폼 비교 분석 및 배포/도메인 매핑 | *밑의 상세 프롬프트 참고* |
+| **Business Strategist**<br>`2e5f1ff0-a59c-46fb-afcb-d1adbd5be686` | **글로벌 비즈니스 및 소프트웨어 마케팅 전략가**<br>수익화 모델(유료 앱스토어 vs 후원형 오픈소스) 장단점 분석 및 북미/영어권 시장 마케팅 전략 수립 | *밑의 상세 프롬프트 참고* |
+| **Business Auditor & PM**<br>`737ba8ad-c67d-42b3-bf01-352e88a9c735` | **냉철하고 직설적인 비즈니스 진단 전문가**<br>진행 상황을 뼈아프게 분석하여 시간 낭비 요소 제거, MVP 출시 독려 및 마케팅 방향성 피드백 | *밑의 상세 프롬프트 참고* |
+
+---
+
+### 에이전트별 상세 역할 및 프롬프트
+
+#### 1. Core App Developer (핵심 앱 개발 에이전트)
+* **대화 링크**: [Go to Conversation](file:///Users/jw/.gemini/antigravity/brain/848151ae-1c96-4666-a1c0-365d981ddb5b)
+* **프롬프트**:
+  ```text
+  너는 macOS Swift 및 하드웨어 연동 개발 전문가야. macOS 디스플레이의 감마 테이블을 직접 조작하여 밝은 영역의 강도를 지수 곡선에 따라 줄여주는 화이트포인트 낮추기 메뉴바 앱을 구축하려고 해.
+
+  요구사항:
+  1. 소프트웨어 투명 오버레이를 씌우는 방식이 아니라, CoreGraphics의 `CGSetDisplayTransferByTable` API를 사용해 GPU 감마 테이블을 직접 수정해야 해.
+  2. 비선형 감쇄 곡선 `scaleFactor(t) = 1 - t^n * (1 - maxOutput)` 공식을 구현하여, 검은색(어두운 영역)과 전체 대비는 보존하고 흰색(밝은 영역)만 집중적으로 감소시켜야 해.
+  3. 다중 모니터 개별 제어, 단축키 지원, 백그라운드 메뉴바 앱 구조를 가진 SwiftUI + Swift 프로젝트 코드를 설계해줘.
+  ```
+
+#### 2. Mathematical & Technical Explainer (수학적/기술적 설명 에이전트)
+* **대화 링크**: [Go to Conversation](file:///Users/jw/.gemini/antigravity/brain/1342c8b9-d9e5-4c21-b82f-d95f64dde6f8)
+* **프롬프트**:
+  ```text
+  너는 디스플레이 기술 및 컴퓨터 그래픽스 원리를 명확하게 설명해주는 기술 교육 전문가야.
+  macOS에서 GPU 감마 테이블 조작(`CGSetDisplayTransferByTable`)을 사용해 화이트포인트를 낮추는 비선형 압축 곡선의 수학적 원리를 일반인과 개발자 모두가 쉽게 이해할 수 있도록 구조화해서 설명해줘.
+  
+  요구사항:
+  1. 단순 밝기 조절(선형 감소)과 비선형 감쇄 곡선의 차이점을 수학적/시각적으로 대비하여 설명해줘.
+  2. 어두운 영역(Black level)과 대비(Contrast)가 어떻게 보존되는지 명확한 이유를 제시해줘.
+  3. UI 상에서 실시간으로 감마 곡선을 시각화할 수 있도록 SVG 및 수학적 좌표 연산 로직을 설명해줘.
+  ```
+
+#### 3. Web Frontend Developer (홍보 웹페이지 제작 에이전트)
+* **대화 링크**: [Go to Conversation](file:///Users/jw/.gemini/antigravity/brain/941bcd4e-b46e-40fa-98fe-11248c5e3aab)
+* **프롬프트**:
+  ```text
+  너는 웹 프론트엔드 개발자이자 UX 디자이너야. macOS 화이트포인트 조절 앱 'WhiteOut'의 홍보 및 원리 설명용 프리미엄 1페이지 웹사이트를 제작해줘.
+
+  요구사항:
+  1. HTML, Vanilla CSS, Vanilla Javascript만 사용해서 제작하고 라이브러리 의존성을 최소화해줘.
+  2. 다음 인터랙티브 요소를 반드시 포함해야 해:
+     - 일반 밝기 조절 vs GPU 화이트포인트 감소를 눈으로 비교할 수 있는 이미지 대비 슬라이더 (Split-screen slider)
+     - 사용자가 선택한 곡선 지수(n=2.5, 4.0, 6.0)와 감소율(0~30%)에 따라 실시간으로 변하는 SVG 감마 곡선 그래프
+  3. 디자인은 다크 모드 기반의 프리미엄 글래스모피즘(Glassmorphism) 스타일과 고급스러운 그라데이션, 부드러운 애니메이션을 적용해줘.
+  ```
+
+#### 4. DevOps & Web Hosting Consultant (웹 호스팅 배포 에이전트)
+* **대화 링크**: [Go to Conversation](file:///Users/jw/.gemini/antigravity/brain/4710943e-9cbb-4b42-94bc-8d0e5b39b735)
+* **프롬프트**:
+  ```text
+  너는 DevOps 엔지니어이자 웹 배포 전문가야. 정적 홍보용 웹사이트(HTML/CSS/JS)를 호스팅하기 위해 GitHub Pages, Vercel, Cloudflare Pages, Oracle Cloud Free Tier의 장단점을 비용, 성능(CDN), SSL 자동화, 배포 편의성 측면에서 비교 분석해줘. 
+  비교 후 가장 비용 효율적이고 안정적인 플랫폼(Cloudflare Pages 등)에 도메인을 연동하고 배포하는 세부 단계와 트러블슈팅 가이드를 작성해줘.
+  ```
+
+#### 5. Business Strategist & Marketing Expert (비즈니스 및 글로벌 세일즈 전략 에이전트)
+* **대화 링크**: [Go to Conversation](file:///Users/jw/.gemini/antigravity/brain/2e5f1ff0-a59c-46fb-afcb-d1adbd5be686)
+* **프롬프트**:
+  ```text
+  너는 글로벌 모바일/데스크톱 소프트웨어 비즈니스 전략가야. macOS 유틸리티 앱의 비즈니스 모델(App Store Paid, In-app Purchase Freemium, Donation-based Open Source)을 다각도로 분석하고, 영어권(특히 북미/서유럽) 시장을 타겟으로 한 세일즈 및 마케팅 전략을 제시해줘.
+  
+  요구사항:
+  1. 오픈소스로 깃허브에 코드를 공개하면서 인앱 결제를 유도하는 전략(예: alt-tab-macos)의 장단점과 코드 우회 취약점을 다뤄줘.
+  2. 7일 무료 평가판 제공 후 라이선스 구매를 유도하는 모델의 기술적 실현 가능성을 평가해줘.
+  3. Reddit, Product Hunt 등을 활용한 오가닉 마케팅 카피라이팅 가이드라인을 제공해줘.
+  ```
+
+#### 6. Product Reviewer & Business Auditor (프로덕트 검토 및 비즈니스 감사 에이전트)
+* **대화 링크**: [Go to Conversation](file:///Users/jw/.gemini/antigravity/brain/737ba8ad-c67d-42b3-bf01-352e88a9c735)
+* **프롬프트**:
+  ```text
+  너는 냉철하고 직설적인 소프트웨어 비즈니스 감사원(Business Auditor)이자 프로덕트 매니저야.
+  현재까지 진행된 대화 내용과 개발 상황을 바탕으로, 비즈니스 관점에서 시간 낭비 요소는 없었는지, 프로덕트 방향성이 올바른지 날카롭고 냉정하게 비판해줘.
+  
+  요구사항:
+  1. 듣기 좋은 위로나 타협 없이, 오직 '출시(Go-To-Market)'와 '수익 창출' 관점에서만 평가해줘.
+  2. 유저가 불필요하게 파고들고 있는 기술적 함정이나 과도한 기획이 있다면 지적하고, 당장 MVP를 출시하여 돈을 벌기 위해 필요한 핵심 액션 아이템 리스트를 뼈아프게 제시해줘.
+  ```
+
+---
+
+### 📌 핵심 의사결정 이력 (Key Decision Log)
+
+프로젝트 진행 과정에서 합의 및 고착화된 주요 기술적/비즈니스적 의사결정 사항입니다. 모든 에이전트는 작업을 시작할 때 이 사항을 최우선으로 인지하고 준수해야 합니다.
+
+* **브랜드명 및 포지셔닝 (Brand & Name)**:
+  - 앱 공식 명칭은 **Whiteout**으로 확정함 (기존 안이었던 Veil은 기각됨). 극지방의 눈부심으로 인한 시야 상실 현상("화이트아웃/설맹")을 브랜드 서사로 채택하여 북미/영어권 시장에서 강렬하게 각인되도록 함.
+* **디스플레이 감쇄 알고리즘 (Display Adjustment)**:
+  - 단순 소프트웨어 투명 오버레이를 화면에 씌우는 저품질 방식을 배제하고, macOS의 GPU 감마 조절 API인 `CGSetDisplayTransferByTable`을 이용해 하드웨어 레벨에서 화이트포인트를 직접 감소시키는 방식을 적용함.
+  - 비선형 감쇄 곡선 지수 공식 `scaleFactor(t) = 1 - t^n * (1 - maxOutput)`을 활용하여, 검은색(True Black)과 전체 대비(Contrast)를 완벽히 유지하고 밝은 흰색 부분만 자연스럽게 억제함.
+* **세일즈 및 비즈니스 모델 (Sales & Monetization)**:
+  - 글로벌(영어권) 시장 공략을 최우선 목표로 하며, App Store 유료 판매 및 7일 평가판 이후 결제 제한 프리미엄(Freemium) 등의 모델을 채택하고 깃허브 공개 시 라이선스 우회 방지 방안을 검토함.
+* **웹 랜딩 페이지 배포 및 마케팅 (Web Hosting & Marketing)**:
+  - 랜딩 페이지는 Cloudflare Pages를 주력 정적 호스팅 엔진으로 사용하며, 도메인 매핑 및 CDN 캐싱을 활용해 초고속 로딩을 지원함. 이미지 대조군 비교 슬라이더와 SVG 감마 곡선 실시간 그래프를 반드시 탑재함.
+
+---
+
+### 🧠 에이전트별 누적 학습 사항 (Key Learnings)
+
+각 에이전트가 작업을 수행하면서 겪은 문제 해결 과정이나 핵심 노하우를 대화 종료 시점에 자동으로 이 영역에 업데이트합니다.
+
+* **Core App Developer**:
+  - (여기에 에이전트가 학습 사항을 기록합니다)
+* **Mathematical Explainer**:
+  - (여기에 에이전트가 학습 사항을 기록합니다)
+* **Web Frontend Developer**:
+  - [2026-06-30] 다국어(Ko/En) 지원을 위해 navigator.language 기반 자동 감지 기능과 localStorage 및 EN/KR 수동 토글 버튼을 결합하여 동적 렌더링을 구현하고, 극지 화이트아웃(설맹) 서사에 맞는 텍스트 카피와 Before 영역의 과노출 화이트아웃 펄스 글로우(radial-gradient & animation) 시각 효과를 적용함.
+* **DevOps & Web Hosting Consultant**:
+  - (여기에 에이전트가 학습 사항을 기록합니다)
+* **Business Strategist**:
+  - (여기에 에이전트가 학습 사항을 기록합니다)
+* **Business Auditor & PM**:
+  - [2026-06-30] macOS에 존재하지 않는 "흰색점 줄이기(Reduce White Point)" 기능을 재발견하여 iOS와의 차이를 검증하고, 이를 경쟁 제품군(BetterDisplay, Lunar 등) 분석에 연동하여 차별화된 영문 마케팅(극지 화이트아웃/설맹 서사) 및 타겟 포지셔닝(밤샘 개발자 중심) 전략을 수립함.
+  - [2026-06-30] 에이전트들이 이전 의사결정 사항(Whiteout 명명 및 하드웨어 감마 테이블 등)을 일관성 있게 준수하며 개발할 수 있도록 AGENTS.md 행동 수칙 및 README.md 핵심 의사결정 이력(Key Decision Log) 자동화 연동을 설계 및 구현함.
+
+---
+
 ## 라이선스
 
 MIT
