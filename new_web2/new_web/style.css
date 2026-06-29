@@ -376,38 +376,9 @@ header {
 }
 
 .panel-before {
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 20%, rgba(15, 23, 42, 0.95) 75%, #070b12 100%);
+  background: radial-gradient(circle at center, #232c3f 0%, #151b27 100%);
   color: #7d8ea6;
   z-index: 1; /* Establish stacking context to fix label overlap bug */
-  position: relative;
-  overflow: hidden;
-}
-
-/* Polar Whiteout Glare Animation */
-.panel-before::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    circle at center,
-    rgba(255, 255, 255, 0.3) 0%,
-    rgba(224, 242, 254, 0.1) 30%,
-    transparent 60%
-  );
-  pointer-events: none;
-  z-index: 2;
-  animation: whiteout-glow-pulse 4s ease-in-out infinite;
-}
-
-@keyframes whiteout-glow-pulse {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1.0;
-    transform: scale(1.15);
-  }
 }
 
 .panel-after {
@@ -415,7 +386,7 @@ header {
   color: #ffffff;
   width: 50%;
   overflow: hidden;
-  z-index: 3; /* Renders above .panel-before (updated to 3 to stay above the pseudo-element) */
+  z-index: 2; /* Renders above .panel-before */
   border-right: 3px solid var(--accent-tech);
 }
 
