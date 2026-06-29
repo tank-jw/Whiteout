@@ -326,3 +326,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run terminal logs continuously and independently
     setInterval(addTerminalLog, 1400);
 });
+
+// ─── i18n: Language-based content switching ───────────────────────────────
+(function applyI18n() {
+    const isKorean = window.__isKorean;
+    const attr = isKorean ? 'data-ko' : 'data-en';
+
+    // Switch all elements that have data-ko / data-en attributes
+    document.querySelectorAll('[data-ko],[data-en]').forEach(el => {
+        const text = el.getAttribute(attr);
+        if (text !== null) {
+            // Use innerHTML for elements that may contain <strong>, <br>, <i>, <sub> tags
+            el.innerHTML = text;
+        }
+    });
+
+    // Also update <html lang> and <title> / meta description
+    if (!isKorean) {
+        document.title = 'WhiteOut - GPU-Level Eye Strain Prevention for Mac';
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) {
+            metaDesc.setAttribute('content',
+                "Simply dimming your screen is not the cure. WhiteOut controls white point photon energy directly at the GPU hardware level, preserving 100% contrast and true blacks while eliminating digital eye strain.");
+        }
+    }
+})();
