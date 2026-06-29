@@ -94,12 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     browserContainers.forEach(c => c.innerHTML = '');
     
     // Helper to generate VS Code styled tokenized lines
-    function createIdeLine(animate = true) {
-        const line = document.createElement('div');
-        line.className = 'ide-code-line';
-        line.style.opacity = animate ? '0' : '1';
-        
-        // Choose line pattern
+    function generateTokensData() {
         const rand = Math.random();
         let tokens = [];
         if (rand < 0.15) {
@@ -122,9 +117,16 @@ document.addEventListener('DOMContentLoaded', () => {
             tokens.push({ width: Math.floor(Math.random() * 15) + 15, type: 'token-type' });
             tokens.push({ width: Math.floor(Math.random() * 10) + 12, type: 'token-variable' });
         }
+        return tokens;
+    }
+
+    function buildLineFromData(tokensData, animate = true) {
+        const line = document.createElement('div');
+        line.className = 'ide-code-line';
+        line.style.opacity = animate ? '0' : '1';
         
-        // Append tokens as spans
-        tokens.forEach(tok => {
+        // Append tokens as spans using the identical tokensData
+        tokensData.forEach(tok => {
             const span = document.createElement('span');
             span.className = `code-token ${tok.type}`;
             span.style.width = animate ? '0%' : `${tok.width}%`;
@@ -153,10 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return line;
     }
     
-    // Add initial mock IDE lines (rendered instantly)
+    // Add initial mock IDE lines (rendered instantly using synchronized token data)
     for (let i = 0; i < 7; i++) {
+        const tokensData = generateTokensData();
         ideContainers.forEach(container => {
-            const line = createIdeLine(false);
+            const line = buildLineFromData(tokensData, false);
             container.appendChild(line);
         });
         ideLinesCount++;
@@ -174,9 +177,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function addIdeLine() {
+        const tokensData = generateTokensData();
+        
         // Append identical line to all IDE containers in sync
         ideContainers.forEach(container => {
-            const line = createIdeLine(true);
+            const line = buildLineFromData(tokensData, true);
             container.appendChild(line);
         });
         
