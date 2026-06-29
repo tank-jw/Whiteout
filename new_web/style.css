@@ -409,8 +409,17 @@ header {
 .half-dark-ide {
   background: #1e1e1e; /* VS Code dark theme background */
   border-right: 1px solid #2d2d2d;
-  justify-content: flex-start; /* Aligns content from the top to prevent scroll drift */
-  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0.75rem 0.75rem 0.5rem 0.75rem;
+}
+
+.ide-editor-area {
+  height: 60%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
 }
 
 .ide-code-scroll {
@@ -428,6 +437,58 @@ header {
   display: flex;
   align-items: center;
   transition: opacity 0.4s ease-out;
+}
+
+/* IDE Terminal Area inside Left Screen Mock */
+.ide-terminal-area {
+  height: 40%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+.terminal-header {
+  font-size: 7px;
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+  font-family: monospace;
+}
+
+.terminal-scroll-container {
+  height: calc(100% - 12px);
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.terminal-scroll {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease-in-out;
+  width: 100%;
+}
+
+.terminal-line {
+  height: 4px;
+  margin-bottom: 4px;
+  border-radius: 1px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease-out, width 0.3s ease-out;
+}
+
+.panel-before .terminal-line {
+  background: #ffffff !important; /* Pure white logs */
+}
+
+.panel-after .terminal-line {
+  background: rgba(255, 255, 255, 0.35); /* Dimmed safe whitepoint logs */
 }
 
 /* VS Code Token Highlights */
@@ -476,7 +537,7 @@ header {
 
 /* OFF State: Blinding white screen with flashbang glare */
 .browser-glaring {
-  background: #ffffff;
+  background: #ffffff !important;
 }
 
 .browser-glaring .browser-line {

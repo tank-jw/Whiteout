@@ -82,16 +82,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Infinite Synchronized Coding and Scrolling Simulator ---
     const ideContainers = document.querySelectorAll('.ide-code-scroll');
     const browserContainers = document.querySelectorAll('.browser-content-mock');
+    const terminalContainers = document.querySelectorAll('.terminal-scroll');
     
     let phase = 'typing'; // 'typing' or 'scrolling'
     let actionCounter = 0;
     let ideLinesCount = 0;
     let ideScrollY = 0;
     let browserScrollY = 0;
+    let terminalLinesCount = 0;
+    let terminalScrollY = 0;
     
     // Clean initial content
     ideContainers.forEach(c => c.innerHTML = '');
     browserContainers.forEach(c => c.innerHTML = '');
+    terminalContainers.forEach(c => c.innerHTML = '');
     
     // Helper to generate VS Code styled tokenized lines
     function generateTokensData() {
@@ -155,6 +159,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return line;
     }
     
+    function createTerminalLine(widthPercent, animate = true) {
+        const line = document.createElement('div');
+        line.className = 'terminal-line';
+        line.style.width = animate ? '0%' : `${widthPercent}%`;
+        line.style.opacity = animate ? '0' : '1';
+        if (animate) {
+            setTimeout(() => {
+                line.style.width = `${widthPercent}%`;
+                line.style.opacity = '1';
+            }, 50);
+        }
+        return line;
+    }
+    
     // Add initial mock IDE lines (rendered instantly using synchronized token data)
     for (let i = 0; i < 7; i++) {
         const tokensData = generateTokensData();
@@ -169,11 +187,19 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let i = 0; i < 12; i++) {
         const width = Math.floor(Math.random() * 50) + 35;
         browserContainers.forEach(container => {
-            const line = document.createElement('div');
-            line.className = 'browser-line';
-            line.style.width = `${width}%`;
+            const line = createBrowserLine(width);
             container.appendChild(line);
         });
+    }
+
+    // Add initial mock Terminal lines
+    for (let i = 0; i < 4; i++) {
+        const width = Math.floor(Math.random() * 45) + 20; // 20% to 65%
+        terminalContainers.forEach(container => {
+            const line = createTerminalLine(width, false);
+            container.appendChild(line);
+        });
+        terminalLinesCount++;
     }
     
     function addIdeLine() {
@@ -242,6 +268,41 @@ document.addEventListener('DOMContentLoaded', () => {
             browserScrollY -= 14;
         }
     }
+
+    function addTerminalLog() {
+        const width = Math.floor(Math.random() * 45) + 20; // 20% to 65%
+        
+        // Append identical terminal line to all containers in sync
+        terminalContainers.forEach(container => {
+            const line = createTerminalLine(width, true);
+            container.appendChild(line);
+        });
+        
+        terminalLinesCount++;
+        
+        // Scroll terminal up if it has more than 5 lines
+        if (terminalLinesCount > 5) {
+            terminalScrollY += 8; // 4px height + 4px margin-bottom
+            terminalContainers.forEach(container => {
+                container.style.transform = `translateY(-${terminalScrollY}px)`;
+            });
+        }
+        
+        // Prune old terminal lines seamlessly
+        const firstContainer = terminalContainers[0];
+        if (firstContainer && firstContainer.children.length > 15) {
+            terminalContainers.forEach(container => {
+                if (container.firstChild) {
+                    container.removeChild(container.firstChild);
+                }
+                container.style.transition = 'none';
+                container.style.transform = `translateY(-${terminalScrollY - 8}px)`;
+                container.offsetHeight; // trigger reflow
+                container.style.transition = 'transform 0.3s ease-in-out';
+            });
+            terminalScrollY -= 8;
+        }
+    }
     
     // Alternate typing and scrolling infinitely
     setInterval(() => {
@@ -261,4 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }, 900);
+
+    // Run terminal logs continuously and independently
+    setInterval(addTerminalLog, 1400);
 });
