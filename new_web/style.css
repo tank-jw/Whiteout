@@ -411,22 +411,74 @@ header {
   border-right: 1px solid #1e293b;
 }
 
+.ide-code-scroll {
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.5s ease-in-out;
+  animation: ideScroll 12s infinite;
+  width: 100%;
+}
+
 .ide-code-line {
   height: 6px;
   background: rgba(255, 255, 255, 0.1);
   margin-bottom: 0.5rem;
   border-radius: 2px;
+  width: 0;
+  opacity: 0;
 }
-.ide-code-line.w-60 { width: 60%; background: rgba(56, 189, 248, 0.2); }
-.ide-code-line.w-80 { width: 80%; background: rgba(16, 185, 129, 0.2); }
-.ide-code-line.w-40 { width: 40%; background: rgba(245, 158, 11, 0.2); }
+.ide-code-line.w-60 { background: rgba(56, 189, 248, 0.2); }
+.ide-code-line.w-80 { background: rgba(16, 185, 129, 0.2); }
+.ide-code-line.w-40 { background: rgba(245, 158, 11, 0.2); }
+
+.line-1 { animation: typeLine1 12s infinite; }
+.line-2 { animation: typeLine2 12s infinite; }
+.line-3 { animation: typeLine3 12s infinite; }
+.line-4 { animation: typeLine4 12s infinite; }
+.line-5 { animation: typeLine5 12s infinite; }
+
+@keyframes typeLine1 {
+  0% { width: 0; opacity: 0; }
+  8%, 100% { width: 60%; opacity: 1; }
+}
+@keyframes typeLine2 {
+  0%, 8% { width: 0; opacity: 0; }
+  16%, 100% { width: 80%; opacity: 1; }
+}
+@keyframes typeLine3 {
+  0%, 16% { width: 0; opacity: 0; }
+  24%, 100% { width: 40%; opacity: 1; }
+}
+@keyframes typeLine4 {
+  0%, 24% { width: 0; opacity: 0; }
+  32%, 100% { width: 50%; opacity: 1; }
+}
+@keyframes typeLine5 {
+  0%, 36% { width: 0; opacity: 0; }
+  44%, 100% { width: 70%; opacity: 1; }
+}
+
+@keyframes ideScroll {
+  0%, 33.3% { transform: translateY(0); }
+  37.5%, 100% { transform: translateY(-12px); }
+}
 
 .half-light-browser {
   transition: var(--transition-smooth);
+  position: relative;
+}
+
+.browser-scroll-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
 }
 
 .browser-content-mock {
   opacity: 0.3;
+  width: 100%;
+  animation: browserScroll 12s infinite ease-in-out;
 }
 
 .browser-line {
@@ -436,6 +488,12 @@ header {
 }
 .browser-line.w-80 { width: 80%; }
 .browser-line.w-50 { width: 50%; }
+
+@keyframes browserScroll {
+  0%, 45.8% { transform: translateY(0); }
+  66.6%, 75% { transform: translateY(-38px); }
+  91.6%, 100% { transform: translateY(0); }
+}
 
 /* OFF State: Blinding white screen with flashbang glare */
 .browser-glaring {
