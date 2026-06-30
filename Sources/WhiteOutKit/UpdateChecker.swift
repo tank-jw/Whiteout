@@ -2,10 +2,10 @@ import Foundation
 import AppKit
 
 /// GitHub Releases API를 통해 최신 버전을 확인하고 자동 업데이트를 수행하는 클래스.
-class UpdateChecker: ObservableObject {
+public class UpdateChecker: ObservableObject {
 
     // 현재 앱 버전 — 릴리즈 빌드 시 build_dmg.sh의 VERSION="1.6.6"과 함께 업데이트할 것
-    static let currentVersion = "1.7.2"
+    public static let currentVersion = "1.7.2.1"
 
     /// 주기적 재확인 간격 (120시간 = 5일)
     private static let checkIntervalSeconds: TimeInterval = 120 * 3600
@@ -13,18 +13,18 @@ class UpdateChecker: ObservableObject {
     private let apiURL      = URL(string: "https://api.github.com/repos/tank-jw/Whiteout/releases/latest")!
     private let releasesURL = URL(string: "https://github.com/tank-jw/Whiteout/releases/latest")!
 
-    @Published var updateAvailable:  Bool   = false
-    @Published var latestVersion:    String = ""
-    @Published var isChecking:       Bool   = false
-    @Published var isDownloading:    Bool   = false
-    @Published var downloadProgress: Double = 0
-    @Published var showNetworkErrorAlert: Bool = false
+    @Published public var updateAvailable:  Bool   = false
+    @Published public var latestVersion:    String = ""
+    @Published public var isChecking:       Bool   = false
+    @Published public var isDownloading:    Bool   = false
+    @Published public var downloadProgress: Double = 0
+    @Published public var showNetworkErrorAlert: Bool = false
 
     private var zipDownloadURL: URL?
     private var progressObservation: NSKeyValueObservation?
     private var periodicTimer: Timer?
 
-    init() {
+    public init() {
         // View에 의존하지 않고 생성 즉시 주기 확인 시작
         scheduleTimer()
         fetchLatestRelease(isManual: false)

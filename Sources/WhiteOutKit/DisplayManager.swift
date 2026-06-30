@@ -15,43 +15,49 @@ private typealias GammaTable = (red: [CGGammaValue], green: [CGGammaValue], blue
 ///   - Applies to ALL active displays (multi-monitor support)
 ///   - Responds to display connect/disconnect at runtime
 ///   - The original gamma table is saved on init and restored on quit / reset
-class DisplayManager: ObservableObject {
+public class DisplayManager: ObservableObject {
 
     // MARK: - Published State
 
-    @Published var reduction: Double {
+    @Published public var reduction: Double {
         didSet {
-            UserDefaults.standard.set(reduction, forKey: Keys.reduction)
+            if !isSyncingProperties {
+                UserDefaults.standard.set(reduction, forKey: Keys.reduction)
+            }
             handleUserAdjustedReduction(reduction)
         }
     }
 
-    @Published var isEnabled: Bool {
+    @Published public var isEnabled: Bool {
         didSet {
-            UserDefaults.standard.set(isEnabled, forKey: Keys.isEnabled)
+            if !isSyncingProperties {
+                UserDefaults.standard.set(isEnabled, forKey: Keys.isEnabled)
+            }
             handleUserAdjustedEnabled(isEnabled)
         }
     }
 
-    @Published var curveExponent: Double {
+    @Published public var curveExponent: Double {
         didSet {
-            UserDefaults.standard.set(curveExponent, forKey: Keys.curveExponent)
+            if !isSyncingProperties {
+                UserDefaults.standard.set(curveExponent, forKey: Keys.curveExponent)
+            }
             handleUserAdjustedExponent(curveExponent)
         }
     }
 
-    @Published var isShortcutEnabled: Bool {
+    @Published public var isShortcutEnabled: Bool {
         didSet {
             UserDefaults.standard.set(isShortcutEnabled, forKey: Keys.isShortcutEnabled)
             if isShortcutEnabled, let sc = shortcut {
-                ShortcutManager.shared.register(sc)
+                shortcutService.register(sc)
             } else {
-                ShortcutManager.shared.unregister()
+                shortcutService.unregister()
             }
         }
     }
 
-    @Published var shortcut: KeyShortcut? {
+    @Published public var shortcut: KeyShortcut? {
         didSet {
             if let sc = shortcut, let data = try? JSONEncoder().encode(sc) {
                 UserDefaults.standard.set(data, forKey: Keys.shortcut)
@@ -60,19 +66,19 @@ class DisplayManager: ObservableObject {
             }
             if isShortcutEnabled {
                 if let sc = shortcut {
-                    ShortcutManager.shared.register(sc)
+                    shortcutService.register(sc)
                 } else {
-                    ShortcutManager.shared.unregister()
+                    shortcutService.unregister()
                 }
             }
         }
     }
 
-    @Published var language: String {
+    @Published public var language: String {
         didSet { UserDefaults.standard.set(language, forKey: Keys.language) }
     }
 
-    @Published var launchAtLogin: Bool {
+    @Published public var launchAtLogin: Bool {
         didSet {
             UserDefaults.standard.set(launchAtLogin, forKey: Keys.launchAtLogin)
             syncLaunchAtLogin()
@@ -80,14 +86,14 @@ class DisplayManager: ObservableObject {
     }
 
     // picker selection: "all" or displayID string
-    @Published var selectedDisplayID: String = "all" {
+    @Published public var selectedDisplayID: String = "all" {
         didSet {
             UserDefaults.standard.set(selectedDisplayID, forKey: Keys.selectedDisplayID)
             syncSelectedDisplayToGlobalProperties()
         }
     }
 
-    @Published var displaySettings: [String: DisplaySetting] = [:] {
+    @Published public var displaySettings: [String: DisplaySetting] = [:] {
         didSet {
             if let data = try? JSONEncoder().encode(displaySettings) {
                 UserDefaults.standard.set(data, forKey: Keys.displaySettings)
@@ -95,7 +101,7 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    @Published var appRules: [AppRule] = [] {
+    @Published public var appRules: [AppRule] = [] {
         didSet {
             if let data = try? JSONEncoder().encode(appRules) {
                 UserDefaults.standard.set(data, forKey: Keys.appRules)
@@ -105,13 +111,13 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    @Published var activeRuleAppName: String? = nil {
+    @Published public var activeRuleAppName: String? = nil {
         didSet {
             updateActiveAppRuleCachedPointer()
         }
     }
 
-    @Published var timeRules: [TimeRule] = [] {
+    @Published public var timeRules: [TimeRule] = [] {
         didSet {
             if let data = try? JSONEncoder().encode(timeRules) {
                 UserDefaults.standard.set(data, forKey: Keys.timeRules)
@@ -120,7 +126,7 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    @Published var activeTimeRuleId: UUID? = nil {
+    @Published public var activeTimeRuleId: UUID? = nil {
         didSet {
             updateActiveTimeRuleCachedPointer()
         }
@@ -129,6 +135,14 @@ class DisplayManager: ObservableObject {
     // MARK: - Cached Rule Pointers (O(1) Access)
     private var activeAppRule: AppRule? = nil
     private var activeTimeRule: TimeRule? = nil
+
+    // MARK: - Services (Dependency Injection)
+    private let displayService: DisplayServiceProtocol
+    private let clockService: ClockServiceProtocol
+    private let workspaceService: WorkspaceServiceProtocol
+    private let appService: AppServiceProtocol
+    private let shortcutService: ShortcutServiceProtocol
+    private var workspaceSubscription: WorkspaceSubscription?
 
     // MARK: - Private / App-tracking properties
 
@@ -146,18 +160,30 @@ class DisplayManager: ObservableObject {
         static let timeRules         = "timeRules"
     }
 
-    private var timeRuleTimer: Timer?
+    private var timeRuleTimer: ClockTimer?
 
     private let tableSize = 256
     private var originalTables: [CGDirectDisplayID: GammaTable] = [:]
     private var isSyncingProperties = false
 
-    var lastActiveAppBundleIdentifier: String?
-    var lastActiveAppName: String?
+    public var lastActiveAppBundleIdentifier: String?
+    public var lastActiveAppName: String?
 
     // MARK: - Init
 
-    init() {
+    public init(
+        displayService: DisplayServiceProtocol = LiveDisplayService(),
+        clockService: ClockServiceProtocol = LiveClockService(),
+        workspaceService: WorkspaceServiceProtocol = LiveWorkspaceService(),
+        appService: AppServiceProtocol = LiveAppService(),
+        shortcutService: ShortcutServiceProtocol = LiveShortcutService()
+    ) {
+        self.displayService = displayService
+        self.clockService = clockService
+        self.workspaceService = workspaceService
+        self.appService = appService
+        self.shortcutService = shortcutService
+
         let savedReduction    = UserDefaults.standard.double(forKey: Keys.reduction)
         let savedEnabled      = UserDefaults.standard.bool(forKey: Keys.isEnabled)
         let savedExponent     = UserDefaults.standard.object(forKey: Keys.curveExponent) as? Double ?? 4.0
@@ -203,6 +229,7 @@ class DisplayManager: ObservableObject {
         updateActiveAppRuleCachedPointer()
         updateActiveTimeRuleCachedPointer()
 
+        // Must happen after properties initialization
         saveOriginalTables()
         syncLaunchAtLogin()
 
@@ -220,12 +247,12 @@ class DisplayManager: ObservableObject {
         }
 
         // 글로벌 단축키 설정 (Carbon ShortcutManager)
-        ShortcutManager.shared.onTrigger = { [weak self] in
+        self.shortcutService.onTrigger = { [weak self] in
             guard let self = self, self.isShortcutEnabled else { return }
             self.setEnabled(!self.isEnabled)
         }
         if savedShortcutOn, let sc = savedShortcut {
-            ShortcutManager.shared.register(sc)
+            self.shortcutService.register(sc)
         }
 
         // 앱 종료 시 원본 감마 복원
@@ -247,29 +274,27 @@ class DisplayManager: ObservableObject {
         }
 
         // Observe application focus change
-        NSWorkspace.shared.notificationCenter.addObserver(
-            self,
-            selector: #selector(appDidActivate(_:)),
-            name: NSWorkspace.didActivateApplicationNotification,
-            object: nil
-        )
+        self.workspaceSubscription = workspaceService.observeActiveApplication { [weak self] bundleID, appName in
+            self?.appDidActivate(bundleID: bundleID, appName: appName)
+        }
 
         // Evaluate time rules periodically
         evaluateTimeRules()
-        timeRuleTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+        timeRuleTimer = clockService.scheduleRepeatingTimer(interval: 30) { [weak self] in
             self?.evaluateTimeRules()
         }
     }
 
     deinit {
         timeRuleTimer?.invalidate()
+        workspaceSubscription?.unsubscribe()
         restoreOriginalTables()
     }
 
     // MARK: - Public API
 
     /// Apply the current `reduction` value to active displays.
-    func applyReduction() {
+    public func applyReduction() {
         let currentActiveAppRule = activeAppRule
         let currentActiveTimeRule = activeTimeRule
 
@@ -299,7 +324,7 @@ class DisplayManager: ObservableObject {
                 var r = tables.red
                 var g = tables.green
                 var b = tables.blue
-                CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+                _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
                 continue
             }
 
@@ -317,25 +342,25 @@ class DisplayManager: ObservableObject {
                 g[i] = tables.green[i] * sf
                 b[i] = tables.blue[i]  * sf
             }
-            CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+            _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
         }
     }
 
     /// Toggle the effect on/off.
-    func setEnabled(_ enabled: Bool) {
+    public func setEnabled(_ enabled: Bool) {
         isEnabled = enabled
         applyReduction()
     }
 
     /// Restore original tables and quit.
-    func quit() {
+    public func quit() {
         restoreOriginalTables()
         NSApplication.shared.terminate(nil)
     }
 
     // MARK: - Monitor/App Rule Management
 
-    func getDisplayName(_ displayID: CGDirectDisplayID) -> String {
+    public func getDisplayName(_ displayID: CGDirectDisplayID) -> String {
         for screen in NSScreen.screens {
             if let screenNumber = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID,
                screenNumber == displayID {
@@ -345,7 +370,7 @@ class DisplayManager: ObservableObject {
         return "외장 디스플레이 (\(displayID))"
     }
 
-    func addAppRuleForLastActiveApp() {
+    public func addAppRuleForLastActiveApp() {
         guard let bundleID = lastActiveAppBundleIdentifier,
               let name = lastActiveAppName else { return }
 
@@ -360,7 +385,7 @@ class DisplayManager: ObservableObject {
         applyReduction()
     }
 
-    func deleteAppRule(at index: Int) {
+    public func deleteAppRule(at index: Int) {
         let rule = appRules[index]
         appRules.remove(at: index)
 
@@ -371,16 +396,13 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    func getAppIcon(bundleIdentifier: String) -> NSImage? {
-        if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) {
-            return NSWorkspace.shared.icon(forFile: url.path)
-        }
-        return nil
+    public func getAppIcon(bundleIdentifier: String) -> NSImage? {
+        return workspaceService.getAppIcon(bundleIdentifier: bundleIdentifier)
     }
 
-    func addTimeRule() {
+    public func addTimeRule() {
         let calendar = Calendar.current
-        let now = Date()
+        let now = clockService.currentDate()
         let hour = calendar.component(.hour, from: now)
         let endHour = (hour + 1) % 24
         
@@ -388,7 +410,7 @@ class DisplayManager: ObservableObject {
         timeRules.append(newRule)
     }
 
-    func deleteTimeRule(at index: Int) {
+    public func deleteTimeRule(at index: Int) {
         let rule = timeRules[index]
         timeRules.remove(at: index)
 
@@ -399,7 +421,7 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    func evaluateTimeRules() {
+    public func evaluateTimeRules() {
         guard isEnabled else {
             if activeTimeRuleId != nil {
                 activeTimeRuleId = nil
@@ -413,7 +435,7 @@ class DisplayManager: ObservableObject {
         }
 
         let calendar = Calendar.current
-        let now = Date()
+        let now = clockService.currentDate()
         let currentHour = calendar.component(.hour, from: now)
         let currentMinute = calendar.component(.minute, from: now)
         let currentMinutes = currentHour * 60 + currentMinute
@@ -545,17 +567,9 @@ class DisplayManager: ObservableObject {
         }
     }
 
-    @objc private func appDidActivate(_ notification: Notification) {
-        guard let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
-              let bundleID = app.bundleIdentifier else { return }
-
-        let myBundleID = Bundle.main.bundleIdentifier ?? "com.tankjw.whiteout"
-        if bundleID == myBundleID {
-            return
-        }
-
+    private func appDidActivate(bundleID: String, appName: String) {
         lastActiveAppBundleIdentifier = bundleID
-        lastActiveAppName = app.localizedName
+        lastActiveAppName = appName
 
         if let rule = appRules.first(where: { $0.bundleIdentifier == bundleID }) {
             activeRuleAppName = rule.appName
@@ -579,10 +593,10 @@ class DisplayManager: ObservableObject {
     /// 현재 연결된 모든 활성 디스플레이 ID 반환
     private func activeDisplayIDs() -> [CGDirectDisplayID] {
         var count: UInt32 = 0
-        CGGetActiveDisplayList(0, nil, &count)
+        _ = displayService.getActiveDisplayList(0, nil, &count)
         guard count > 0 else { return [] }
         var ids = [CGDirectDisplayID](repeating: 0, count: Int(count))
-        CGGetActiveDisplayList(count, &ids, &count)
+        _ = displayService.getActiveDisplayList(count, &ids, &count)
         return ids
     }
 
@@ -593,7 +607,7 @@ class DisplayManager: ObservableObject {
             var g = [CGGammaValue](repeating: 0, count: tableSize)
             var b = [CGGammaValue](repeating: 0, count: tableSize)
             var count: UInt32 = 0
-            CGGetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b, &count)
+            _ = displayService.getDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b, &count)
 
             if isTableDistorted(red: r, green: g, blue: b) {
                 print("⚠️ Warning: Display \(displayID) gamma is already distorted. Initializing with Linear Table.")
@@ -611,7 +625,7 @@ class DisplayManager: ObservableObject {
             var r = tables.red
             var g = tables.green
             var b = tables.blue
-            CGSetDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+            _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
         }
     }
 
@@ -626,7 +640,7 @@ class DisplayManager: ObservableObject {
             var g = [CGGammaValue](repeating: 0, count: tableSize)
             var b = [CGGammaValue](repeating: 0, count: tableSize)
             var count: UInt32 = 0
-            CGGetDisplayTransferByTable(id, UInt32(tableSize), &r, &g, &b, &count)
+            _ = displayService.getDisplayTransferByTable(id, UInt32(tableSize), &r, &g, &b, &count)
 
             if isTableDistorted(red: r, green: g, blue: b) {
                 print("⚠️ Warning: Newly connected Display \(id) gamma is distorted. Initializing with Linear Table.")
@@ -652,17 +666,17 @@ class DisplayManager: ObservableObject {
     /// 로그인 시 자동 실행 등록/해제 동기화
     private func syncLaunchAtLogin() {
         if launchAtLogin {
-            if SMAppService.mainApp.status != .enabled {
+            if !appService.isRegisteredForLaunchAtLogin {
                 do {
-                    try SMAppService.mainApp.register()
+                    try appService.registerForLaunchAtLogin()
                 } catch {
                     print("Failed to register SMAppService: \(error)")
                 }
             }
         } else {
-            if SMAppService.mainApp.status == .enabled {
+            if appService.isRegisteredForLaunchAtLogin {
                 do {
-                    try SMAppService.mainApp.unregister()
+                    try appService.unregisterForLaunchAtLogin()
                 } catch {
                     print("Failed to unregister SMAppService: \(error)")
                 }

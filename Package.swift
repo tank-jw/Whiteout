@@ -6,16 +6,36 @@ let package = Package(
     platforms: [
         .macOS(.v13)
     ],
+    products: [
+        .library(
+            name: "WhiteOutKit",
+            targets: ["WhiteOutKit"]
+        )
+    ],
     dependencies: [],
     targets: [
         .executableTarget(
             name: "WhiteOut",
-            dependencies: [],
+            dependencies: [
+                "WhiteOutKit"
+            ],
             path: "Sources/Whiteout",
             linkerSettings: [
-                // Carbon framework: EventHotKey API (RegisterEventHotKey 등)
                 .linkedFramework("Carbon")
             ]
+        ),
+        .target(
+            name: "WhiteOutKit",
+            dependencies: [],
+            path: "Sources/WhiteOutKit",
+            linkerSettings: [
+                .linkedFramework("Carbon")
+            ]
+        ),
+        .testTarget(
+            name: "WhiteOutKitTests",
+            dependencies: ["WhiteOutKit"],
+            path: "Tests/WhiteOutKitTests"
         )
     ]
 )

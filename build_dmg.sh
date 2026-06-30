@@ -5,7 +5,7 @@ set -e
 
 APP_NAME="WhiteOut"
 BUNDLE_ID="com.tankjw.whiteout"
-VERSION="1.7.2"
+VERSION="1.7.2.1"
 DMG_NAME="${APP_NAME}.dmg"
 ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"
@@ -120,21 +120,43 @@ tell application "Finder"
     open disk "${ACTUAL_VOL_NAME}"
     delay 2
     set containerWindow to container window of disk "${ACTUAL_VOL_NAME}"
-    set current view of containerWindow to icon view
-    set toolbar visible of containerWindow to false
-    set statusbar visible of containerWindow to false
-    set the bounds of containerWindow to {400, 100, 1000, 700} -- 가로 600, 세로 600
     
-    set viewOptions to icon view options of containerWindow
-    set icon size of viewOptions to 115
-    set arrangement of viewOptions to not arranged
-    set background picture of viewOptions to file ".background:dmg_background.png" of disk "${ACTUAL_VOL_NAME}"
+    try
+        set current view of containerWindow to icon view
+    end try
+    
+    try
+        set toolbar visible of containerWindow to false
+    end try
+    
+    try
+        set statusbar visible of containerWindow to false
+    end try
+    
+    try
+        set the bounds of containerWindow to {400, 100, 1000, 700} -- 가로 600, 세로 600
+    end try
+    
+    delay 1
+    
+    try
+        set viewOptions to icon view options of containerWindow
+        set icon size of viewOptions to 115
+        set arrangement of viewOptions to not arranged
+        set background picture of viewOptions to file ".background:dmg_background.png" of disk "${ACTUAL_VOL_NAME}"
+    end try
     
     -- 앱 아이콘 및 Applications 심볼릭 링크 위치 정렬
-    set position of item "WhiteOut.app" of containerWindow to {150, 310}
-    set position of item "Applications" of containerWindow to {450, 310}
+    try
+        set position of item "WhiteOut.app" of containerWindow to {150, 310}
+    end try
+    try
+        set position of item "Applications" of containerWindow to {450, 310}
+    end try
     
-    update every item of containerWindow
+    try
+        update every item of containerWindow
+    end try
     delay 2
     close containerWindow
 end tell

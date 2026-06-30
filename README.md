@@ -138,6 +138,7 @@ Sources/Whiteout/
 
 | 버전 | 내용 |
 |---|---|
+| **v1.7.2.1** | **품질 보증 테스트 스위트 및 의존성 주입(DI) 아키텍처 도입**<br>- `Package.swift` 구조 개편을 통해 코어 로직을 `WhiteOutKit` 라이브러리로 분리하고 단위/통합 테스트 타겟 구축<br>- 모의 디스플레이 및 시간 환경 하에서 작동하는 9대 시나리오 전수 검사 스위트(`swift test`) 완성<br>- 자동 규칙(시간/앱) 적용 시 `UserDefaults` 사용자 초기 설정이 오버라이트되는 버그 수정 |
 | **v1.7.2** | **코드 구조 모듈화 리팩토링 및 안정성/패키징 대폭 개선**<br>- 비대해진 `ContentView.swift`를 `CurveGraphView`, `DetailsSectionView`, `Models` 파일로 역할별 깔끔히 모듈화 분리<br>- 앱 강제 종료 상태에서 재시작 시 왜곡된 감마가 오인 캐싱되는 복원력 버그 방지 가드(`isTableDistorted`) 탑재<br>- Active Rules 포인터 O(1) 캐싱 및 시간 규칙 비동기 중복 연산 최적화<br>- `build_dmg.sh` 내 고해상도 앱 아이콘(`AppIcon.icns`) 누락 패키징 버그 수정 및 Info.plist CFBundleIconFile 주입 완료 |
 | **v1.7.1.1** | **내부 백엔드 코드 리팩토링 및 최적화**<br>- 디스플레이별 감쇄율 계산 루프와 중복 함수들(`applyReductionForActiveRule`, `applyReductionForActiveTimeRule`)을 단일화된 연산 메서드로 병합하여 중복 코드를 극적으로 줄이고 유지 보수 편의성 극대화 |
 | **v1.7.1** | **시간별 화이트포인트 자동 설정 규칙 기능 추가**<br>- 사용자가 지정한 시간 범위(예: 17:00 ~ 23:00)에 맞춰 화이트포인트 감소 강도가 실시간으로 자동 변경되고, 범위를 벗어날 시 원래 설정값으로 자동 복원되는 주기 엔진 및 Time Picker UI 도입 |
@@ -316,6 +317,7 @@ Sources/Whiteout/
 
 * **Core App Developer**:
   - [2026-06-30] 비대화되었던 SwiftUI 파일(ContentView)을 CurveGraphView, DetailsSectionView, Models로 깔끔하게 컴포지션 분리하여 가독성을 높이고, 이미 왜곡된 감마 상태로 재시작 시 오인 캐싱을 유발하는 치명적인 복원력 버그를 선형(Linear) 감마 재생성 가드를 통해 완벽하게 해결함.
+  - [2026-06-30] DisplayManager를 5개의 독립된 서비스 프로토콜로 의존성 주입 리팩토링하고 WhiteOutKit 라이브러리 분할 및 단위 테스트 타겟(WhiteOutKitTests)을 구축하여 테스트 가능성 및 모듈성을 대폭 향상시킴.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:
@@ -331,6 +333,16 @@ Sources/Whiteout/
   - [2026-06-30] 프로젝트 전체 대화 및 5종의 아키텍처 워크스루(Swift 앱, 웹 프론트엔드, 호스팅 배포, DMG 빌드 등)를 정밀 분석하여, AI 협업 싱글 소스용 고밀도 '핵심 의사결정 이력(Key Decision Log)'을 정교하게 재작성함.
 * **QA Engineer & Integrity Verifier**:
   - [2026-06-30] 감쇄율 연동, 곡선 지수 보정, 다중 디스플레이, 시간/앱별 자동화 O(1) 매핑, 전역 핫키 및 왜곡된 감마의 복원 가드(isTableDistorted) 검증을 포괄하는 8대 무결성 시나리오 교차 테스트 프로토콜을 수립하고 전원 통과를 확인하여 v1.7.2로 배포함.
+  - [2026-06-30] DisplayManager의 감쇄 공식, 앱/시간 자동화 규칙, 전역 핫키 토글, 그리고 왜곡된 감마 복원 가드를 검증하는 5대 시나리오 통합 테스트 케이스를 구현하고, 테스트 중 발견된 Rule 활성화 시 UserDefaults의 사용자 설정 값이 오버라이트되는 버그를 수정함.
+* **Preview Explorer**:
+  - [2026-06-30] CoreGraphics C-API, Timer, NSWorkspace, 및 SMAppService 등의 강결합을 해제하기 위한 프로토콜 기반 의존성 주입(Dependency Injection) 아키텍처를 설계하고, 자정 교차 시간 규칙 테스트용 MockClockService 등 5종의 Mock 구조를 수립함.
+  - [2026-06-30] Designed a testable architecture for Whiteout using dependency injection, decoupling DisplayManager from CoreGraphics, Date/Timer, NSWorkspace, and SMAppService with fully mockable protocols.
+  - [2026-06-30] DisplayManager 내의 6대 핵심 결합 위치를 정밀 추적하고, 기존 SwiftUI 앱의 하위 호환성을 유지하기 위한 기본값 생성자(Default Initializer Param) 형태의 DI 리팩토링 방안을 제안함.
+* **Preview Auditor**:
+  - [2026-06-30] macOS Whiteout 통합 테스트 스위트와 DisplayManager/DisplayServices의 무결성 검증을 완료하고, Mocking 환경 하에서 10초 이내(실제 0.085초)의 헤드리스 정상 수행을 입증함.
+* **Preview Packaging Tester**:
+  - [2026-06-30] `build_dmg.sh` 스크립트를 사용하여 arm64 및 x86_64 아키텍처용 유니버설 바이너리 생성 및 DMG/ZIP 패키징 전 과정을 성공적으로 검증함.
+
 
 ---
 

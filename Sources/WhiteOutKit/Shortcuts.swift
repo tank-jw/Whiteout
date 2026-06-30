@@ -4,11 +4,16 @@ import Foundation
 
 // MARK: - KeyShortcut Model
 
-struct KeyShortcut: Codable, Equatable {
-    let keyCode: UInt32
-    let carbonModifiers: UInt32
+public struct KeyShortcut: Codable, Equatable {
+    public let keyCode: UInt32
+    public let carbonModifiers: UInt32
 
-    var displayString: String {
+    public init(keyCode: UInt32, carbonModifiers: UInt32) {
+        self.keyCode = keyCode
+        self.carbonModifiers = carbonModifiers
+    }
+
+    public var displayString: String {
         var result = ""
         if carbonModifiers & UInt32(controlKey) != 0 { result += "⌃" }
         if carbonModifiers & UInt32(optionKey)  != 0 { result += "⌥" }
@@ -18,7 +23,7 @@ struct KeyShortcut: Codable, Equatable {
         return result
     }
 
-    static func keyCodeToString(_ code: UInt32) -> String {
+    public static func keyCodeToString(_ code: UInt32) -> String {
         let map: [UInt32: String] = [
             0:"A",  11:"B", 8:"C",  2:"D",  14:"E", 3:"F",
             5:"G",  4:"H",  34:"I", 38:"J", 40:"K", 37:"L",
@@ -37,7 +42,7 @@ struct KeyShortcut: Codable, Equatable {
     }
 
     /// NSEvent의 키 입력에서 KeyShortcut 생성 (modifier 없으면 nil)
-    static func from(event: NSEvent) -> KeyShortcut? {
+    public static func from(event: NSEvent) -> KeyShortcut? {
         let nsModifiers = event.modifierFlags.intersection([.command, .option, .control, .shift])
         guard !nsModifiers.isEmpty else { return nil }
         var carbon: UInt32 = 0

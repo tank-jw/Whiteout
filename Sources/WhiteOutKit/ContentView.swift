@@ -1,9 +1,11 @@
 import SwiftUI
 
-struct ContentView: View {
+public struct ContentView: View {
     @EnvironmentObject var dm: DisplayManager
     @EnvironmentObject var updater: UpdateChecker
     @State private var showDetails = false
+
+    public init() {}
 
     // MARK: - Bindings
 
@@ -36,7 +38,7 @@ struct ContentView: View {
 
     // MARK: - Body
 
-    var body: some View {
+    public var body: some View {
         HStack(spacing: 0) {
             VStack(spacing: 0) {
                 headerSection
