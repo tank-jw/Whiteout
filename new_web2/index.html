@@ -18,10 +18,20 @@
     <!-- i18n Language Detection Script -->
     <script>
         (function() {
-            const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-            const isKorean = lang.startsWith('ko');
+            let isKorean = false;
+            try {
+                const stored = localStorage.getItem('whiteout_lang');
+                if (stored) {
+                    isKorean = stored === 'ko';
+                } else {
+                    const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+                    isKorean = lang.startsWith('ko');
+                }
+            } catch (e) {
+                const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+                isKorean = lang.startsWith('ko');
+            }
             document.documentElement.lang = isKorean ? 'ko' : 'en';
-            // Store globally for content switching
             window.__isKorean = isKorean;
         })();
     </script>

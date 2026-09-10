@@ -18,10 +18,20 @@
     <!-- i18n Language Detection Script -->
     <script>
         (function() {
-            const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-            const isKorean = lang.startsWith('ko');
+            let isKorean = false;
+            try {
+                const stored = localStorage.getItem('whiteout_lang');
+                if (stored) {
+                    isKorean = stored === 'ko';
+                } else {
+                    const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+                    isKorean = lang.startsWith('ko');
+                }
+            } catch (e) {
+                const lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+                isKorean = lang.startsWith('ko');
+            }
             document.documentElement.lang = isKorean ? 'ko' : 'en';
-            // Store globally for content switching
             window.__isKorean = isKorean;
         })();
     </script>
@@ -180,7 +190,7 @@
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" xmlns="http://www.w3.org/2000/svg">
                                             <polyline points="20 6 9 17 4 12"/>
                                         </svg>
-                                        눈 보호 작동중
+                                        <span data-ko="눈 보호 작동중" data-en="Protection Active">Protection Active</span>
                                     </div>
                                     <div class="browser-scroll-container">
                                         <div class="browser-content-mock">
@@ -381,31 +391,28 @@
             </div>
             
             <div class="tech-explanation">
-                <div class="badge">Technical Precision</div>
-                <h2 style="font-size:2.25rem; margin-bottom:1.5rem;">디스플레이 화질 보존을 위한 독보적인 GPU 감마 제어</h2>
-                <p style="margin-bottom:1.5rem;">
-                    대부분의 눈 보호 앱들은 편의성을 위해 화면 위에 단순 회색 레이어를 얹는 방식으로 눈을 속입니다. 
-                    이러한 쉐도우 오버레이는 수백만 원 가치의 고성능 레티나 디스플레이의 트루 블랙(True Black) 표현력을 전부 휴지조각으로 만들어 버립니다.
-                </p>
+                <div class="badge" data-ko="독보적인 기술 정밀도" data-en="Technical Precision">Technical Precision</div>
+                <h2 style="font-size:2.25rem; margin-bottom:1.5rem;" data-ko="디스플레이 화질 보존을 위한 독보적인 GPU 감마 제어" data-en="Proprietary GPU Gamma Control for True Display Preservation">Proprietary GPU Gamma Control for True Display Preservation</h2>
+                <p style="margin-bottom:1.5rem;" data-ko="대부분의 눈 보호 앱들은 편의성을 위해 화면 위에 단순 회색 레이어를 얹는 방식으로 눈을 속입니다. 이러한 쉐도우 오버레이는 수백만 원 가치의 고성능 레티나 디스플레이의 트루 블랙(True Black) 표현력을 전부 휴지조각으로 만들어 버립니다." data-en="Most eye protection apps take the shortcut of drawing a semi-transparent grey overlay across your screen. This cheap shadow ruins the true black capabilities and contrast of your premium Retina display.">Most eye protection apps take the shortcut of drawing a semi-transparent grey overlay across your screen. This cheap shadow ruins the true black capabilities and contrast of your premium Retina display.</p>
                 <ul class="bullet-list">
                     <li class="bullet-item">
                         <!-- Check Icon SVG -->
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143z" clip-rule="evenodd" />
                         </svg>
-                        <span><strong>하드웨어 레벨 감마 변조</strong>: 모니터 전원 및 GPU 출력 감마 테이블에 직접 명령을 내려 명암 손실 없이 고휘도 에너지 파장만 골라냅니다.</span>
+                        <span data-ko="<strong>하드웨어 레벨 감마 변조</strong>: 모니터 전원 및 GPU 출력 감마 테이블에 직접 명령을 내려 명암 손실 없이 고휘도 에너지 파장만 골라냅니다." data-en="<strong>Hardware-Level Gamma Modulation</strong>: Directly manipulates GPU output lookup tables (LUT) to eliminate blinding white energy without sacrificing contrast."><strong>Hardware-Level Gamma Modulation</strong>: Directly manipulates GPU output lookup tables (LUT) to eliminate blinding white energy without sacrificing contrast.</span>
                     </li>
                     <li class="bullet-item">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143z" clip-rule="evenodd" />
                         </svg>
-                        <span><strong>비선형 커브 압축</strong>: 중간 명조 영역의 색 왜곡을 예방하기 위해 알고리즘에 기반한 완만한 비선형 커브 억제를 실행합니다.</span>
+                        <span data-ko="<strong>비선형 커브 압축</strong>: 중간 명조 영역의 색 왜곡을 예방하기 위해 알고리즘에 기반한 완만한 비선형 커브 억제를 실행합니다." data-en="<strong>Non-linear Curve Compression</strong>: Employs an exponential compression curve to suppress peak white points while leaving mid-tones and darks untouched."><strong>Non-linear Curve Compression</strong>: Employs an exponential compression curve to suppress peak white points while leaving mid-tones and darks untouched.</span>
                     </li>
                     <li class="bullet-item">
                         <svg viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143z" clip-rule="evenodd" />
                         </svg>
-                        <span><strong>멀티 디스플레이 동기화</strong>: 듀얼, 트리플 모니터 사용 환경에서도 시선이 이동할 때 발생하는 동공의 급격한 재적응 충격을 방지하기 위해 연결된 모든 디스플레이의 값을 정밀하게 동기화합니다.</span>
+                        <span data-ko="<strong>멀티 디스플레이 동기화</strong>: 듀얼, 트리플 모니터 사용 환경에서도 시선이 이동할 때 발생하는 동공의 급격한 재적응 충격을 방지하기 위해 연결된 모든 디스플레이의 값을 정밀하게 동기화합니다." data-en="<strong>Multi-Display Synchronization</strong>: Automatically synchronizes white point suppression across all internal and external monitors, eliminating focus shocks when glancing between screens."><strong>Multi-Display Synchronization</strong>: Automatically synchronizes white point suppression across all internal and external monitors, eliminating focus shocks when glancing between screens.</span>
                     </li>
                 </ul>
             </div>
@@ -424,42 +431,42 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>비교 지표</th>
-                            <th>일반 소프트웨어 오버레이 앱</th>
-                            <th class="col-featured">TrueBlack WhitePoint (화이트아웃)</th>
-                            <th>눈 건강에 미치는 생리학적 영향</th>
+                            <th data-ko="비교 지표" data-en="Metric">Metric</th>
+                            <th data-ko="일반 소프트웨어 오버레이 앱" data-en="Generic Dimmer Apps">Generic Dimmer Apps</th>
+                            <th class="col-featured" data-ko="WhiteOut (GPU 감마 제어)" data-en="WhiteOut (Hardware GPU LUT)">WhiteOut (Hardware GPU LUT)</th>
+                            <th data-ko="눈 건강에 미치는 생리학적 영향" data-en="Physiological Impact on Eyes">Physiological Impact on Eyes</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong>문서 명암비 (Contrast)</strong></td>
-                            <td><span class="status-badge status-negative">심각한 손상 (회색조화)</span></td>
-                            <td class="col-featured"><span class="status-badge status-positive">100% 완벽 보존 (리얼 블랙)</span></td>
-                            <td>모양체근 초점 피로(조절 피로) 원천 방지</td>
+                            <td><strong data-ko="문서 명암비 (Contrast)" data-en="Document Contrast Ratio">Document Contrast Ratio</strong></td>
+                            <td><span class="status-badge status-negative" data-ko="심각한 손상 (회색조화)" data-en="Severely Degraded (Greyed)">Severely Degraded (Greyed)</span></td>
+                            <td class="col-featured"><span class="status-badge status-positive" data-ko="100% 완벽 보존 (리얼 블랙)" data-en="100% Preserved (True Black)">100% Preserved (True Black)</span></td>
+                            <td data-ko="모양체근 초점 피로(조절 피로) 원천 방지" data-en="Eliminates ciliary muscle accommodation strain">Eliminates ciliary muscle accommodation strain</td>
                         </tr>
                         <tr>
-                            <td><strong>백색광 자극 (Glare Energy)</strong></td>
-                            <td>불균형하고 거친 임시 감소</td>
-                            <td class="col-featured"><span class="status-badge status-positive">곡선형 정밀 압축 (최대 30%)</span></td>
-                            <td>동공괄약근 긴장 완화 및 안구 통증 예방</td>
+                            <td><strong data-ko="백색광 자극 (Glare Energy)" data-en="White Point Glare Energy">White Point Glare Energy</strong></td>
+                            <td data-ko="불균형하고 거친 임시 감소" data-en="Coarse & uneven linear dimming">Coarse & uneven linear dimming</td>
+                            <td class="col-featured"><span class="status-badge status-positive" data-ko="곡선형 정밀 압축 (최대 30%)" data-en="Precision curve compression (up to 30%)">Precision curve compression (up to 30%)</span></td>
+                            <td data-ko="동공괄약근 긴장 완화 및 안구 통증 예방" data-en="Relieves pupillary sphincter spasms & eye aches">Relieves pupillary sphincter spasms & eye aches</td>
                         </tr>
                         <tr>
-                            <td><strong>멀티 모니터 대응</strong></td>
-                            <td>반응이 없거나 화면 일부 깜빡임 발생</td>
-                            <td class="col-featured"><span class="status-badge status-positive">모든 디스플레이 즉시 실시간 동기화</span></td>
-                            <td>시선 이동 시 동공의 급격한 피로 충격 차단</td>
+                            <td><strong data-ko="멀티 모니터 대응" data-en="Multi-Monitor Support">Multi-Monitor Support</strong></td>
+                            <td data-ko="반응이 없거나 화면 일부 깜빡임 발생" data-en="Flickering or unsupported on externals">Flickering or unsupported on externals</td>
+                            <td class="col-featured"><span class="status-badge status-positive" data-ko="모든 디스플레이 즉시 실시간 동기화" data-en="Instant real-time sync across all screens">Instant real-time sync across all screens</span></td>
+                            <td data-ko="시선 이동 시 동공의 급격한 피로 충격 차단" data-en="Blocks pupil dilation shocks when switching screens">Blocks pupil dilation shocks when switching screens</td>
                         </tr>
                         <tr>
-                            <td><strong>GPU 가속 & 리소스 점유</strong></td>
-                            <td>CPU 및 메모리 점유율 다소 높음</td>
-                            <td class="col-featured"><span class="status-badge status-positive">GPU 하드웨어 레벨 연산 (점유율 0%)</span></td>
-                            <td>맥북 발열 방지 및 부드러운 시스템 프레임 유지</td>
+                            <td><strong data-ko="GPU 가속 & 리소스 점유" data-en="Performance & Footprint">Performance & Footprint</strong></td>
+                            <td data-ko="CPU 및 메모리 점유율 다소 높음" data-en="Higher CPU/RAM usage from overlay rendering">Higher CPU/RAM usage from overlay rendering</td>
+                            <td class="col-featured"><span class="status-badge status-positive" data-ko="GPU 하드웨어 레벨 연산 (점유율 0%)" data-en="Zero CPU overhead (Hardware LUT rewrite)">Zero CPU overhead (Hardware LUT rewrite)</span></td>
+                            <td data-ko="맥북 발열 방지 및 부드러운 시스템 프레임 유지" data-en="No battery drain, silent operation, zero thermal load">No battery drain, silent operation, zero thermal load</td>
                         </tr>
                         <tr>
-                            <td><strong>멜라토닌 파괴 방지</strong></td>
-                            <td><span class="status-badge status-warning">효과가 부분적임</span></td>
-                            <td class="col-featured"><span class="status-badge status-positive">고밀도 광자 제어로 우수한 효과</span></td>
-                            <td>생체 생리 리듬 및 수면 주기 정상 수호</td>
+                            <td><strong data-ko="멜라토닌 파괴 방지" data-en="Circadian / Melatonin Protection">Circadian / Melatonin Protection</strong></td>
+                            <td><span class="status-badge status-warning" data-ko="효과가 부분적임" data-en="Partial / Ineffective">Partial / Ineffective</span></td>
+                            <td class="col-featured"><span class="status-badge status-positive" data-ko="고밀도 광자 제어로 우수한 효과" data-en="Highly effective via peak photon reduction">Highly effective via peak photon reduction</span></td>
+                            <td data-ko="생체 생리 리듬 및 수면 주기 정상 수호" data-en="Protects circadian rhythm and supports natural sleep">Protects circadian rhythm and supports natural sleep</td>
                         </tr>
                     </tbody>
                 </table>
