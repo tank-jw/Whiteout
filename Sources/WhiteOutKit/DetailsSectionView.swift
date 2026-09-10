@@ -270,58 +270,28 @@ struct DetailsSectionView: View {
     // MARK: - 3. App Rules Card
 
     private func appRulesCard(isEN: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(spacing: 8) {
             HStack {
                 Label(LocalizedStrings.appRulesSectionTitle(isEN: isEN), systemImage: "app.badge")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(Color.secondary)
                 Spacer()
-            }
-
-            // Add current app button (Restored from Main develop)
-            if let lastAppName = dm.lastActiveAppName {
                 Button {
                     withAnimation {
                         dm.addAppRuleForLastActiveApp()
                     }
                 } label: {
-                    HStack(spacing: 6) {
-                        if let bundleID = dm.lastActiveAppBundleIdentifier,
-                           let icon = dm.getAppIcon(bundleIdentifier: bundleID) {
-                            Image(nsImage: icon)
-                                .resizable()
-                                .frame(width: 12, height: 12)
-                        } else {
-                            Image(systemName: "plus.app.fill")
-                                .font(.system(size: 11))
-                        }
-                        Text(LocalizedStrings.addRuleBtn(isEN: isEN, appName: lastAppName))
+                    HStack(spacing: 2) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 9, weight: .bold))
+                        Text(isEN ? "Add" : "추가")
                             .font(.system(size: 10, weight: .semibold))
                     }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.orange.opacity(0.08))
-                    .cornerRadius(6)
                     .foregroundStyle(.orange)
-                }
-                .buttonStyle(.plain)
-            } else {
-                Button {
-                    withAnimation {
-                        dm.addAppRuleForLastActiveApp()
-                    }
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "plus.app.fill")
-                            .font(.system(size: 11))
-                        Text(LocalizedStrings.addRuleBtnDefault(isEN: isEN))
-                            .font(.system(size: 10, weight: .semibold))
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.orange.opacity(0.08))
-                    .cornerRadius(6)
-                    .foregroundStyle(.orange)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(Color.orange.opacity(0.1))
+                    .clipShape(Capsule())
                 }
                 .buttonStyle(.plain)
             }
