@@ -332,6 +332,7 @@ Sources/Whiteout/
   - [2026-09-11] 랜딩 페이지 다운로드 링크를 고정 버전(v1.0.0)에서 GitHub Releases latest 엔드포인트로 현대화하고, 실제 시스템 요구사항에 맞추어 최소 OS 요구 사양을 macOS 13.0+로 정정함.
   - [2026-09-11] 웹 네비게이션 상단 로고를 macOS 네이티브 DMG 앱 아이콘(`AppIcon.png`)으로 통일하고, 레이아웃 변경 없이 차가운 쿨 다크 톤에서 눈이 편안한 누르스름한 웜 다크 톤(Warm Espresso & Amber Gold)으로 컬러 시스템을 리디자인함.
   - [2026-09-11] 기술 정밀도(Tech Explanation) 및 비교 분석 테이블(Comparison Table), 슬라이더 뱃지 등에서 누락되었던 20여 개 요소에 data-ko / data-en 및 localStorage 우선 감지 스크립트를 전수 매핑하여, 영문 모드(EN) 접속 시 한글이 단 하나도 섞이지 않는 완전한 글로벌 다국어 렌더링 무결성을 달성함.
+  - [2026-09-11] 웹 전체의 테마를 순백색(0% 감쇄)부터 20% 감쇄된 웜 오프화이트까지 Hero 인터랙티브 비교 슬라이더의 위치(0~100%)와 60fps로 실시간 연동되는 Dynamic Whiteout Lerp 시스템을 구현하고, 텍스트 대비(Contrast) 100% 보존 가독성 및 핸들 실시간 감쇄율 뱃지, 슬라이더 하단 라벨 겹침 방지 레이아웃을 완성함.
 * **DevOps & Web Hosting Consultant**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Business Strategist**:

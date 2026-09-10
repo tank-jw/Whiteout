@@ -3,6 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const panelAfter = document.getElementById('panelAfter');
     const handle = document.getElementById('sliderHandle');
     
+    const badgeVal = document.getElementById('sliderBadgeVal');
+    const root = document.documentElement;
+    
     function updateSliderWidth() {
         const rect = slider.getBoundingClientRect();
         slider.style.setProperty('--slider-width', `${rect.width}px`);
@@ -13,6 +16,57 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!slider || !panelAfter || !handle) return;
     
     let isDragging = false;
+
+    function applyLiveWhiteout(position) {
+        // position: 0 (leftmost) -> 100 (rightmost)
+        // t: 0.0 (0% reduction) -> 1.0 (20% reduction)
+        const t = Math.max(0, Math.min(1, position / 100));
+        const reductionRatio = t * 0.20;
+        const pct = Math.round(t * 20);
+        
+        // Dynamic Whitepoint reduction color interpolation:
+        // t = 0: Pure white (#ffffff, rgb(255, 255, 255))
+        // t = 1: Soothing warm paper off-white (#e4ded2, rgb(228, 222, 210))
+        const rMain = Math.round(255 - t * 27);
+        const gMain = Math.round(255 - t * 33);
+        const bMain = Math.round(255 - t * 45);
+        const bgMain = `rgb(${rMain}, ${gMain}, ${bMain})`;
+
+        // Surface interpolation (fbfaf7 -> dcd6ca)
+        const rSurf = Math.round(251 - t * 31);
+        const gSurf = Math.round(250 - t * 36);
+        const bSurf = Math.round(247 - t * 45);
+        const bgSurface = `rgb(${rSurf}, ${gSurf}, ${bSurf})`;
+
+        // Card interpolation (ffffff -> e8e3d8)
+        const rCard = Math.round(255 - t * 23);
+        const gCard = Math.round(255 - t * 28);
+        const bCard = Math.round(255 - t * 39);
+        const bgCard = `rgb(${rCard}, ${gCard}, ${bCard})`;
+
+        // Border interpolation (e5dfd3 -> c3bbaa)
+        const rBrd = Math.round(229 - t * 34);
+        const gBrd = Math.round(223 - t * 36);
+        const bBrd = Math.round(211 - t * 41);
+        const borderColor = `rgb(${rBrd}, ${gBrd}, ${bBrd})`;
+
+        // Nav Glassmorphism background
+        const navBg = `rgba(${rMain}, ${gMain}, ${bMain}, 0.92)`;
+
+        // Update CSS Variables on Root
+        root.style.setProperty('--reduction-ratio', reductionRatio.toFixed(2));
+        root.style.setProperty('--white-reduction-pct', `${pct}%`);
+        root.style.setProperty('--bg-main', bgMain);
+        root.style.setProperty('--bg-surface', bgSurface);
+        root.style.setProperty('--bg-card', bgCard);
+        root.style.setProperty('--border-color', borderColor);
+        root.style.setProperty('--nav-bg', navBg);
+
+        // Update handle badge display
+        if (badgeVal) {
+            badgeVal.textContent = pct === 0 ? '0%' : `-${pct}%`;
+        }
+    }
     
     function moveSlider(x) {
         const rect = slider.getBoundingClientRect();
@@ -22,10 +76,16 @@ document.addEventListener('DOMContentLoaded', () => {
         if (position < 0) position = 0;
         if (position > 100) position = 100;
         
-        // Apply position
+        // Apply position to slider UI
         panelAfter.style.width = `${position}%`;
         handle.style.left = `${position}%`;
+
+        // Apply real-time Whiteout to entire webpage
+        applyLiveWhiteout(position);
     }
+
+    // Initialize with 50% slider position (10% reduction)
+    applyLiveWhiteout(50);
     
     // Mouse events
     slider.addEventListener('mousedown', (e) => {
@@ -59,6 +119,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     window.addEventListener('touchend', () => {
+        isDragging = false;
+    });
+    window.addEventListener('touchcancel', () => {
         isDragging = false;
     });
     

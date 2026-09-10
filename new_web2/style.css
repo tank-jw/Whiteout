@@ -1524,5 +1524,30 @@ footer {
   .cta-box {
     padding: 3rem 1.5rem;
   }
+  .slider-label {
+    font-size: 0.65rem;
+    padding: 0.25rem 0.5rem;
+    max-width: 42%;
+    bottom: 0.8rem;
+  }
+  .label-before {
+    right: 0.75rem;
+  }
+  .label-after {
+    left: 0.75rem;
+  }
+  .slider-badge-val {
+    font-size: 0.72rem;
+    padding: 0.18rem 0.5rem;
+    top: calc(50% - 42px);
+  }
+  .slider-button {
+    width: 38px;
+    height: 38px;
+  }
+  .slider-button svg {
+    width: 15px;
+    height: 15px;
+  }
 }
 
