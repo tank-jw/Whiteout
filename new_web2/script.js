@@ -24,9 +24,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const reductionRatio = t * 0.20;
         const pct = Math.round(t * 20);
         
-        // Update CSS Variables on Root for reduction tracking
+        // Pure Whitepoint Reduction (Neutral Achromatic Gamma Attenuation):
+        // Whiteout reduces white luminance purely without color distortion or yellowing.
+        // t = 0 (0% reduction): Pure white (#ffffff, rgb(255, 255, 255))
+        // t = 1 (20% reduction): Neutral dimmer white (#cccccc, rgb(204, 204, 204))
+        const lumMain = Math.round(255 - t * 51); // 255 -> 204
+        const bgMain = `rgb(${lumMain}, ${lumMain}, ${lumMain})`;
+
+        // Surface interpolation (248 -> 198, clean neutral grey)
+        const lumSurf = Math.round(248 - t * 50);
+        const bgSurface = `rgb(${lumSurf}, ${lumSurf}, ${lumSurf})`;
+
+        // Card interpolation (255 -> 208, neutral clean white-to-light-grey)
+        const lumCard = Math.round(255 - t * 47);
+        const bgCard = `rgb(${lumCard}, ${lumCard}, ${lumCard})`;
+
+        // Border interpolation (226 -> 175)
+        const lumBrd = Math.round(226 - t * 51);
+        const borderColor = `rgb(${lumBrd}, ${lumBrd}, ${lumBrd})`;
+
+        // Nav Glassmorphism background (neutral transparent white)
+        const navBg = `rgba(${lumMain}, ${lumMain}, ${lumMain}, 0.92)`;
+
+        // Update CSS Variables on Root
         root.style.setProperty('--reduction-ratio', reductionRatio.toFixed(2));
         root.style.setProperty('--white-reduction-pct', `${pct}%`);
+        root.style.setProperty('--bg-main', bgMain);
+        root.style.setProperty('--bg-surface', bgSurface);
+        root.style.setProperty('--bg-card', bgCard);
+        root.style.setProperty('--border-color', borderColor);
+        root.style.setProperty('--nav-bg', navBg);
 
         // Update handle badge display
         if (badgeVal) {
