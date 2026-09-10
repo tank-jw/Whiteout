@@ -106,4 +106,25 @@ struct LocalizedStrings {
     static func timeRuleActiveBanner(isEN: Bool, range: String) -> String {
         isEN ? "Time rule active (\(range))" : "시간별 규칙 적용 중 (\(range))"
     }
+    static func settingsTitle(isEN: Bool) -> String {
+        isEN ? "Preferences & Rules" : "설정 및 자동화"
+    }
+    static func backButton(isEN: Bool) -> String {
+        isEN ? "Back" : "뒤로"
+    }
+    static func settingsGear(isEN: Bool) -> String {
+        isEN ? "Settings" : "설정"
+    }
+    static func activeStatus(isEN: Bool) -> String {
+        isEN ? "On" : "켜짐"
+    }
+    static func inactiveStatus(isEN: Bool) -> String {
+        isEN ? "Off" : "꺼짐"
+    }
+    static func shortcutsAndLaunchSection(isEN: Bool) -> String {
+        isEN ? "Shortcuts & System" : "단축키 및 시스템"
+    }
+    static func automationSection(isEN: Bool) -> String {
+        isEN ? "Automation Rules" : "자동화 규칙"
+    }
 }

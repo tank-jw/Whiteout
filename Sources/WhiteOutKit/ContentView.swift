@@ -3,7 +3,7 @@ import SwiftUI
 public struct ContentView: View {
     @EnvironmentObject var dm: DisplayManager
     @EnvironmentObject var updater: UpdateChecker
-    @State private var showDetails = false
+    @State private var showingPreferences = false
 
     public init() {}
 
@@ -37,34 +37,24 @@ public struct ContentView: View {
     // MARK: - Body
 
     public var body: some View {
-        HStack(spacing: 0) {
-            VStack(spacing: 0) {
-                headerSection
-                Divider().opacity(0.5)
-                controlSection
-                Divider().opacity(0.5)
-                shortcutSection
-                Divider().opacity(0.5)
-                launchAtLoginSection
-                Divider().opacity(0.5)
-                curveSection
-                Divider().opacity(0.5)
-                timeSection
-                Divider().opacity(0.5)
-                footerSection
-            }
-            .frame(width: 290)
-
-            if showDetails {
-                Divider().opacity(0.5)
-                DetailsSectionView(dm: dm, showDetails: $showDetails)
-                    .transition(.move(edge: .trailing).combined(with: .opacity))
+        ZStack {
+            if showingPreferences {
+                DetailsSectionView(dm: dm, showDetails: $showingPreferences)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .trailing).combined(with: .opacity)
+                    ))
+            } else {
+                mainControlsView
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .leading).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
             }
         }
-        .frame(width: showDetails ? 590 : 290)
+        .frame(width: 310)
         .background(.ultraThinMaterial)
-        .animation(.spring(response: 0.35, dampingFraction: 0.82), value: showDetails)
-        .animation(.easeInOut(duration: 0.2), value: dm.isShortcutEnabled)
+        .animation(.spring(response: 0.35, dampingFraction: 0.84), value: showingPreferences)
         .alert(LocalizedStrings.updateNetworkErrorTitle(isEN: dm.language == "en"), isPresented: $updater.showNetworkErrorAlert) {
             Button(dm.language == "en" ? "OK" : "확인", role: .cancel) {}
         } message: {
@@ -72,139 +62,177 @@ public struct ContentView: View {
         }
     }
 
+    // MARK: - Main Controls View
+
+    private var mainControlsView: some View {
+        let isEN = dm.language == "en"
+        return VStack(spacing: 0) {
+            headerSection(isEN: isEN)
+
+            activeRuleBanner(isEN: isEN)
+
+            VStack(spacing: 10) {
+                reductionCard(isEN: isEN)
+                curveProfileCard(isEN: isEN)
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 4)
+            .padding(.bottom, 6)
+
+            Divider().opacity(0.4)
+
+            footerSection(isEN: isEN)
+        }
+    }
+
     // MARK: - Header
 
-    private var headerSection: some View {
-        HStack(spacing: 12) {
-            // Icon
+    private func headerSection(isEN: Bool) -> some View {
+        HStack(spacing: 10) {
+            // Squircle Sun Icon
             ZStack {
-                Circle()
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
                     .fill(
                         dm.isEnabled
-                        ? LinearGradient(colors: [.orange.opacity(0.25), .yellow.opacity(0.12)],
+                        ? LinearGradient(colors: [Color.orange, Color.orange.opacity(0.85)],
                                          startPoint: .topLeading, endPoint: .bottomTrailing)
-                        : LinearGradient(colors: [Color.primary.opacity(0.08), Color.primary.opacity(0.04)],
+                        : LinearGradient(colors: [Color.primary.opacity(0.12), Color.primary.opacity(0.06)],
                                          startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
-                    .frame(width: 38, height: 38)
-                Image(systemName: dm.isEnabled ? "sun.min.fill" : "sun.min")
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundStyle(dm.isEnabled ? Color.orange : Color.secondary)
+                    .frame(width: 32, height: 32)
+                    .shadow(color: dm.isEnabled ? Color.orange.opacity(0.25) : Color.clear, radius: 4, y: 1.5)
+
+                Image(systemName: dm.isEnabled ? "sun.max.fill" : "sun.min")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(dm.isEnabled ? Color.white : Color.secondary)
             }
 
-            // Title + status
-            let isEN = dm.language == "en"
-            VStack(alignment: .leading, spacing: 1) {
-                Text(isEN ? "White" : "화이트")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(Color.primary)
-                if dm.isEnabled {
-                    Text(isEN ? "out" : "아웃")
+            // Title + Status
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Text("WhiteOut")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundStyle(statusColor(isEnabled: dm.isEnabled, reduction: dm.reduction))
-                        .transition(.asymmetric(
-                            insertion: .opacity.combined(with: .move(edge: .top)),
-                            removal: .opacity
-                        ))
+                        .foregroundStyle(Color.primary)
+
+                    if dm.isEnabled {
+                        Text("\(Int((dm.reduction * 30).rounded()))%")
+                            .font(.system(size: 10, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.orange)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Color.orange.opacity(0.12))
+                            .clipShape(Capsule())
+                    }
                 }
+
+                Text(dm.isEnabled ? LocalizedStrings.activeStatus(isEN: isEN) : LocalizedStrings.inactiveStatus(isEN: isEN))
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(dm.isEnabled ? Color.orange.opacity(0.9) : Color.secondary)
             }
-            .frame(minHeight: 36, alignment: .leading)
 
             Spacer()
 
-            // Info Button
+            // Settings Gear Button
             Button {
-                withAnimation {
-                    showDetails.toggle()
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.84)) {
+                    showingPreferences = true
                 }
             } label: {
-                Image(systemName: showDetails ? "info.circle.fill" : "info.circle")
-                    .font(.system(size: 15))
-                    .foregroundStyle(showDetails ? Color.orange : Color.secondary)
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.secondary)
+                    .padding(6)
+                    .background(Color.primary.opacity(0.05))
+                    .clipShape(Circle())
             }
             .buttonStyle(.plain)
-            .padding(.trailing, 2)
+            .help(LocalizedStrings.settingsGear(isEN: isEN))
 
-            // Toggle
+            // Master Toggle
             Toggle("", isOn: enabledBinding)
                 .toggleStyle(.switch)
                 .labelsHidden()
                 .tint(.orange)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 14)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
     }
 
-    // MARK: - Controls
+    // MARK: - Active Rule Banner
 
-    private var controlSection: some View {
-        let isEN = dm.language == "en"
-        return VStack(spacing: 12) {
-            // App Rule Active Banner
-            if let activeAppName = dm.activeRuleAppName {
-                HStack(spacing: 6) {
-                    Image(systemName: "bolt.shield.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.orange)
-                    Text(LocalizedStrings.ruleActiveBanner(isEN: isEN, appName: activeAppName))
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.orange)
-                    Spacer()
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color.orange.opacity(0.08))
-                .cornerRadius(6)
-                .transition(.move(edge: .top).combined(with: .opacity))
-            } else if let activeTimeId = dm.activeTimeRuleId,
-                      let rule = dm.timeRules.first(where: { $0.id == activeTimeId }) {
-                HStack(spacing: 6) {
-                    Image(systemName: "clock.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(.orange)
-                    let startStr = String(format: "%02d:%02d", rule.startHour, rule.startMinute)
-                    let endStr = String(format: "%02d:%02d", rule.endHour, rule.endMinute)
-                    Text(LocalizedStrings.timeRuleActiveBanner(isEN: isEN, range: "\(startStr) ~ \(endStr)"))
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(.orange)
-                    Spacer()
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(Color.orange.opacity(0.08))
-                .cornerRadius(6)
-                .transition(.move(edge: .top).combined(with: .opacity))
-            }
-
-            // Display Picker
-            HStack {
-                Text(LocalizedStrings.displayLabel(isEN: isEN))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
+    @ViewBuilder
+    private func activeRuleBanner(isEN: Bool) -> some View {
+        if let activeAppName = dm.activeRuleAppName {
+            HStack(spacing: 6) {
+                Image(systemName: "bolt.shield.fill")
+                    .font(.system(size: 10))
+                Text(LocalizedStrings.ruleActiveBanner(isEN: isEN, appName: activeAppName))
+                    .font(.system(size: 11, weight: .semibold))
                 Spacer()
-                Picker("", selection: $dm.selectedDisplayID) {
-                    Text(LocalizedStrings.allDisplays(isEN: isEN))
-                        .tag("all")
-                    ForEach(dm.activeDisplaySettings) { setting in
-                        Text(setting.name)
-                            .tag(String(setting.displayID))
-                    }
-                }
-                .pickerStyle(.menu)
-                .labelsHidden()
-                .scaleEffect(0.9)
-                .frame(maxHeight: 24)
             }
-            .padding(.bottom, 2)
+            .foregroundStyle(Color.orange)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Color.orange.opacity(0.09))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(.horizontal, 14)
+            .padding(.bottom, 6)
+            .transition(.move(edge: .top).combined(with: .opacity))
+        } else if let activeTimeId = dm.activeTimeRuleId,
+                  let rule = dm.timeRules.first(where: { $0.id == activeTimeId }) {
+            let startStr = String(format: "%02d:%02d", rule.startHour, rule.startMinute)
+            let endStr = String(format: "%02d:%02d", rule.endHour, rule.endMinute)
+            HStack(spacing: 6) {
+                Image(systemName: "clock.fill")
+                    .font(.system(size: 10))
+                Text(LocalizedStrings.timeRuleActiveBanner(isEN: isEN, range: "\(startStr) ~ \(endStr)"))
+                    .font(.system(size: 11, weight: .semibold))
+                Spacer()
+            }
+            .foregroundStyle(Color.orange)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(Color.orange.opacity(0.09))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .padding(.horizontal, 14)
+            .padding(.bottom, 6)
+            .transition(.move(edge: .top).combined(with: .opacity))
+        }
+    }
 
-            // Label row
+    // MARK: - Card 1: Reduction & Display
+
+    private func reductionCard(isEN: Bool) -> some View {
+        VStack(spacing: 11) {
+            // Display Picker Row (only if multi-monitor)
+            if dm.activeDisplaySettings.count > 1 {
+                HStack {
+                    Label(LocalizedStrings.displayLabel(isEN: isEN), systemImage: "display")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
+                    Spacer()
+                    Picker("", selection: $dm.selectedDisplayID) {
+                        Text(LocalizedStrings.allDisplays(isEN: isEN)).tag("all")
+                        ForEach(dm.activeDisplaySettings) { setting in
+                            Text(setting.name).tag(String(setting.displayID))
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .labelsHidden()
+                    .scaleEffect(0.9)
+                }
+                Divider().opacity(0.3)
+            }
+
+            // Percentage Header
             HStack {
                 Text(LocalizedStrings.reductionLabel(isEN: isEN))
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
                 Spacer()
                 Text("\(Int((dm.reduction * 30).rounded()))%")
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(dm.isEnabled ? Color.orange : Color.secondary)
                     .contentTransition(.numericText())
                     .animation(.easeOut(duration: 0.15), value: dm.reduction)
@@ -215,133 +243,96 @@ public struct ContentView: View {
                 .tint(.orange)
                 .disabled(!dm.isEnabled)
 
-            // White point visualizer bar
+            // Visualizer Bar
             whitepointBar
 
-            // Info labels
+            // Subtitle info
             HStack {
-                Label(LocalizedStrings.preserveBlacks(isEN: isEN), systemImage: "checkmark.circle.fill")
-                    .font(.system(size: 10))
-                    .foregroundStyle(Color.green)
+                Text(LocalizedStrings.preserveBlacks(isEN: isEN))
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(Color.secondary)
                 Spacer()
                 Text(LocalizedStrings.maxWhiteLevel(isEN: isEN, percent: 100 - Int((dm.reduction * 30).rounded())))
-                    .font(.system(size: 10))
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(statusColor(isEnabled: dm.isEnabled, reduction: dm.reduction))
                     .contentTransition(.numericText())
                     .animation(.easeOut(duration: 0.15), value: dm.reduction)
             }
         }
-        .padding(16)
+        .padding(13)
+        .background(
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
+        )
     }
 
-    // MARK: - Curve Preset Section
+    // MARK: - Card 2: Curve Profile
 
-    private var curveSection: some View {
-        let isEN = dm.language == "en"
-        return VStack(spacing: 10) {
-            HStack {
-                Text(LocalizedStrings.curveTypeLabel(isEN: isEN))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
-                Spacer()
-                if dm.isEnabled {
-                    Text(String(format: "T = %.1f", dm.curveExponent))
-                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(Color.orange)
-                }
-            }
+    private func curveProfileCard(isEN: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 9) {
+            Text(LocalizedStrings.curveTypeLabel(isEN: isEN))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
 
-            // 3-way segmented toggle
-            HStack(spacing: 6) {
-                let segments = [
-                    (2.5, LocalizedStrings.curveGeneral(isEN: isEN)),
-                    (4.0, LocalizedStrings.curveDocs(isEN: isEN)),
-                    (6.0, LocalizedStrings.curveHighlights(isEN: isEN))
+            // 3-way Segmented Button Row
+            HStack(spacing: 5) {
+                let segments: [(Double, String, String)] = [
+                    (2.5, LocalizedStrings.curveGeneral(isEN: isEN), "sun.min"),
+                    (4.0, LocalizedStrings.curveDocs(isEN: isEN), "doc.text"),
+                    (6.0, LocalizedStrings.curveHighlights(isEN: isEN), "sparkles")
                 ]
-                ForEach(segments, id: \.0) { value, label in
+                ForEach(segments, id: \.0) { value, label, icon in
                     let selected = dm.curveExponent == value
                     Button {
-                        exponentBinding.wrappedValue = value
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            exponentBinding.wrappedValue = value
+                        }
                     } label: {
-                        Text(label)
-                            .font(.system(size: 11, weight: selected ? .semibold : .regular))
-                            .foregroundStyle(selected ? Color.black : (dm.isEnabled ? Color.primary : Color.secondary))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 5)
-                            .background(
-                                RoundedRectangle(cornerRadius: 6)
-                                    .fill(selected ? Color.orange : Color.primary.opacity(0.06))
-                            )
+                        HStack(spacing: 4) {
+                            Image(systemName: icon)
+                                .font(.system(size: 10))
+                            Text(label)
+                                .font(.system(size: 11, weight: selected ? .semibold : .regular))
+                        }
+                        .foregroundStyle(selected ? (dm.isEnabled ? Color.orange : Color.primary) : Color.secondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 6)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(selected ? Color.orange.opacity(0.12) : Color.primary.opacity(0.03))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .strokeBorder(selected ? Color.orange.opacity(0.25) : Color.clear, lineWidth: 0.5)
+                        )
                     }
                     .buttonStyle(.plain)
                     .disabled(!dm.isEnabled)
                 }
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-    }
-
-    // MARK: - Shortcut Section
-
-    private var shortcutSection: some View {
-        let isEN = dm.language == "en"
-        return VStack(spacing: 8) {
-            HStack {
-                Text(LocalizedStrings.shortcutToggle(isEN: isEN))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
-                Spacer()
-                Toggle("", isOn: $dm.isShortcutEnabled)
-                    .toggleStyle(.switch)
-                    .labelsHidden()
-                    .tint(.orange)
-            }
-
-            if dm.isShortcutEnabled {
-                HStack {
-                    Text(LocalizedStrings.shortcutRecord(isEN: isEN))
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.secondary)
-                    Spacer()
-                    ShortcutRecorderView(shortcut: $dm.shortcut)
-                        .frame(width: 120, height: 22)
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-    }
-
-    // MARK: - Launch at Login Section
-
-    private var launchAtLoginSection: some View {
-        let isEN = dm.language == "en"
-        return HStack {
-            Text(LocalizedStrings.launchAtLogin(isEN: isEN))
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(Color.primary)
-            Spacer()
-            Toggle("", isOn: $dm.launchAtLogin)
-                .toggleStyle(.switch)
-                .labelsHidden()
-                .tint(.orange)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(13)
+        .background(
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
+        )
     }
 
     // MARK: - White Point Bar
 
-    /// Canvas-based visualization of the gamma reduction.
-    /// Left anchor = black (always 0), right = max white output (reduced).
-    /// The clipped region (beyond new white point) is shown dimmed.
     private var whitepointBar: some View {
         let whitePointRatio = CGFloat(1.0 - dm.reduction * 0.3)
         let active = dm.isEnabled && dm.reduction > 0.01
 
         return Canvas { ctx, size in
-            // --- Base gradient: black → white ---
             let baseGrad = Gradient(stops: [
                 .init(color: .black, location: 0),
                 .init(color: .white, location: 1)
@@ -355,8 +346,6 @@ public struct ContentView: View {
 
             if active {
                 let cutX = size.width * whitePointRatio
-
-                // Dimmed overlay for the clipped region
                 let dimmingGrad = Gradient(stops: [
                     .init(color: Color.gray.opacity(0.0), location: 0),
                     .init(color: Color.gray.opacity(0.72), location: 1)
@@ -370,11 +359,9 @@ public struct ContentView: View {
                                           endPoint: CGPoint(x: size.width, y: 0))
                 )
 
-                // Orange marker line at the new white point
                 let markerRect = CGRect(x: cutX - 1, y: 0, width: 2, height: size.height)
                 ctx.fill(Path(markerRect), with: .color(.orange))
 
-                // Small triangle / tick below the marker
                 var tick = Path()
                 tick.move(to: CGPoint(x: cutX - 4, y: size.height))
                 tick.addLine(to: CGPoint(x: cutX + 4, y: size.height))
@@ -383,24 +370,87 @@ public struct ContentView: View {
                 ctx.fill(tick, with: .color(.orange))
             }
         }
-        .frame(height: 22)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .frame(height: 20)
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5)
         )
         .animation(.easeInOut(duration: 0.2), value: dm.reduction)
     }
 
+    // MARK: - Footer
+
+    private func footerSection(isEN: Bool) -> some View {
+        VStack(spacing: 0) {
+            updateBanner(isEN: isEN)
+
+            HStack {
+                // KR / EN Language Switch Button
+                Button {
+                    withAnimation {
+                        dm.language = (dm.language == "ko") ? "en" : "ko"
+                    }
+                } label: {
+                    Text(dm.language == "ko" ? "🇰🇷 한국어" : "🇺🇸 English")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Color.secondary)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(Color.primary.opacity(0.04))
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+
+                Spacer()
+
+                // Version text (Click to check updates)
+                Button {
+                    updater.manualCheck()
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("v\(UpdateChecker.currentVersion)")
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(Color.secondary.opacity(0.7))
+                        if updater.isChecking {
+                            ProgressView()
+                                .scaleEffect(0.4)
+                                .frame(width: 10, height: 10)
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 8))
+                                .foregroundStyle(Color.secondary.opacity(0.5))
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+                .help(LocalizedStrings.manualCheckHelp(isEN: isEN))
+
+                Spacer()
+
+                // Quit button
+                Button {
+                    dm.quit()
+                } label: {
+                    Text(LocalizedStrings.quitLabel(isEN: isEN))
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Color.secondary)
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut("q")
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+        }
+    }
+
     // MARK: - Update Banner
 
     @ViewBuilder
-    private var updateBanner: some View {
-        let isEN = dm.language == "en"
+    private func updateBanner(isEN: Bool) -> some View {
         if updater.updateAvailable {
             if updater.isDownloading {
-                // 다운로드 진행 중
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     HStack {
                         Image(systemName: "arrow.down.circle.fill")
                             .foregroundStyle(.orange)
@@ -414,12 +464,10 @@ public struct ContentView: View {
                     ProgressView(value: updater.downloadProgress)
                         .tint(.orange)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
                 .background(Color.orange.opacity(0.06))
-
             } else {
-                // 업데이트 가능 — 클릭 시 자동 업데이트
                 Button {
                     updater.performUpdate()
                 } label: {
@@ -439,8 +487,8 @@ public struct ContentView: View {
                             .font(.system(size: 10))
                             .foregroundStyle(.secondary)
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -449,219 +497,21 @@ public struct ContentView: View {
         }
     }
 
-
-    // MARK: - Time Rules Section
-
-    private var timeSection: some View {
-        let isEN = dm.language == "en"
-        return VStack(spacing: 6) {
-            HStack {
-                Text(LocalizedStrings.timeRulesSectionTitle(isEN: isEN))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
-                Spacer()
-                Button {
-                    withAnimation {
-                        dm.addTimeRule()
-                    }
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 13))
-                        .foregroundStyle(dm.isEnabled ? Color.orange : Color.secondary)
-                }
-                .buttonStyle(.plain)
-                .disabled(!dm.isEnabled)
-            }
-
-            if dm.timeRules.isEmpty {
-                Text(isEN ? "No time rules configured." : "설정된 시간별 규칙이 없습니다.")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 4)
-            } else {
-                VStack(spacing: 4) {
-                    ForEach(Array(dm.timeRules.enumerated()), id: \.element.id) { index, rule in
-                        timeRuleRow(index: index, rule: rule, isEN: isEN)
-                    }
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-    }
-
-    private func timeRuleRow(index: Int, rule: TimeRule, isEN: Bool) -> some View {
-        let isActive = dm.activeTimeRuleId == rule.id
-        
-        return HStack(spacing: 4) {
-            // Active Indicator or Toggle
-            Toggle("", isOn: Binding(
-                get: { rule.isEnabled },
-                set: { newVal in
-                    dm.timeRules[index].isEnabled = newVal
-                }
-            ))
-            .toggleStyle(.switch)
-            .labelsHidden()
-            .scaleEffect(0.65)
-            .frame(width: 28)
-            .disabled(!dm.isEnabled)
-
-            // Start Date Picker (default compact style on macOS)
-            DatePicker("", selection: Binding(
-                get: { rule.startDate },
-                set: { newVal in
-                    dm.timeRules[index].startDate = newVal
-                }
-            ), displayedComponents: .hourAndMinute)
-            .labelsHidden()
-            .scaleEffect(0.85)
-            .frame(width: 58)
-            .disabled(!dm.isEnabled || !rule.isEnabled)
-
-            Text("~")
-                .font(.system(size: 10))
-                .foregroundStyle(Color.secondary)
-
-            // End Date Picker
-            DatePicker("", selection: Binding(
-                get: { rule.endDate },
-                set: { newVal in
-                    dm.timeRules[index].endDate = newVal
-                }
-            ), displayedComponents: .hourAndMinute)
-            .labelsHidden()
-            .scaleEffect(0.85)
-            .frame(width: 58)
-            .disabled(!dm.isEnabled || !rule.isEnabled)
-
-            Spacer(minLength: 0)
-
-            // Percentage Picker
-            Picker("", selection: Binding(
-                get: { rule.reduction },
-                set: { newVal in
-                    dm.timeRules[index].reduction = newVal
-                }
-            )) {
-                ForEach(0...6, id: \.self) { i in
-                    let pct = i * 5
-                    let val = Double(i) / 6.0
-                    Text("\(pct)%").tag(val)
-                }
-            }
-            .pickerStyle(.menu)
-            .labelsHidden()
-            .scaleEffect(0.8)
-            .frame(width: 48)
-            .disabled(!dm.isEnabled || !rule.isEnabled)
-
-            // Trash delete button
-            Button {
-                withAnimation {
-                    dm.deleteTimeRule(at: index)
-                }
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 10))
-                    .foregroundStyle(dm.isEnabled ? Color.red.opacity(0.8) : Color.secondary)
-            }
-            .buttonStyle(.plain)
-            .disabled(!dm.isEnabled)
-        }
-        .padding(.vertical, 3)
-        .padding(.horizontal, 4)
-        .background(isActive ? Color.orange.opacity(0.06) : Color.clear)
-        .cornerRadius(6)
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(isActive ? Color.orange.opacity(0.2) : Color.clear, lineWidth: 0.5)
-        )
-    }
-
-    // MARK: - Footer
-
-    private var footerSection: some View {
-        let isEN = dm.language == "en"
-        return VStack(spacing: 0) {
-            updateBanner
-
-            HStack {
-                // KR / EN Language Switch Button
-                Button {
-                    withAnimation {
-                        dm.language = (dm.language == "ko") ? "en" : "ko"
-                    }
-                } label: {
-                    HStack(spacing: 2) {
-                        Text("KR")
-                            .foregroundStyle(dm.language == "ko" ? Color.orange : Color.secondary.opacity(0.5))
-                        Text("/")
-                            .foregroundStyle(Color.secondary.opacity(0.3))
-                        Text("EN")
-                            .foregroundStyle(dm.language == "en" ? Color.orange : Color.secondary.opacity(0.5))
-                    }
-                    .font(.system(size: 10, weight: .bold))
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                // 버전 텍스트 — 클릭하면 수동 업데이트 확인
-                Button {
-                    updater.manualCheck()
-                } label: {
-                    HStack(spacing: 4) {
-                        Text("v\(UpdateChecker.currentVersion)")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.secondary.opacity(0.5))
-                        if updater.isChecking {
-                            ProgressView()
-                                .scaleEffect(0.45)
-                                .frame(width: 10, height: 10)
-                        } else {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 9))
-                                .foregroundStyle(Color.secondary.opacity(0.35))
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
-                .help(LocalizedStrings.manualCheckHelp(isEN: isEN))
-
-                Spacer()
-
-                Button {
-                    dm.quit()
-                } label: {
-                    Text(LocalizedStrings.quitLabel(isEN: isEN))
-                        .font(.system(size: 12))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(Color.secondary)
-                .keyboardShortcut("q")
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-        }
-    }
-
     private func statusColor(isEnabled: Bool, reduction: Double) -> Color {
         guard isEnabled else { return Color.secondary }
         let startColor = NSColor.textColor
         let endColor = NSColor.orange
-        
+
         guard let startRGB = startColor.usingColorSpace(.sRGB),
               let endRGB = endColor.usingColorSpace(.sRGB) else {
             return Color.orange
         }
-        
+
         let t = CGFloat(reduction)
         let r = startRGB.redComponent   + t * (endRGB.redComponent   - startRGB.redComponent)
         let g = startRGB.greenComponent + t * (endRGB.greenComponent - startRGB.greenComponent)
         let b = startRGB.blueComponent  + t * (endRGB.blueComponent  - startRGB.blueComponent)
-        
+
         return Color(NSColor(red: r, green: g, blue: b, alpha: 1.0))
     }
 }
-
