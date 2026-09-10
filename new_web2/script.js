@@ -24,34 +24,27 @@ document.addEventListener('DOMContentLoaded', () => {
         const reductionRatio = t * 0.20;
         const pct = Math.round(t * 20);
         
-        // Dynamic Whitepoint reduction color interpolation:
-        // t = 0: Pure white (#ffffff, rgb(255, 255, 255))
-        // t = 1: Soothing warm paper off-white (#e4ded2, rgb(228, 222, 210))
-        const rMain = Math.round(255 - t * 27);
-        const gMain = Math.round(255 - t * 33);
-        const bMain = Math.round(255 - t * 45);
-        const bgMain = `rgb(${rMain}, ${gMain}, ${bMain})`;
+        // Pure Whitepoint Reduction (Neutral Achromatic Gamma Attenuation):
+        // Whiteout reduces white luminance purely without color distortion or yellowing.
+        // t = 0 (0% reduction): Pure white (#ffffff, rgb(255, 255, 255))
+        // t = 1 (20% reduction): Neutral dimmer white (#cccccc, rgb(204, 204, 204))
+        const lumMain = Math.round(255 - t * 51); // 255 -> 204
+        const bgMain = `rgb(${lumMain}, ${lumMain}, ${lumMain})`;
 
-        // Surface interpolation (fbfaf7 -> dcd6ca)
-        const rSurf = Math.round(251 - t * 31);
-        const gSurf = Math.round(250 - t * 36);
-        const bSurf = Math.round(247 - t * 45);
-        const bgSurface = `rgb(${rSurf}, ${gSurf}, ${bSurf})`;
+        // Surface interpolation (248 -> 198, clean neutral grey)
+        const lumSurf = Math.round(248 - t * 50);
+        const bgSurface = `rgb(${lumSurf}, ${lumSurf}, ${lumSurf})`;
 
-        // Card interpolation (ffffff -> e8e3d8)
-        const rCard = Math.round(255 - t * 23);
-        const gCard = Math.round(255 - t * 28);
-        const bCard = Math.round(255 - t * 39);
-        const bgCard = `rgb(${rCard}, ${gCard}, ${bCard})`;
+        // Card interpolation (255 -> 208, neutral clean white-to-light-grey)
+        const lumCard = Math.round(255 - t * 47);
+        const bgCard = `rgb(${lumCard}, ${lumCard}, ${lumCard})`;
 
-        // Border interpolation (e5dfd3 -> c3bbaa)
-        const rBrd = Math.round(229 - t * 34);
-        const gBrd = Math.round(223 - t * 36);
-        const bBrd = Math.round(211 - t * 41);
-        const borderColor = `rgb(${rBrd}, ${gBrd}, ${bBrd})`;
+        // Border interpolation (226 -> 175)
+        const lumBrd = Math.round(226 - t * 51);
+        const borderColor = `rgb(${lumBrd}, ${lumBrd}, ${lumBrd})`;
 
-        // Nav Glassmorphism background
-        const navBg = `rgba(${rMain}, ${gMain}, ${bMain}, 0.92)`;
+        // Nav Glassmorphism background (neutral transparent white)
+        const navBg = `rgba(${lumMain}, ${lumMain}, ${lumMain}, 0.92)`;
 
         // Update CSS Variables on Root
         root.style.setProperty('--reduction-ratio', reductionRatio.toFixed(2));
