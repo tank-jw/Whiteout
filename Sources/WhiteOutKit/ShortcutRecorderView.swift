@@ -92,7 +92,7 @@ class RecorderNSView: NSView {
         switch event.keyCode {
         case 53: // Esc — 취소
             window?.makeFirstResponder(nil)
-        case 51: // Delete — 단축키 삭제
+        case 51 where event.modifierFlags.intersection([.command, .option, .control, .shift]).isEmpty: // Delete — 단축키 삭제 (보조키가 없을 때만)
             onShortcutChanged?(nil)
             currentShortcut = nil
             needsDisplay = true

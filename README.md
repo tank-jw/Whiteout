@@ -100,12 +100,12 @@ bash build_dmg.sh
 새 기능/버그 수정 후 릴리즈할 때 반드시 확인:
 
 ### 1. 코드 및 환경 설정 체크
-- [x] `UpdateChecker.swift` — `currentVersion = "x.x.x"` 업데이트 (1.7.3 완료)
-- [x] `build_dmg.sh` — `VERSION="x.x.x"` 동일하게 업데이트 (1.7.3 완료)
-- [x] `README.md` — **업데이트 내역** 테이블에 새 버전 추가 (1.7.3 완료)
-- [x] `bash build_dmg.sh` 실행 → DMG + ZIP 생성 확인 (v1.7.3 완료)
-- [x] `git commit` + `git push` (v1.7.3 완료)
-- [x] `gh release create vx.x.x Whiteout.dmg Whiteout.zip` (v1.7.3 완료)
+- [x] `UpdateChecker.swift` — `currentVersion = "x.x.x"` 업데이트 (1.7.4 완료)
+- [x] `build_dmg.sh` — `VERSION="x.x.x"` 동일하게 업데이트 (1.7.4 완료)
+- [x] `README.md` — **업데이트 내역** 테이블에 새 버전 추가 (1.7.4 완료)
+- [x] `bash build_dmg.sh` 실행 → DMG + ZIP 생성 확인 (v1.7.4 완료)
+- [x] `git commit` + `git push` (v1.7.4 완료)
+- [x] `gh release create vx.x.x Whiteout.dmg Whiteout.zip` (v1.7.4 완료)
 
 ### 2. 🧪 배포 전 필수 무결성 검증 시나리오 테스트 (GTM/유료화 대비)
 - [x] **디스플레이 감쇄**: 슬라이더(0~30%) 이동 시 감마가 실시간으로 조정되며, 비활성화 시 정상적인 원래 감마로 즉각 복구되는지 확인.
@@ -138,6 +138,7 @@ Sources/Whiteout/
 
 | 버전 | 내용 |
 |---|---|
+| **v1.7.4** | **정밀 코드 감사 개선 및 엣지 케이스 안정성 강화**<br>- 규칙 삭제 시 인덱스 경계 검사(Bounds Check) 가드 추가로 삭제 연타 크래시 원천 차단<br>- 단축키 녹화기에서 보조키 조합 Delete 키(`Cmd+Delete` 등) 등록 지원<br>- 외장 모니터 연결 해제 시 디스플레이 Picker 목록 실시간 동기화(`activeDisplaySettings`)<br>- 인앱 업데이터 스크립트 실행 후 자체 파일 자동 청소(`rm -f "$0"`) 적용<br>- `DisplayManager`에 `@MainActor` 적용으로 Swift 6 엄격 동시성(Concurrency) 대비<br>- `build_dmg.sh` 이전 잔여 볼륨 자동 언마운트 가드 및 랜딩 페이지 최신 릴리즈 다운로드 링크(`latest`) 연결 |
 | **v1.7.3** | **코드 품질 전수 점검 및 안정성/호환성 강화**<br>- `build_dmg.sh` 내 `Info.plist` 중복 CFBundleIconFile 선언 정리 및 유니버셜 바이너리(arm64+x86_64) 패키징 무결성 강화<br>- `DisplayManager`의 NotificationCenter 옵저버 해제(deinit) 누수 방지 로직 추가<br>- `ContentView` 슬라이더 바인딩 내 중복 감마 적용 연산 제거로 슬라이더 조작 반응성 향상<br>- Apple Silicon 및 Intel Mac, macOS 13+ 전 기종 무결성 전수 검증 통과 |
 | **v1.7.2.1** | **품질 보증 테스트 스위트 및 의존성 주입(DI) 아키텍처 도입**<br>- `Package.swift` 구조 개편을 통해 코어 로직을 `WhiteOutKit` 라이브러리로 분리하고 단위/통합 테스트 타겟 구축<br>- 모의 디스플레이 및 시간 환경 하에서 작동하는 9대 시나리오 전수 검사 스위트(`swift test`) 완성<br>- 자동 규칙(시간/앱) 적용 시 `UserDefaults` 사용자 초기 설정이 오버라이트되는 버그 수정 |
 | **v1.7.2** | **코드 구조 모듈화 리팩토링 및 안정성/패키징 대폭 개선**<br>- 비대해진 `ContentView.swift`를 `CurveGraphView`, `DetailsSectionView`, `Models` 파일로 역할별 깔끔히 모듈화 분리<br>- 앱 강제 종료 상태에서 재시작 시 왜곡된 감마가 오인 캐싱되는 복원력 버그 방지 가드(`isTableDistorted`) 탑재<br>- Active Rules 포인터 O(1) 캐싱 및 시간 규칙 비동기 중복 연산 최적화<br>- `build_dmg.sh` 내 고해상도 앱 아이콘(`AppIcon.icns`) 누락 패키징 버그 수정 및 Info.plist CFBundleIconFile 주입 완료 |
@@ -320,11 +321,13 @@ Sources/Whiteout/
   - [2026-06-30] 비대화되었던 SwiftUI 파일(ContentView)을 CurveGraphView, DetailsSectionView, Models로 깔끔하게 컴포지션 분리하여 가독성을 높이고, 이미 왜곡된 감마 상태로 재시작 시 오인 캐싱을 유발하는 치명적인 복원력 버그를 선형(Linear) 감마 재생성 가드를 통해 완벽하게 해결함.
   - [2026-06-30] DisplayManager를 5개의 독립된 서비스 프로토콜로 의존성 주입 리팩토링하고 WhiteOutKit 라이브러리 분할 및 단위 테스트 타겟(WhiteOutKitTests)을 구축하여 테스트 가능성 및 모듈성을 대폭 향상시킴.
   - [2026-08-17] Info.plist 중복 키 정리, NotificationCenter 옵저버 토큰 deinit 해제 처리 및 SwiftUI 슬라이더 바인딩 중복 감마 인가 호출 제거로 반응성과 라이프사이클 무결성을 극대화하여 v1.7.3으로 배포함.
+  - [2026-09-11] 규칙 삭제 시 인덱스 경계 검사 가드 추가, ShortcutRecorderView의 보조키 조합 Delete 키 허용, 외장 모니터 해제 시 활성 디스플레이 실시간 필터링 및 @MainActor 선언으로 Swift 6 엄격 동시성 안정성을 확보하여 v1.7.4로 배포함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:
   - [2026-06-30] 다국어(Ko/En) 지원을 위해 navigator.language 기반 자동 감지 기능과 localStorage 및 EN/KR 수동 토글 버튼을 결합하여 동적 렌더링을 구현하고, 극지 화이트아웃(설맹) 서사에 맞는 텍스트 카피와 Before 영역의 과노출 화이트아웃 펄스 글로우(radial-gradient & animation) 시각 효과를 적용함.
   - [2026-06-30] 모바일 디바이스(iPhone 등 480px 이하 뷰포트)에서 헤더 네비게이션이 겹치는 현상과 슬라이더 영역 내 320px 노트북 가로 너비로 인한 가로 스크롤 레이아웃 깨짐을 방지하기 위해, 패딩 감소 및 로고/토글/CTA 버튼 폰트·패딩을 정교하게 최적화하는 미디어 쿼리를 개발하여 완벽한 모바일 반응성을 확보함.
+  - [2026-09-11] 랜딩 페이지 다운로드 링크를 고정 버전(v1.0.0)에서 GitHub Releases latest 엔드포인트로 현대화하고, 실제 시스템 요구사항에 맞추어 최소 OS 요구 사양을 macOS 13.0+로 정정함.
 * **DevOps & Web Hosting Consultant**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Business Strategist**:
@@ -332,6 +335,9 @@ Sources/Whiteout/
   - [2026-07-23] 맥 유틸리티 앱의 다중 채널(Mac App Store + 웹사이트 직접 판매) 병행 판매 전략(Omnichannel) 분석 및 채널 간 상호 보완 마케팅 시너지 구조 정리.
   - [2026-07-23] 기능 스펙(다중 모니터 개별 제어, 앱/시간 자동화 규칙) 및 서양권 유저의 심리적 결제 장벽을 고려한 맥 앱스토어 최적 가격 정책($3.99~$4.99 일회성 소장) 도출.
   - [2026-07-23] 북미(미국) 물가 체감(라떼 1잔 $5~$7)을 반영한 $3.99~$4.99 앱 가격의 'Buy Me a Coffee' 구매 심리 가성비 검증.
+  - [2026-09-11] AI 코딩 툴 고도화 시대에서의 구매 심리(코드 생성이 아닌 0-Setup 완제품 경험 소비) 및 초기 비용(20만원) 리스크를 0으로 만드는 웹 기반 사전 검증(Lemon Squeezy MoR 린 런칭) 프레임워크 수립.
+  - [2026-09-11] Lemon Squeezy 등 MoR(Merchant of Record) 플랫폼의 글로벌 세금 대행 구조 및 한국 세법(초기 개인 정산/종소세 신고, 사업화 시 외화 영세율 부가세 0% 적용) 합법성 및 세무 전략 정립.
+  - [2026-09-11] 애플 앱스토어의 한국 지역 유료 판매 규정(전자상거래법 사업자 정보 요구)과 글로벌(북미/유럽) 타겟 출시 시 개인(Individual) 정산 프로세스 및 통신판매업 면제 요건 분석.
 * **Business Auditor & PM**:
   - [2026-06-30] macOS에 존재하지 않는 "흰색점 줄이기(Reduce White Point)" 기능을 재발견하여 iOS와의 차이를 검증하고, 이를 경쟁 제품군(BetterDisplay, Lunar 등) 분석에 연동하여 차별화된 영문 마케팅(극지 화이트아웃/설맹 서사) 및 타겟 포지셔닝(밤샘 개발자 중심) 전략을 수립함.
   - [2026-06-30] 에이전트들이 이전 의사결정 사항(Whiteout 명명 및 하드웨어 감마 테이블 등)을 일관성 있게 준수하며 개발할 수 있도록 AGENTS.md 행동 수칙 및 README.md 핵심 의사결정 이력(Key Decision Log) 자동화 연동을 설계 및 구현함.

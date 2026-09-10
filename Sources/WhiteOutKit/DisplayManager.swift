@@ -101,6 +101,14 @@ public class DisplayManager: ObservableObject {
         }
     }
 
+    /// 현재 실제 활성화된 디스플레이 설정 목록 (이름순 정렬)
+    public var activeDisplaySettings: [DisplaySetting] {
+        let currentIDs = Set(originalTables.keys.map { String($0) })
+        return displaySettings.values
+            .filter { currentIDs.contains(String($0.displayID)) }
+            .sorted(by: { $0.name < $1.name })
+    }
+
     @Published public var appRules: [AppRule] = [] {
         didSet {
             if let data = try? JSONEncoder().encode(appRules) {
@@ -394,6 +402,7 @@ public class DisplayManager: ObservableObject {
     }
 
     public func deleteAppRule(at index: Int) {
+        guard index >= 0 && index < appRules.count else { return }
         let rule = appRules[index]
         appRules.remove(at: index)
 
@@ -419,6 +428,7 @@ public class DisplayManager: ObservableObject {
     }
 
     public func deleteTimeRule(at index: Int) {
+        guard index >= 0 && index < timeRules.count else { return }
         let rule = timeRules[index]
         timeRules.remove(at: index)
 

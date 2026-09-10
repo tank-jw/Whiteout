@@ -185,7 +185,7 @@ public struct ContentView: View {
                 Picker("", selection: $dm.selectedDisplayID) {
                     Text(LocalizedStrings.allDisplays(isEN: isEN))
                         .tag("all")
-                    ForEach(Array(dm.displaySettings.values.sorted(by: { $0.name < $1.name }))) { setting in
+                    ForEach(dm.activeDisplaySettings) { setting in
                         Text(setting.name)
                             .tag(String(setting.displayID))
                     }

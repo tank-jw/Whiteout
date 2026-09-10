@@ -7,20 +7,25 @@ export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
 
 APP_NAME="WhiteOut"
 BUNDLE_ID="com.tankjw.whiteout"
-VERSION="1.7.3"
+VERSION="1.7.4"
 DMG_NAME="${APP_NAME}.dmg"
 ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"
 APP_DIR="${APP_NAME}.app"
 
 echo "🧹 이전 빌드 아티팩트 청소 중..."
-rm -rf .build/release "${APP_DIR}" temp.dmg "${DMG_NAME}" "${ZIP_NAME}"
+hdiutil detach "/Volumes/WhiteOut Installer" 2>/dev/null || true
+rm -rf .build/apple .build/release "${APP_DIR}" temp.dmg "${DMG_NAME}" "${ZIP_NAME}"
 
 echo "🔨 유니버셜 바이너리 (arm64 + x86_64) Release 빌드 중..."
 swift build -c release --arch arm64 --arch x86_64
 
 # 빌드된 바이너리 경로 탐색 (dSYM 제외)
-UNIVERSAL_BIN=$(find .build -name "${APP_NAME}" -type f | grep -v "\.dSYM" | grep "/release/" | head -n 1)
+if [ -f ".build/apple/Products/Release/${APP_NAME}" ]; then
+  UNIVERSAL_BIN=".build/apple/Products/Release/${APP_NAME}"
+else
+  UNIVERSAL_BIN=$(find .build -name "${APP_NAME}" -type f | grep -v "\.dSYM" | grep -i "/release/" | head -n 1)
+fi
 
 if [ -z "$UNIVERSAL_BIN" ]; then
   echo "❌ 빌드된 유니버셜 바이너리를 찾을 수 없습니다."
