@@ -329,6 +329,7 @@ Sources/Whiteout/
   - [2026-06-30] 다국어(Ko/En) 지원을 위해 navigator.language 기반 자동 감지 기능과 localStorage 및 EN/KR 수동 토글 버튼을 결합하여 동적 렌더링을 구현하고, 극지 화이트아웃(설맹) 서사에 맞는 텍스트 카피와 Before 영역의 과노출 화이트아웃 펄스 글로우(radial-gradient & animation) 시각 효과를 적용함.
   - [2026-06-30] 모바일 디바이스(iPhone 등 480px 이하 뷰포트)에서 헤더 네비게이션이 겹치는 현상과 슬라이더 영역 내 320px 노트북 가로 너비로 인한 가로 스크롤 레이아웃 깨짐을 방지하기 위해, 패딩 감소 및 로고/토글/CTA 버튼 폰트·패딩을 정교하게 최적화하는 미디어 쿼리를 개발하여 완벽한 모바일 반응성을 확보함.
   - [2026-09-11] 랜딩 페이지 다운로드 링크를 고정 버전(v1.0.0)에서 GitHub Releases latest 엔드포인트로 현대화하고, 실제 시스템 요구사항에 맞추어 최소 OS 요구 사양을 macOS 13.0+로 정정함.
+  - [2026-09-11] 웹 네비게이션 상단 로고를 macOS 네이티브 DMG 앱 아이콘(`AppIcon.png`)으로 통일하고, 레이아웃 변경 없이 차가운 쿨 다크 톤에서 눈이 편안한 누르스름한 웜 다크 톤(Warm Espresso & Amber Gold)으로 컬러 시스템을 리디자인함.
 * **DevOps & Web Hosting Consultant**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Business Strategist**:
