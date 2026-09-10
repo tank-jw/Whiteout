@@ -89,7 +89,21 @@ struct CurveGraphView: View {
                     curvePath.addLine(to: CGPoint(x: x, y: y))
                 }
             }
-            ctx.stroke(curvePath, with: .color(isEnabled ? Color.orange : Color.secondary), style: StrokeStyle(lineWidth: 2))
+
+            // Draw translucent gradient fill under the curve
+            var fillPath = curvePath
+            fillPath.addLine(to: CGPoint(x: w, y: h))
+            fillPath.addLine(to: CGPoint(x: 0, y: h))
+            fillPath.closeSubpath()
+
+            let fillGrad = Gradient(stops: [
+                .init(color: (isEnabled ? Color.orange : Color.secondary).opacity(0.18), location: 0),
+                .init(color: (isEnabled ? Color.orange : Color.secondary).opacity(0.01), location: 1)
+            ])
+            ctx.fill(fillPath, with: .linearGradient(fillGrad, startPoint: CGPoint(x: 0, y: 0), endPoint: CGPoint(x: 0, y: h)))
+
+            // Stroke the curve line
+            ctx.stroke(curvePath, with: .color(isEnabled ? Color.orange : Color.secondary), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
         }
     }
 }

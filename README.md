@@ -323,6 +323,7 @@ Sources/Whiteout/
   - [2026-08-17] Info.plist 중복 키 정리, NotificationCenter 옵저버 토큰 deinit 해제 처리 및 SwiftUI 슬라이더 바인딩 중복 감마 인가 호출 제거로 반응성과 라이프사이클 무결성을 극대화하여 v1.7.3으로 배포함.
   - [2026-09-11] 규칙 삭제 시 인덱스 경계 검사 가드 추가, ShortcutRecorderView의 보조키 조합 Delete 키 허용, 외장 모니터 해제 시 활성 디스플레이 실시간 필터링 및 @MainActor 선언으로 Swift 6 엄격 동시성 안정성을 확보하여 v1.7.4로 배포함.
   - [2026-09-11] 수직 나열식 Divider 구조와 토글 남발을 탈피하여 macOS Control Center 스타일의 인셋 카드(Inset Grouped Card) 구조와 톱니바퀴 환경설정(Preferences) 슬라이드 네비게이션으로 리디자인하고, Shortcuts의 특수문자 키코드(24번 등) 누락 매핑을 수정하여 네이티브 완성도를 극대화함.
+  - [2026-09-11] 메인 제어 카드에 72pt 높이의 실시간 감마 변환 곡선 모니터(Live Transfer Curve)와 하단 반투명 오렌지 그라데이션 면적 채우기를 결합하여, 슬라이더 감쇄율 조절 및 T계수 모드 전환 시 60fps로 즉각 반응하는 하이테크 디스플레이 캘리브레이터 시각화 UX를 구현함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:

@@ -127,4 +127,7 @@ struct LocalizedStrings {
     static func automationSection(isEN: Bool) -> String {
         isEN ? "Automation Rules" : "자동화 규칙"
     }
+    static func liveCurveTitle(isEN: Bool) -> String {
+        isEN ? "Live Transfer Curve" : "실시간 감마 변환 곡선"
+    }
 }

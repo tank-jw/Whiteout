@@ -71,12 +71,12 @@ public struct ContentView: View {
 
             activeRuleBanner(isEN: isEN)
 
-            VStack(spacing: 10) {
-                reductionCard(isEN: isEN)
-                curveProfileCard(isEN: isEN)
+            VStack(spacing: 9) {
+                liveCurveCard(isEN: isEN)
+                reductionAndProfileCard(isEN: isEN)
             }
             .padding(.horizontal, 14)
-            .padding(.top, 4)
+            .padding(.top, 2)
             .padding(.bottom, 6)
 
             Divider().opacity(0.4)
@@ -156,7 +156,7 @@ public struct ContentView: View {
         }
         .padding(.horizontal, 14)
         .padding(.top, 14)
-        .padding(.bottom, 10)
+        .padding(.bottom, 8)
     }
 
     // MARK: - Active Rule Banner
@@ -201,10 +201,77 @@ public struct ContentView: View {
         }
     }
 
-    // MARK: - Card 1: Reduction & Display
+    // MARK: - Card 1: Live Curve Monitor Card
 
-    private func reductionCard(isEN: Bool) -> some View {
-        VStack(spacing: 11) {
+    private func liveCurveCard(isEN: Bool) -> some View {
+        let maxWhite = 100 - Int((dm.reduction * 30).rounded())
+        let activeMax = dm.isEnabled ? maxWhite : 100
+
+        return VStack(spacing: 6) {
+            HStack {
+                Label(LocalizedStrings.liveCurveTitle(isEN: isEN), systemImage: "waveform.path.ecg")
+                    .font(.system(size: 10.5, weight: .bold))
+                    .foregroundStyle(Color.secondary)
+
+                Spacer()
+
+                if dm.isEnabled {
+                    Text(String(format: "t = %.1f", dm.curveExponent))
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundStyle(Color.orange)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .background(Color.orange.opacity(0.12))
+                        .clipShape(Capsule())
+                }
+            }
+
+            ZStack(alignment: .bottomTrailing) {
+                CurveGraphView(
+                    isEnabled: dm.isEnabled,
+                    reduction: dm.reduction,
+                    curveExponent: dm.curveExponent
+                )
+                .frame(height: 72)
+                .background(Color.black.opacity(0.12))
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .strokeBorder(Color.primary.opacity(0.08), lineWidth: 0.5)
+                )
+
+                // Max output percentage label (top right)
+                Text("\(activeMax)%")
+                    .font(.system(size: 8, weight: .bold, design: .monospaced))
+                    .foregroundStyle(dm.isEnabled ? Color.orange.opacity(0.9) : Color.secondary.opacity(0.5))
+                    .padding(.trailing, 5)
+                    .padding(.top, 3)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+
+                // Black level indicator label (bottom left)
+                Text("0%")
+                    .font(.system(size: 8, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(Color.secondary.opacity(0.5))
+                    .padding(.leading, 5)
+                    .padding(.bottom, 3)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+            }
+        }
+        .padding(11)
+        .background(
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
+        )
+    }
+
+    // MARK: - Card 2: Reduction & Curve Profile Card
+
+    private func reductionAndProfileCard(isEN: Bool) -> some View {
+        VStack(spacing: 10) {
             // Display Picker Row (only if multi-monitor)
             if dm.activeDisplaySettings.count > 1 {
                 HStack {
@@ -225,7 +292,7 @@ public struct ContentView: View {
                 Divider().opacity(0.3)
             }
 
-            // Percentage Header
+            // Slider & Percentage Header
             HStack {
                 Text(LocalizedStrings.reductionLabel(isEN: isEN))
                     .font(.system(size: 12, weight: .semibold))
@@ -243,43 +310,8 @@ public struct ContentView: View {
                 .tint(.orange)
                 .disabled(!dm.isEnabled)
 
-            // Visualizer Bar
-            whitepointBar
-
-            // Subtitle info
-            HStack {
-                Text(LocalizedStrings.preserveBlacks(isEN: isEN))
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(Color.secondary)
-                Spacer()
-                Text(LocalizedStrings.maxWhiteLevel(isEN: isEN, percent: 100 - Int((dm.reduction * 30).rounded())))
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(statusColor(isEnabled: dm.isEnabled, reduction: dm.reduction))
-                    .contentTransition(.numericText())
-                    .animation(.easeOut(duration: 0.15), value: dm.reduction)
-            }
-        }
-        .padding(13)
-        .background(
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 11, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
-        )
-    }
-
-    // MARK: - Card 2: Curve Profile
-
-    private func curveProfileCard(isEN: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 9) {
-            Text(LocalizedStrings.curveTypeLabel(isEN: isEN))
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
-
-            // 3-way Segmented Button Row
-            HStack(spacing: 5) {
+            // Curve Profile 3-Way Segmented Buttons
+            HStack(spacing: 4) {
                 let segments: [(Double, String, String)] = [
                     (2.5, LocalizedStrings.curveGeneral(isEN: isEN), "sun.min"),
                     (4.0, LocalizedStrings.curveDocs(isEN: isEN), "doc.text"),
@@ -288,25 +320,25 @@ public struct ContentView: View {
                 ForEach(segments, id: \.0) { value, label, icon in
                     let selected = dm.curveExponent == value
                     Button {
-                        withAnimation(.easeInOut(duration: 0.15)) {
+                        withAnimation(.easeInOut(duration: 0.2)) {
                             exponentBinding.wrappedValue = value
                         }
                     } label: {
-                        HStack(spacing: 4) {
+                        HStack(spacing: 3) {
                             Image(systemName: icon)
-                                .font(.system(size: 10))
+                                .font(.system(size: 9.5))
                             Text(label)
-                                .font(.system(size: 11, weight: selected ? .semibold : .regular))
+                                .font(.system(size: 10.5, weight: selected ? .semibold : .regular))
                         }
                         .foregroundStyle(selected ? (dm.isEnabled ? Color.orange : Color.primary) : Color.secondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, 5)
                         .background(
-                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
                                 .fill(selected ? Color.orange.opacity(0.12) : Color.primary.opacity(0.03))
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
                                 .strokeBorder(selected ? Color.orange.opacity(0.25) : Color.clear, lineWidth: 0.5)
                         )
                     }
@@ -315,7 +347,7 @@ public struct ContentView: View {
                 }
             }
         }
-        .padding(13)
+        .padding(11)
         .background(
             RoundedRectangle(cornerRadius: 11, style: .continuous)
                 .fill(Color(nsColor: .controlBackgroundColor).opacity(0.5))
@@ -324,59 +356,6 @@ public struct ContentView: View {
             RoundedRectangle(cornerRadius: 11, style: .continuous)
                 .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
         )
-    }
-
-    // MARK: - White Point Bar
-
-    private var whitepointBar: some View {
-        let whitePointRatio = CGFloat(1.0 - dm.reduction * 0.3)
-        let active = dm.isEnabled && dm.reduction > 0.01
-
-        return Canvas { ctx, size in
-            let baseGrad = Gradient(stops: [
-                .init(color: .black, location: 0),
-                .init(color: .white, location: 1)
-            ])
-            ctx.fill(
-                Path(CGRect(origin: .zero, size: size)),
-                with: .linearGradient(baseGrad,
-                                      startPoint: .zero,
-                                      endPoint: CGPoint(x: size.width, y: 0))
-            )
-
-            if active {
-                let cutX = size.width * whitePointRatio
-                let dimmingGrad = Gradient(stops: [
-                    .init(color: Color.gray.opacity(0.0), location: 0),
-                    .init(color: Color.gray.opacity(0.72), location: 1)
-                ])
-                let clippedRect = CGRect(x: cutX, y: 0,
-                                         width: size.width - cutX, height: size.height)
-                ctx.fill(
-                    Path(clippedRect),
-                    with: .linearGradient(dimmingGrad,
-                                          startPoint: CGPoint(x: cutX, y: 0),
-                                          endPoint: CGPoint(x: size.width, y: 0))
-                )
-
-                let markerRect = CGRect(x: cutX - 1, y: 0, width: 2, height: size.height)
-                ctx.fill(Path(markerRect), with: .color(.orange))
-
-                var tick = Path()
-                tick.move(to: CGPoint(x: cutX - 4, y: size.height))
-                tick.addLine(to: CGPoint(x: cutX + 4, y: size.height))
-                tick.addLine(to: CGPoint(x: cutX, y: size.height - 5))
-                tick.closeSubpath()
-                ctx.fill(tick, with: .color(.orange))
-            }
-        }
-        .frame(height: 20)
-        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5)
-        )
-        .animation(.easeInOut(duration: 0.2), value: dm.reduction)
     }
 
     // MARK: - Footer
@@ -440,7 +419,7 @@ public struct ContentView: View {
                 .keyboardShortcut("q")
             }
             .padding(.horizontal, 14)
-            .padding(.vertical, 10)
+            .padding(.vertical, 9)
         }
     }
 
@@ -495,23 +474,5 @@ public struct ContentView: View {
                 .background(Color.orange.opacity(0.08))
             }
         }
-    }
-
-    private func statusColor(isEnabled: Bool, reduction: Double) -> Color {
-        guard isEnabled else { return Color.secondary }
-        let startColor = NSColor.textColor
-        let endColor = NSColor.orange
-
-        guard let startRGB = startColor.usingColorSpace(.sRGB),
-              let endRGB = endColor.usingColorSpace(.sRGB) else {
-            return Color.orange
-        }
-
-        let t = CGFloat(reduction)
-        let r = startRGB.redComponent   + t * (endRGB.redComponent   - startRGB.redComponent)
-        let g = startRGB.greenComponent + t * (endRGB.greenComponent - startRGB.greenComponent)
-        let b = startRGB.blueComponent  + t * (endRGB.blueComponent  - startRGB.blueComponent)
-
-        return Color(NSColor(red: r, green: g, blue: b, alpha: 1.0))
     }
 }
