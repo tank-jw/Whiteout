@@ -69,6 +69,13 @@ public protocol WorkspaceSubscription {
 public protocol WorkspaceServiceProtocol {
     func getAppIcon(bundleIdentifier: String) -> NSImage?
     func observeActiveApplication(handler: @escaping (String, String) -> Void) -> WorkspaceSubscription
+    func getFrontmostApplication() -> (bundleIdentifier: String, appName: String)?
+}
+
+public extension WorkspaceServiceProtocol {
+    func getFrontmostApplication() -> (bundleIdentifier: String, appName: String)? {
+        return nil
+    }
 }
 
 public final class LiveWorkspaceService: WorkspaceServiceProtocol {
@@ -85,6 +92,16 @@ public final class LiveWorkspaceService: WorkspaceServiceProtocol {
         let observer = WorkspaceObserver(handler: handler)
         observer.start()
         return observer
+    }
+
+    public func getFrontmostApplication() -> (bundleIdentifier: String, appName: String)? {
+        let myBundleID = Bundle.main.bundleIdentifier ?? "com.tankjw.whiteout"
+        if let frontApp = NSWorkspace.shared.runningApplications.first(where: { $0.isActive && $0.bundleIdentifier != myBundleID }) ?? NSWorkspace.shared.frontmostApplication {
+            if let bid = frontApp.bundleIdentifier, bid != myBundleID, let name = frontApp.localizedName {
+                return (bid, name)
+            }
+        }
+        return nil
     }
 }
 

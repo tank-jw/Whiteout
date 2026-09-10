@@ -288,6 +288,12 @@ public class DisplayManager: ObservableObject {
             self?.appDidActivate(bundleID: bundleID, appName: appName)
         }
 
+        // Initialize last active app with currently frontmost application if available
+        if let front = workspaceService.getFrontmostApplication() {
+            self.lastActiveAppBundleIdentifier = front.bundleIdentifier
+            self.lastActiveAppName = front.appName
+        }
+
         // Evaluate time rules periodically
         evaluateTimeRules()
         timeRuleTimer = clockService.scheduleRepeatingTimer(interval: 30) { [weak self] in
@@ -387,6 +393,13 @@ public class DisplayManager: ObservableObject {
     }
 
     public func addAppRuleForLastActiveApp() {
+        if lastActiveAppBundleIdentifier == nil || lastActiveAppName == nil {
+            if let front = workspaceService.getFrontmostApplication() {
+                self.lastActiveAppBundleIdentifier = front.bundleIdentifier
+                self.lastActiveAppName = front.appName
+            }
+        }
+
         guard let bundleID = lastActiveAppBundleIdentifier,
               let name = lastActiveAppName else { return }
 

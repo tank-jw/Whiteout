@@ -324,6 +324,7 @@ Sources/Whiteout/
   - [2026-09-11] 규칙 삭제 시 인덱스 경계 검사 가드 추가, ShortcutRecorderView의 보조키 조합 Delete 키 허용, 외장 모니터 해제 시 활성 디스플레이 실시간 필터링 및 @MainActor 선언으로 Swift 6 엄격 동시성 안정성을 확보하여 v1.7.4로 배포함.
   - [2026-09-11] 수직 나열식 Divider 구조와 토글 남발을 탈피하여 macOS Control Center 스타일의 인셋 카드(Inset Grouped Card) 구조와 톱니바퀴 환경설정(Preferences) 슬라이드 네비게이션으로 리디자인하고, Shortcuts의 특수문자 키코드(24번 등) 누락 매핑을 수정하여 네이티브 완성도를 극대화함.
   - [2026-09-11] 메인 제어 카드의 실시간 감마 변환 곡선 모니터(Live Transfer Curve)를 설정창 내 진단 그래프와 동일한 110pt 높이로 규격을 일치시키고 하단 반투명 오렌지 그라데이션 면적 채우기와 상/하단 100%·0% 축 레이블을 완비하여, 슬라이더 감쇄율 조절 및 T계수 모드 전환 시 60fps로 즉각 반응하는 하이테크 디스플레이 캘리브레이터 시각화 UX를 완성함.
+  - [2026-09-11] Main develop의 앱별 자동화 규칙 추가 버튼 구조(실제 앱 아이콘, 오렌지 강조 바, 동적 앱 명칭)를 원형 그대로 복원하고, DisplayManager의 lastActiveApp 속성을 @Published 및 DI 프로토콜(WorkspaceServiceProtocol.getFrontmostApplication) 기반 즉시 감지 구조로 보강하여 앱 시작 직후나 포커스 전환 시에도 추가 버튼이 누락 없이 즉각 반응하도록 안정성을 확보함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:
