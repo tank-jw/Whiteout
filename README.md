@@ -100,12 +100,12 @@ bash build_dmg.sh
 새 기능/버그 수정 후 릴리즈할 때 반드시 확인:
 
 ### 1. 코드 및 환경 설정 체크
-- [x] `UpdateChecker.swift` — `currentVersion = "x.x.x"` 업데이트 (1.7.4 완료)
-- [x] `build_dmg.sh` — `VERSION="x.x.x"` 동일하게 업데이트 (1.7.4 완료)
-- [x] `README.md` — **업데이트 내역** 테이블에 새 버전 추가 (1.7.4 완료)
-- [x] `bash build_dmg.sh` 실행 → DMG + ZIP 생성 확인 (v1.7.4 완료)
-- [x] `git commit` + `git push` (v1.7.4 완료)
-- [x] `gh release create vx.x.x Whiteout.dmg Whiteout.zip` (v1.7.4 완료)
+- [x] `UpdateChecker.swift` — `currentVersion = "x.x.x"` 업데이트 (2.0.0 완료)
+- [x] `build_dmg.sh` — `VERSION="x.x.x"` 동일하게 업데이트 (2.0.0 완료)
+- [x] `README.md` — **업데이트 내역** 테이블에 새 버전 추가 (2.0.0 완료)
+- [x] `bash build_dmg.sh` 실행 → DMG + ZIP 생성 확인 (v2.0.0 완료)
+- [x] `git commit` + `git push` (v2.0.0 완료)
+- [x] `gh release create vx.x.x Whiteout.dmg Whiteout.zip` (v2.0.0 완료)
 
 ### 2. 🧪 배포 전 필수 무결성 검증 시나리오 테스트 (GTM/유료화 대비)
 - [x] **디스플레이 감쇄**: 슬라이더(0~30%) 이동 시 감마가 실시간으로 조정되며, 비활성화 시 정상적인 원래 감마로 즉각 복구되는지 확인.
@@ -138,6 +138,7 @@ Sources/Whiteout/
 
 | 버전 | 내용 |
 |---|---|
+| **v2.0.0** | **차세대 네이티브 2.0 카드형 UI 전면 리디자인 및 웹 디자인 동기화**<br>- macOS Control Center 스타일의 인셋 카드(Inset Grouped Card) 아키텍처 및 톱니바퀴 Preferences 슬라이드 네비게이션 적용<br>- 110pt 실시간 전달 곡선 모니터(Live Transfer Curve)를 메인 화면에 전면 배치하여 60fps 하이테크 캘리브레이터 시각화 완성<br>- Shortcuts 특수문자 키코드 매핑 보강 및 앱 규칙 즉시 감지(`getFrontmostApplication`) 구조 도입<br>- 웹 랜딩 페이지 100% 무채색 순수 화이트포인트 감쇄 통일 및 순백색(#ffffff) 배경 리디자인 배포 |
 | **v1.7.4** | **정밀 코드 감사 개선 및 엣지 케이스 안정성 강화**<br>- 규칙 삭제 시 인덱스 경계 검사(Bounds Check) 가드 추가로 삭제 연타 크래시 원천 차단<br>- 단축키 녹화기에서 보조키 조합 Delete 키(`Cmd+Delete` 등) 등록 지원<br>- 외장 모니터 연결 해제 시 디스플레이 Picker 목록 실시간 동기화(`activeDisplaySettings`)<br>- 인앱 업데이터 스크립트 실행 후 자체 파일 자동 청소(`rm -f "$0"`) 적용<br>- `DisplayManager`에 `@MainActor` 적용으로 Swift 6 엄격 동시성(Concurrency) 대비<br>- `build_dmg.sh` 이전 잔여 볼륨 자동 언마운트 가드 및 랜딩 페이지 최신 릴리즈 다운로드 링크(`latest`) 연결 |
 | **v1.7.3** | **코드 품질 전수 점검 및 안정성/호환성 강화**<br>- `build_dmg.sh` 내 `Info.plist` 중복 CFBundleIconFile 선언 정리 및 유니버셜 바이너리(arm64+x86_64) 패키징 무결성 강화<br>- `DisplayManager`의 NotificationCenter 옵저버 해제(deinit) 누수 방지 로직 추가<br>- `ContentView` 슬라이더 바인딩 내 중복 감마 적용 연산 제거로 슬라이더 조작 반응성 향상<br>- Apple Silicon 및 Intel Mac, macOS 13+ 전 기종 무결성 전수 검증 통과 |
 | **v1.7.2.1** | **품질 보증 테스트 스위트 및 의존성 주입(DI) 아키텍처 도입**<br>- `Package.swift` 구조 개편을 통해 코어 로직을 `WhiteOutKit` 라이브러리로 분리하고 단위/통합 테스트 타겟 구축<br>- 모의 디스플레이 및 시간 환경 하에서 작동하는 9대 시나리오 전수 검사 스위트(`swift test`) 완성<br>- 자동 규칙(시간/앱) 적용 시 `UserDefaults` 사용자 초기 설정이 오버라이트되는 버그 수정 |
@@ -325,6 +326,7 @@ Sources/Whiteout/
   - [2026-09-11] 수직 나열식 Divider 구조와 토글 남발을 탈피하여 macOS Control Center 스타일의 인셋 카드(Inset Grouped Card) 구조와 톱니바퀴 환경설정(Preferences) 슬라이드 네비게이션으로 리디자인하고, Shortcuts의 특수문자 키코드(24번 등) 누락 매핑을 수정하여 네이티브 완성도를 극대화함.
   - [2026-09-11] 메인 제어 카드의 실시간 감마 변환 곡선 모니터(Live Transfer Curve)를 설정창 내 진단 그래프와 동일한 110pt 높이로 규격을 일치시키고 하단 반투명 오렌지 그라데이션 면적 채우기와 상/하단 100%·0% 축 레이블을 완비하여, 슬라이더 감쇄율 조절 및 T계수 모드 전환 시 60fps로 즉각 반응하는 하이테크 디스플레이 캘리브레이터 시각화 UX를 완성함.
   - [2026-09-11] Main develop의 앱별 자동화 규칙 추가 버튼 구조(실제 앱 아이콘, 오렌지 강조 바, 동적 앱 명칭)를 원형 그대로 복원하고, DisplayManager의 lastActiveApp 속성을 @Published 및 DI 프로토콜(WorkspaceServiceProtocol.getFrontmostApplication) 기반 즉시 감지 구조로 보강하여 앱 시작 직후나 포커스 전환 시에도 추가 버튼이 누락 없이 즉각 반응하도록 안정성을 확보함.
+  - [2026-09-11] 네이티브 2.0 카드형 UI 리디자인, 110pt 실시간 전달 곡선 모니터 전면 배치 및 Preferences 슬라이드 전환을 완성하여 v2.0.0으로 정식 배포함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:
