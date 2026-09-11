@@ -17,7 +17,7 @@
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=2.4.2">
+    <link rel="stylesheet" href="style.css?v=2.4.3">
     
     <!-- i18n Language Detection Script -->
     <script>
@@ -429,45 +429,115 @@
             </div>
             
             <div class="table-wrapper">
-                <table>
+                <table class="craft-compare-table">
                     <thead>
                         <tr>
-                            <th data-ko="비교 지표" data-en="Metric">Metric</th>
-                            <th data-ko="일반 소프트웨어 오버레이 앱" data-en="Generic Dimmer Apps">Generic Dimmer Apps</th>
-                            <th class="col-featured" data-ko="WhiteOut (GPU 감마 제어)" data-en="WhiteOut (Hardware GPU LUT)">WhiteOut (Hardware GPU LUT)</th>
-                            <th data-ko="눈 건강에 미치는 생리학적 영향" data-en="Physiological Impact on Eyes">Physiological Impact on Eyes</th>
+                            <th class="col-metric" data-ko="비교 지표" data-en="Metric">Metric</th>
+                            <th class="col-competitor" data-ko="일반 소프트웨어 오버레이 앱" data-en="Generic Dimmer Apps">Generic Dimmer Apps</th>
+                            <th class="col-featured">
+                                <div class="th-featured-header">
+                                    <span class="th-featured-title">WhiteOut</span>
+                                    <span class="th-featured-tag" data-ko="GPU 하드웨어 LUT" data-en="Hardware GPU LUT">Hardware GPU LUT</span>
+                                </div>
+                            </th>
+                            <th class="col-impact" data-ko="눈 건강에 미치는 생리학적 영향" data-en="Physiological Impact on Eyes">Physiological Impact on Eyes</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td><strong data-ko="문서 명암비 (Contrast)" data-en="Document Contrast Ratio">Document Contrast Ratio</strong></td>
-                            <td><span class="status-badge status-negative" data-ko="심각한 손상 (회색조화)" data-en="Severely Degraded (Greyed)">Severely Degraded (Greyed)</span></td>
-                            <td class="col-featured"><span class="status-badge status-positive" data-ko="100% 완벽 보존 (리얼 블랙)" data-en="100% Preserved (True Black)">100% Preserved (True Black)</span></td>
-                            <td data-ko="모양체근 초점 피로(조절 피로) 원천 방지" data-en="Eliminates ciliary muscle accommodation strain">Eliminates ciliary muscle accommodation strain</td>
+                            <td class="col-metric"><strong class="metric-name" data-ko="문서 명암비 (Contrast)" data-en="Document Contrast Ratio">Document Contrast Ratio</strong></td>
+                            <td class="col-competitor">
+                                <div class="comp-val comp-negative">
+                                    <svg class="table-icon icon-cross" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>
+                                    <span data-ko="심각한 손상 (회색조화)" data-en="Severely Degraded (Greyed)">Severely Degraded (Greyed)</span>
+                                </div>
+                            </td>
+                            <td class="col-featured">
+                                <div class="feat-val">
+                                    <span class="feat-check"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span>
+                                    <div>
+                                        <strong class="feat-primary" data-ko="100% 완벽 보존" data-en="100% Preserved">100% Preserved</strong>
+                                        <span class="feat-secondary" data-ko="트루 블랙 무손실" data-en="True Black, Zero Grey Wash">True Black, Zero Grey Wash</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="col-impact"><span class="impact-text" data-ko="모양체근 초점 조절 피로 원천 방지" data-en="Eliminates ciliary muscle accommodation strain">Eliminates ciliary muscle accommodation strain</span></td>
                         </tr>
                         <tr>
-                            <td><strong data-ko="백색광 자극 (Glare Energy)" data-en="White Point Glare Energy">White Point Glare Energy</strong></td>
-                            <td data-ko="불균형하고 거친 임시 감소" data-en="Coarse & uneven linear dimming">Coarse & uneven linear dimming</td>
-                            <td class="col-featured"><span class="status-badge status-positive" data-ko="곡선형 정밀 압축 (최대 30%)" data-en="Precision curve compression (up to 30%)">Precision curve compression (up to 30%)</span></td>
-                            <td data-ko="동공괄약근 긴장 완화 및 안구 통증 예방" data-en="Relieves pupillary sphincter spasms & eye aches">Relieves pupillary sphincter spasms & eye aches</td>
+                            <td class="col-metric"><strong class="metric-name" data-ko="백색광 자극 (Glare Energy)" data-en="White Point Glare Energy">White Point Glare Energy</strong></td>
+                            <td class="col-competitor">
+                                <div class="comp-val comp-muted">
+                                    <svg class="table-icon icon-minus" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM6.75 9.25a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clip-rule="evenodd"/></svg>
+                                    <span data-ko="불균형하고 거친 임시 선형 감쇄" data-en="Coarse & uneven linear dimming">Coarse & uneven linear dimming</span>
+                                </div>
+                            </td>
+                            <td class="col-featured">
+                                <div class="feat-val">
+                                    <span class="feat-check"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span>
+                                    <div>
+                                        <strong class="feat-primary" data-ko="곡선형 정밀 압축" data-en="Precision Curve Compression">Precision Curve Compression</strong>
+                                        <span class="feat-secondary" data-ko="피크 백색광만 최대 30% 제어" data-en="Suppresses peak white up to 30%">Suppresses peak white up to 30%</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="col-impact"><span class="impact-text" data-ko="동공괄약근 긴장 완화 및 안구 통증 예방" data-en="Relieves pupillary sphincter spasms & eye aches">Relieves pupillary sphincter spasms & eye aches</span></td>
                         </tr>
                         <tr>
-                            <td><strong data-ko="멀티 모니터 대응" data-en="Multi-Monitor Support">Multi-Monitor Support</strong></td>
-                            <td data-ko="반응이 없거나 화면 일부 깜빡임 발생" data-en="Flickering or unsupported on externals">Flickering or unsupported on externals</td>
-                            <td class="col-featured"><span class="status-badge status-positive" data-ko="모든 디스플레이 즉시 실시간 동기화" data-en="Instant real-time sync across all screens">Instant real-time sync across all screens</span></td>
-                            <td data-ko="시선 이동 시 동공의 급격한 피로 충격 차단" data-en="Blocks pupil dilation shocks when switching screens">Blocks pupil dilation shocks when switching screens</td>
+                            <td class="col-metric"><strong class="metric-name" data-ko="멀티 모니터 대응" data-en="Multi-Monitor Support">Multi-Monitor Support</strong></td>
+                            <td class="col-competitor">
+                                <div class="comp-val comp-muted">
+                                    <svg class="table-icon icon-cross" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"/></svg>
+                                    <span data-ko="반응이 없거나 화면 일부 깜빡임 발생" data-en="Flickering or unsupported on externals">Flickering or unsupported on externals</span>
+                                </div>
+                            </td>
+                            <td class="col-featured">
+                                <div class="feat-val">
+                                    <span class="feat-check"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span>
+                                    <div>
+                                        <strong class="feat-primary" data-ko="전체 모니터 실시간 동기화" data-en="Instant Multi-Screen Sync">Instant Multi-Screen Sync</strong>
+                                        <span class="feat-secondary" data-ko="연결/해제 즉시 자동 적응" data-en="Zero lag hotplug auto-adaptation">Zero lag hotplug auto-adaptation</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="col-impact"><span class="impact-text" data-ko="시선 이동 시 동공의 급격한 피로 충격 차단" data-en="Blocks pupil dilation shocks when switching screens">Blocks pupil dilation shocks when switching screens</span></td>
                         </tr>
                         <tr>
-                            <td><strong data-ko="GPU 가속 & 리소스 점유" data-en="Performance & Footprint">Performance & Footprint</strong></td>
-                            <td data-ko="CPU 및 메모리 점유율 다소 높음" data-en="Higher CPU/RAM usage from overlay rendering">Higher CPU/RAM usage from overlay rendering</td>
-                            <td class="col-featured"><span class="status-badge status-positive" data-ko="GPU 하드웨어 레벨 연산 (점유율 0%)" data-en="Zero CPU overhead (Hardware LUT rewrite)">Zero CPU overhead (Hardware LUT rewrite)</span></td>
-                            <td data-ko="맥북 발열 방지 및 부드러운 시스템 프레임 유지" data-en="No battery drain, silent operation, zero thermal load">No battery drain, silent operation, zero thermal load</td>
+                            <td class="col-metric"><strong class="metric-name" data-ko="GPU 가속 & 리소스 점유" data-en="Performance & Footprint">Performance & Footprint</strong></td>
+                            <td class="col-competitor">
+                                <div class="comp-val comp-muted">
+                                    <svg class="table-icon icon-warning" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+                                    <span data-ko="소프트웨어 오버레이로 지속적 CPU/RAM 점유" data-en="Higher CPU/RAM usage from overlay rendering">Higher CPU/RAM usage from overlay rendering</span>
+                                </div>
+                            </td>
+                            <td class="col-featured">
+                                <div class="feat-val">
+                                    <span class="feat-check"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span>
+                                    <div>
+                                        <strong class="feat-primary" data-ko="0.0% CPU 점유율" data-en="0.0% CPU Overhead">0.0% CPU Overhead</strong>
+                                        <span class="feat-secondary" data-ko="하드웨어 LUT 직접 인가 • 배터리 소모 0" data-en="Direct LUT write • Zero battery drain">Direct LUT write • Zero battery drain</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="col-impact"><span class="impact-text" data-ko="맥북 발열 방지 및 무소음 무부하 구동" data-en="No battery drain, silent operation, zero thermal load">No battery drain, silent operation, zero thermal load</span></td>
                         </tr>
                         <tr>
-                            <td><strong data-ko="멜라토닌 파괴 방지" data-en="Circadian / Melatonin Protection">Circadian / Melatonin Protection</strong></td>
-                            <td><span class="status-badge status-warning" data-ko="효과가 부분적임" data-en="Partial / Ineffective">Partial / Ineffective</span></td>
-                            <td class="col-featured"><span class="status-badge status-positive" data-ko="고밀도 광자 제어로 우수한 효과" data-en="Highly effective via peak photon reduction">Highly effective via peak photon reduction</span></td>
-                            <td data-ko="생체 생리 리듬 및 수면 주기 정상 수호" data-en="Protects circadian rhythm and supports natural sleep">Protects circadian rhythm and supports natural sleep</td>
+                            <td class="col-metric"><strong class="metric-name" data-ko="멜라토닌 파괴 방지" data-en="Circadian / Melatonin Protection">Circadian / Melatonin Protection</strong></td>
+                            <td class="col-competitor">
+                                <div class="comp-val comp-warning">
+                                    <svg class="table-icon icon-minus" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM6.75 9.25a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clip-rule="evenodd"/></svg>
+                                    <span data-ko="명암비 손상으로 효과 제한적" data-en="Partial / Ineffective">Partial / Ineffective</span>
+                                </div>
+                            </td>
+                            <td class="col-featured">
+                                <div class="feat-val">
+                                    <span class="feat-check"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"/></svg></span>
+                                    <div>
+                                        <strong class="feat-primary" data-ko="고에너지 백색 광자 집중 제어" data-en="High-Energy Photon Cut">High-Energy Photon Cut</strong>
+                                        <span class="feat-secondary" data-ko="자연스러운 멜라토닌 분비 수호" data-en="Protects natural melatonin secretion">Protects natural melatonin secretion</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="col-impact"><span class="impact-text" data-ko="생체 생리 리듬 및 수면 주기 정상 수호" data-en="Protects circadian rhythm and supports natural sleep">Protects circadian rhythm and supports natural sleep</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -511,6 +581,6 @@
     </footer>
 
     <!-- Script for interactive comparison slider -->
-    <script src="script.js?v=2.4.2"></script>
+    <script src="script.js?v=2.4.3"></script>
 </body>
 </html>

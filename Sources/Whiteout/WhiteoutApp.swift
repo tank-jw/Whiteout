@@ -8,7 +8,7 @@ struct WhiteoutApp: App {
     @StateObject private var updateChecker  = UpdateChecker()
 
     var body: some Scene {
-        MenuBarExtra {
+        MenuBarExtra(isInserted: .constant(true)) {
             ContentView()
                 .environmentObject(displayManager)
                 .environmentObject(updateChecker)
@@ -20,14 +20,12 @@ struct WhiteoutApp: App {
 
     private var menuBarLabel: some View {
         HStack(spacing: 3) {
-            Image(systemName: displayManager.isEnabled ? "sun.min.fill" : "sun.min")
+            Image(systemName: displayManager.isEnabled ? "sun.max.fill" : "sun.min")
             if displayManager.isEnabled && displayManager.reduction > 0.01 {
                 Text("\(Int((displayManager.reduction * 30).rounded()))%")
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
-                    .frame(width: 24, alignment: .leading)
             }
         }
-        .frame(width: 46, alignment: .center)
     }
 }
 
