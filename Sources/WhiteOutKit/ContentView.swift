@@ -3,7 +3,6 @@ import SwiftUI
 public struct ContentView: View {
     @EnvironmentObject var dm: DisplayManager
     @EnvironmentObject var updater: UpdateChecker
-    @State private var showingPreferences = false
 
     public init() {}
 
@@ -37,22 +36,31 @@ public struct ContentView: View {
     // MARK: - Body
 
     public var body: some View {
-        ZStack {
-            if showingPreferences {
-                DetailsSectionView(dm: dm, showDetails: $showingPreferences)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .trailing).combined(with: .opacity)
-                    ))
-            } else {
-                mainControlsView
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .leading).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    ))
+        let isEN = dm.language == "en"
+        return VStack(spacing: 0) {
+            headerSection(isEN: isEN)
+
+            ScrollView(showsIndicators: true) {
+                VStack(spacing: 9) {
+                    activeRuleBanner(isEN: isEN)
+                    liveCurveCard(isEN: isEN)
+                    reductionAndProfileCard(isEN: isEN)
+                    ShortcutsAndSystemCard(dm: dm)
+                    TimeRulesCard(dm: dm)
+                    AppRulesCard(dm: dm)
+                    TechPrinciplesCard(dm: dm)
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 2)
+                .padding(.bottom, 8)
             }
+            .frame(maxHeight: 520)
+
+            Divider().opacity(0.4)
+
+            footerSection(isEN: isEN)
         }
-        .frame(width: 310)
+        .frame(width: 320)
         .background(.ultraThinMaterial)
         .background(
             WindowPositionLock()
@@ -62,34 +70,10 @@ public struct ContentView: View {
         .onDisappear {
             WindowPositionStabilizer.shared.releaseLock()
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.84), value: showingPreferences)
         .alert(LocalizedStrings.updateNetworkErrorTitle(isEN: dm.language == "en"), isPresented: $updater.showNetworkErrorAlert) {
             Button(dm.language == "en" ? "OK" : "확인", role: .cancel) {}
         } message: {
             Text(LocalizedStrings.updateNetworkErrorMsg(isEN: dm.language == "en"))
-        }
-    }
-
-    // MARK: - Main Controls View
-
-    private var mainControlsView: some View {
-        let isEN = dm.language == "en"
-        return VStack(spacing: 0) {
-            headerSection(isEN: isEN)
-
-            activeRuleBanner(isEN: isEN)
-
-            VStack(spacing: 9) {
-                liveCurveCard(isEN: isEN)
-                reductionAndProfileCard(isEN: isEN)
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 2)
-            .padding(.bottom, 6)
-
-            Divider().opacity(0.4)
-
-            footerSection(isEN: isEN)
         }
     }
 
@@ -139,22 +123,6 @@ public struct ContentView: View {
             }
 
             Spacer()
-
-            // Settings Gear Button
-            Button {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.84)) {
-                    showingPreferences = true
-                }
-            } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color.secondary)
-                    .padding(6)
-                    .background(Color.primary.opacity(0.05))
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-            .help(LocalizedStrings.settingsGear(isEN: isEN))
 
             // Master Toggle
             Toggle("", isOn: enabledBinding)

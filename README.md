@@ -331,6 +331,7 @@ Sources/Whiteout/
   - [2026-09-11] TimeRule/AppRule의 Swift struct 값 복사(Snapshot) 캐싱으로 인해 규칙 활성 중 슬라이더 변경 시 CoreGraphics 감마 테이블에 이전 복사본 값이 재인가되던 버그를 계산 프로퍼티(Live Computed Property) 구조로 전면 리팩토링하여 해결함.
   - [2026-09-11] 메뉴바 아이콘 라벨 텍스트 변경 시 AppKit 레벨에서 발생하는 팝오버 윈도우의 좌우 축 흔들림을 NSWindow setFrameOrigin 가로채기(WindowPositionStabilizer)로 고정하고, On 시 나타나는 t=지수값 뱃지의 헤더 행 높이 고정(frame height 16) 및 opacity 토글을 통해 On/Off 전환 시 창 크기가 아래로 밀려나거나 요동치는 현상을 완벽 차단함.
   - [2026-09-11] 시간대별 규칙(Time-based Rule) 및 앱 규칙의 감쇄율/곡선지수 Picker가 좁은 프레임폭(44~48pt) 및 비매칭 실수값 태그로 인해 '...' 말줄임표로 표시되던 결함을 고정 크기(fixedSize) 커스텀 Menu 버튼 및 실시간 백분율 텍스트 연동 구조로 전면 교체하여, 어떤 수치에서도 잘림 없이 정확한 숫자가 표시되도록 해결함.
+  - [2026-09-11] 분리되어 있던 톱니바퀴 환경설정(Preferences) 페이지의 모든 컴포넌트(단축키 및 시스템, 시간별 자동화, 앱별 자동화, 기술 원리 및 감쇄 모드 설명)를 메인 화면 단일 ScrollView(maxHeight: 520) 내 인셋 카드(Inset Grouped Card)로 전면 통합하여, 페이지 전환 없이 한 화면에서 모든 설정을 직관적으로 제어할 수 있는 올인원 네이티브 제어 센터 UX를 완성함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:

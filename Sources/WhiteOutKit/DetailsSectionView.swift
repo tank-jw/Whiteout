@@ -1,74 +1,14 @@
 import SwiftUI
 
-struct DetailsSectionView: View {
+public struct ShortcutsAndSystemCard: View {
     @ObservedObject var dm: DisplayManager
-    @Binding var showDetails: Bool
 
-    var body: some View {
-        let isEN = dm.language == "en"
-        VStack(spacing: 0) {
-            // Navigation Bar
-            HStack {
-                Button {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
-                        showDetails = false
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 11, weight: .bold))
-                        Text(LocalizedStrings.backButton(isEN: isEN))
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .foregroundStyle(Color.orange)
-                    .padding(.vertical, 4)
-                    .padding(.horizontal, 6)
-                    .background(Color.orange.opacity(0.08))
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-
-                Spacer()
-
-                Text(LocalizedStrings.settingsTitle(isEN: isEN))
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(Color.primary)
-
-                Spacer()
-
-                // Balancing spacer
-                Color.clear.frame(width: 48, height: 16)
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 14)
-            .padding(.bottom, 10)
-
-            Divider().opacity(0.4)
-
-            // Scrollable Content
-            ScrollView {
-                VStack(spacing: 12) {
-                    // 1. Shortcuts & System Card
-                    shortcutsAndSystemCard(isEN: isEN)
-
-                    // 2. Time-Based Rules Card
-                    timeRulesCard(isEN: isEN)
-
-                    // 3. App-Specific Rules Card
-                    appRulesCard(isEN: isEN)
-
-                    // 4. Live Curve Diagnostics & Principles Card
-                    curveDiagnosticsCard(isEN: isEN)
-                }
-                .padding(14)
-            }
-        }
-        .frame(width: 310)
+    public init(dm: DisplayManager) {
+        self.dm = dm
     }
 
-    // MARK: - 1. Shortcuts & System Card
-
-    private func shortcutsAndSystemCard(isEN: Bool) -> some View {
+    public var body: some View {
+        let isEN = dm.language == "en"
         VStack(spacing: 10) {
             HStack {
                 Label(LocalizedStrings.shortcutsAndLaunchSection(isEN: isEN), systemImage: "keyboard")
@@ -129,10 +69,17 @@ struct DetailsSectionView: View {
                 .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
         )
     }
+}
 
-    // MARK: - 2. Time Rules Card
+public struct TimeRulesCard: View {
+    @ObservedObject var dm: DisplayManager
 
-    private func timeRulesCard(isEN: Bool) -> some View {
+    public init(dm: DisplayManager) {
+        self.dm = dm
+    }
+
+    public var body: some View {
+        let isEN = dm.language == "en"
         VStack(spacing: 8) {
             HStack {
                 Label(LocalizedStrings.timeRulesSectionTitle(isEN: isEN), systemImage: "clock")
@@ -297,10 +244,17 @@ struct DetailsSectionView: View {
                 .stroke(isActive ? Color.orange.opacity(0.2) : Color.clear, lineWidth: 0.5)
         )
     }
+}
 
-    // MARK: - 3. App Rules Card
+public struct AppRulesCard: View {
+    @ObservedObject var dm: DisplayManager
 
-    private func appRulesCard(isEN: Bool) -> some View {
+    public init(dm: DisplayManager) {
+        self.dm = dm
+    }
+
+    public var body: some View {
+        let isEN = dm.language == "en"
         VStack(spacing: 8) {
             HStack {
                 Label(LocalizedStrings.appRulesSectionTitle(isEN: isEN), systemImage: "app.badge")
@@ -335,8 +289,8 @@ struct DetailsSectionView: View {
                     .padding(.vertical, 6)
             } else {
                 VStack(spacing: 6) {
-                    ForEach(dm.appRules) { rule in
-                        appRuleRow(rule: rule, isEN: isEN)
+                    ForEach(Array(dm.appRules.enumerated()), id: \.element.id) { index, rule in
+                        appRuleRow(index: index, rule: rule, isEN: isEN)
                     }
                 }
             }
@@ -352,7 +306,7 @@ struct DetailsSectionView: View {
         )
     }
 
-    private func appRuleRow(rule: AppRule, isEN: Bool) -> some View {
+    private func appRuleRow(index: Int, rule: AppRule, isEN: Bool) -> some View {
         let active = dm.activeRuleAppName == rule.appName
 
         return VStack(spacing: 4) {
@@ -379,16 +333,14 @@ struct DetailsSectionView: View {
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
                         .background(Color.orange.opacity(0.12))
-                        .cornerRadius(3)
+                        .clipShape(Capsule())
                 }
 
                 Spacer()
 
                 Button {
-                    if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
-                        withAnimation {
-                            dm.deleteAppRule(at: idx)
-                        }
+                    withAnimation {
+                        dm.deleteAppRule(at: index)
                     }
                 } label: {
                     Image(systemName: "trash")
@@ -481,50 +433,21 @@ struct DetailsSectionView: View {
                 .stroke(active ? Color.orange.opacity(0.2) : Color.clear, lineWidth: 0.5)
         )
     }
+}
 
-    // MARK: - 4. Curve Diagnostics Card
+public struct TechPrinciplesCard: View {
+    @ObservedObject var dm: DisplayManager
 
-    private func curveDiagnosticsCard(isEN: Bool) -> some View {
+    public init(dm: DisplayManager) {
+        self.dm = dm
+    }
+
+    public var body: some View {
+        let isEN = dm.language == "en"
         VStack(alignment: .leading, spacing: 10) {
-            Label(LocalizedStrings.detailsSectionTitle(isEN: isEN), systemImage: "waveform.path.ecg")
+            Label(LocalizedStrings.detailsSectionTitle(isEN: isEN), systemImage: "info.circle")
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(Color.secondary)
-
-            ZStack(alignment: .bottomTrailing) {
-                CurveGraphView(
-                    isEnabled: dm.isEnabled,
-                    reduction: dm.reduction,
-                    curveExponent: dm.curveExponent
-                )
-                .frame(height: 110)
-                .background(Color.black.opacity(0.15))
-                .cornerRadius(6)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
-                )
-
-                Text("100%")
-                    .font(.system(size: 7, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .padding(.leading, 6)
-                    .padding(.top, 4)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-
-                Text("0%")
-                    .font(.system(size: 7, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .padding(.leading, 6)
-                    .padding(.bottom, 4)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-
-                Text("100%")
-                    .font(.system(size: 7, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .padding(.trailing, 6)
-                    .padding(.bottom, 4)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            }
 
             // Exponent Explanation
             VStack(alignment: .leading, spacing: 3) {
@@ -599,21 +522,40 @@ struct DetailsSectionView: View {
         let isEN = dm.language == "en"
         switch dm.curveExponent {
         case 2.5:
-            return isEN 
+            return isEN
                 ? "Lowers brightness smoothly and naturally across the whole screen. Recommended for daily tasks."
                 : "전반적으로 자연스럽고 부드럽게 밝기를 낮춥니다. 웹서핑 및 일상 작업에 가장 권장됩니다."
         case 4.0:
-            return isEN 
+            return isEN
                 ? "Perfectly preserves text contrast while compressing glaring white backgrounds. Ideal for reading."
                 : "텍스트의 선명한 블랙을 완벽히 유지하면서 눈부신 흰 배경만 집중 감쇄합니다. 독서와 문서 작업에 적합합니다."
         case 6.0:
-            return isEN 
+            return isEN
                 ? "Maximally preserves dark and mid-tones, compressing only peak bright highlights. Tailored for dark rooms."
                 : "어두운 톤과 중간 톤을 최대로 보존하고 가장 밝은 극단적 광원만 눌러줍니다. 어두운 환경에 특화되어 있습니다."
         default:
-            return isEN 
+            return isEN
                 ? "Nonlinear dimming is applied based on the configured exponent."
                 : "설정된 곡선 지수에 따라 비선형 감쇄가 적용됩니다."
+        }
+    }
+}
+
+public struct DetailsSectionView: View {
+    @ObservedObject var dm: DisplayManager
+    @Binding var showDetails: Bool
+
+    public init(dm: DisplayManager, showDetails: Binding<Bool> = .constant(true)) {
+        self.dm = dm
+        self._showDetails = showDetails
+    }
+
+    public var body: some View {
+        VStack(spacing: 9) {
+            ShortcutsAndSystemCard(dm: dm)
+            TimeRulesCard(dm: dm)
+            AppRulesCard(dm: dm)
+            TechPrinciplesCard(dm: dm)
         }
     }
 }
