@@ -208,7 +208,7 @@ struct DetailsSectionView: View {
             ), displayedComponents: .hourAndMinute)
             .labelsHidden()
             .scaleEffect(0.82)
-            .frame(width: 56)
+            .frame(width: 60)
             .disabled(!rule.isEnabled)
 
             Text("~")
@@ -223,27 +223,58 @@ struct DetailsSectionView: View {
             ), displayedComponents: .hourAndMinute)
             .labelsHidden()
             .scaleEffect(0.82)
-            .frame(width: 56)
+            .frame(width: 60)
             .disabled(!rule.isEnabled)
 
             Spacer(minLength: 0)
 
-            Picker("", selection: Binding(
-                get: { rule.reduction },
-                set: { newVal in
-                    dm.timeRules[index].reduction = newVal
+            Menu {
+                let currentPct = Int((rule.reduction * 30).rounded())
+                let presets = [0, 5, 10, 15, 20, 25, 30]
+                if !presets.contains(currentPct) {
+                    Button {
+                        // Current live value
+                    } label: {
+                        Text("✓ \(currentPct)%")
+                    }
+                    Divider()
                 }
-            )) {
-                ForEach(0...6, id: \.self) { i in
-                    let pct = i * 5
-                    let val = Double(i) / 6.0
-                    Text("\(pct)%").tag(val)
+                ForEach(presets, id: \.self) { pct in
+                    Button {
+                        dm.timeRules[index].reduction = Double(pct) / 30.0
+                        if isActive {
+                            dm.applyReduction()
+                        }
+                    } label: {
+                        if currentPct == pct {
+                            Text("✓ \(pct)%")
+                        } else {
+                            Text("\(pct)%")
+                        }
+                    }
                 }
+            } label: {
+                HStack(spacing: 3) {
+                    Text("\(Int((rule.reduction * 30).rounded()))%")
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundStyle(rule.isEnabled ? (isActive ? Color.orange : Color.primary) : Color.secondary)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 7, weight: .semibold))
+                        .foregroundStyle(Color.secondary.opacity(0.8))
+                }
+                .padding(.horizontal, 6)
+                .padding(.vertical, 3)
+                .background(
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .fill(isActive ? Color.orange.opacity(0.15) : Color(nsColor: .controlColor))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
+                        .stroke(isActive ? Color.orange.opacity(0.3) : Color.primary.opacity(0.08), lineWidth: 0.5)
+                )
             }
-            .pickerStyle(.menu)
-            .labelsHidden()
-            .scaleEffect(0.8)
-            .frame(width: 48)
+            .buttonStyle(.plain)
+            .fixedSize()
             .disabled(!rule.isEnabled)
 
             Button {
@@ -396,23 +427,48 @@ struct DetailsSectionView: View {
                 .disabled(!rule.isEnabled)
                 .scaleEffect(0.85)
 
-                Picker("", selection: Binding(
-                    get: { rule.curveExponent },
-                    set: { newVal in
-                        if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
-                            dm.appRules[idx].curveExponent = newVal
-                            dm.applyReduction()
+                Text("\(Int((rule.reduction * 30).rounded()))%")
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundStyle(rule.isEnabled ? Color.primary : Color.secondary)
+                    .frame(width: 26, alignment: .trailing)
+
+                Menu {
+                    ForEach([2.5, 4.0, 6.0], id: \.self) { exp in
+                        Button {
+                            if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
+                                dm.appRules[idx].curveExponent = exp
+                                dm.applyReduction()
+                            }
+                        } label: {
+                            if abs(rule.curveExponent - exp) < 0.1 {
+                                Text(String(format: "✓ %.1f", exp))
+                            } else {
+                                Text(String(format: "%.1f", exp))
+                            }
                         }
                     }
-                )) {
-                    Text("2.5").tag(2.5)
-                    Text("4.0").tag(4.0)
-                    Text("6.0").tag(6.0)
+                } label: {
+                    HStack(spacing: 2) {
+                        Text(String(format: "%.1f", rule.curveExponent))
+                            .font(.system(size: 10, weight: .bold, design: .monospaced))
+                            .foregroundStyle(rule.isEnabled ? Color.primary : Color.secondary)
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.system(size: 7, weight: .semibold))
+                            .foregroundStyle(Color.secondary.opacity(0.8))
+                    }
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 3)
+                    .background(
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .fill(Color(nsColor: .controlColor))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                            .stroke(Color.primary.opacity(0.08), lineWidth: 0.5)
+                    )
                 }
-                .pickerStyle(.menu)
-                .labelsHidden()
-                .scaleEffect(0.8)
-                .frame(width: 44)
+                .buttonStyle(.plain)
+                .fixedSize()
                 .disabled(!rule.isEnabled)
             }
             .padding(.leading, 20)

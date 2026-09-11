@@ -223,16 +223,17 @@ public struct ContentView: View {
 
                 Spacer()
 
-                if dm.isEnabled {
-                    Text(String(format: "t = %.1f", dm.curveExponent))
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(Color.orange)
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 1)
-                        .background(Color.orange.opacity(0.12))
-                        .clipShape(Capsule())
-                }
+                Text(String(format: "t = %.1f", dm.curveExponent))
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundStyle(Color.orange)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 1)
+                    .background(Color.orange.opacity(0.12))
+                    .clipShape(Capsule())
+                    .opacity(dm.isEnabled ? 1 : 0)
+                    .animation(.easeInOut(duration: 0.15), value: dm.isEnabled)
             }
+            .frame(height: 16)
 
             ZStack(alignment: .bottomTrailing) {
                 CurveGraphView(

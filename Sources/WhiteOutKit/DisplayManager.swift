@@ -430,7 +430,7 @@ public class DisplayManager: ObservableObject {
         let hour = calendar.component(.hour, from: now)
         let endHour = (hour + 1) % 24
         
-        let newRule = TimeRule(startHour: hour, startMinute: 0, endHour: endHour, endMinute: 0, reduction: 0.1, isEnabled: true)
+        let newRule = TimeRule(startHour: hour, startMinute: 0, endHour: endHour, endMinute: 0, reduction: 0.5, isEnabled: true)
         timeRules.append(newRule)
     }
 
