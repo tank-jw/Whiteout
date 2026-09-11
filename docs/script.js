@@ -46,6 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Nav Glassmorphism background (neutral transparent white)
         const navBg = `rgba(${lumMain}, ${lumMain}, ${lumMain}, 0.92)`;
 
+        // Browser mock screen background in the hero laptop (Pure White -> Dimmed White)
+        const lumBrowser = Math.round(255 - t * 51); // 255 -> 204
+        const sliderBrowserBg = `rgb(${lumBrowser}, ${lumBrowser}, ${lumBrowser})`;
+
+        // Dynamic Glare and Shield opacities
+        const glareOpacity = (1 - t).toFixed(3);
+        const shieldOpacity = Math.min(1, t * 1.6).toFixed(3);
+
         // Update CSS Variables on Root
         root.style.setProperty('--reduction-ratio', reductionRatio.toFixed(2));
         root.style.setProperty('--white-reduction-pct', `${pct}%`);
@@ -54,6 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
         root.style.setProperty('--bg-card', bgCard);
         root.style.setProperty('--border-color', borderColor);
         root.style.setProperty('--nav-bg', navBg);
+        root.style.setProperty('--slider-browser-bg', sliderBrowserBg);
+        root.style.setProperty('--glare-opacity', glareOpacity);
+        root.style.setProperty('--shield-opacity', shieldOpacity);
 
         // Update handle badge display
         if (badgeVal) {
@@ -73,43 +84,67 @@ document.addEventListener('DOMContentLoaded', () => {
         panelAfter.style.width = `${position}%`;
         handle.style.left = `${position}%`;
 
-        // Apply real-time Whiteout to entire webpage
+        // Apply real-time Whiteout to entire webpage & mock screens
         applyLiveWhiteout(position);
     }
 
-    // Initialize with 50% slider position (10% reduction)
+    // Initialize with 50% slider position (10% reduction) and set inline styles
+    panelAfter.style.width = '50%';
+    handle.style.left = '50%';
     applyLiveWhiteout(50);
     
-    // Mouse events
-    slider.addEventListener('mousedown', (e) => {
+    // Modern unified Pointer Events for smooth 60fps drag across Mouse, Trackpad, and Touch
+    let isDragging = false;
+
+    slider.addEventListener('pointerdown', (e) => {
         isDragging = true;
+        try {
+            slider.setPointerCapture(e.pointerId);
+        } catch (err) {}
         moveSlider(e.clientX);
-        e.preventDefault(); // Prevent text selection
+        e.preventDefault();
     });
-    
+
+    slider.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        moveSlider(e.clientX);
+        e.preventDefault();
+    });
+
+    const stopDragging = (e) => {
+        if (isDragging) {
+            isDragging = false;
+            try {
+                slider.releasePointerCapture(e.pointerId);
+            } catch (err) {}
+        }
+    };
+
+    slider.addEventListener('pointerup', stopDragging);
+    slider.addEventListener('pointercancel', stopDragging);
+
+    // Fallback mouse and touch events
     window.addEventListener('mousemove', (e) => {
         if (!isDragging) return;
         moveSlider(e.clientX);
     });
-    
     window.addEventListener('mouseup', () => {
         isDragging = false;
     });
-    
-    // Touch events for mobile responsiveness
+
     slider.addEventListener('touchstart', (e) => {
         isDragging = true;
         if (e.touches && e.touches[0]) {
             moveSlider(e.touches[0].clientX);
         }
-    });
+    }, { passive: true });
     
     window.addEventListener('touchmove', (e) => {
         if (!isDragging) return;
         if (e.touches && e.touches[0]) {
             moveSlider(e.touches[0].clientX);
         }
-    });
+    }, { passive: true });
     
     window.addEventListener('touchend', () => {
         isDragging = false;

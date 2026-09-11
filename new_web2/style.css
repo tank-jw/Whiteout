@@ -363,6 +363,8 @@ header {
   border: 1px solid var(--border-color);
   box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.12);
   user-select: none;
+  touch-action: none;
+  cursor: ew-resize;
 }
 
 .slider-panel {
@@ -386,6 +388,7 @@ header {
   align-items: center;
   padding: 2rem;
   font-family: var(--font-sans);
+  pointer-events: none;
 }
 
 .panel-before {
@@ -409,6 +412,8 @@ header {
   );
   pointer-events: none;
   z-index: 2;
+  opacity: var(--glare-opacity, 1);
+  transition: opacity 0.15s ease;
   animation: whiteout-glow-pulse 4s ease-in-out infinite;
 }
 
@@ -424,8 +429,8 @@ header {
 }
 
 .panel-after {
-  background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-  color: #ffffff;
+  background: radial-gradient(circle at center, var(--bg-surface) 0%, var(--bg-card) 60%, var(--border-color) 100%);
+  color: var(--text-primary);
   width: 50%;
   overflow: hidden;
   z-index: 3; /* Renders above .panel-before (updated to 3 to stay above the pseudo-element) */
@@ -615,9 +620,10 @@ header {
 .browser-line.w-80 { width: 80%; }
 .browser-line.w-50 { width: 50%; }
 
-/* OFF State: Blinding white screen with flashbang glare */
+/* OFF State: Blinding white screen with flashbang glare (dynamically dimmed by Whiteout slider) */
 .browser-glaring {
-  background: #ffffff !important;
+  background: var(--slider-browser-bg, #ffffff) !important;
+  transition: background 0.05s ease;
 }
 
 .browser-glaring .browser-line {
@@ -633,6 +639,8 @@ header {
   height: 70px;
   pointer-events: none;
   z-index: 3;
+  opacity: var(--glare-opacity, 1);
+  transition: opacity 0.1s ease;
 }
 
 .glare-lines-wrapper {
@@ -642,6 +650,8 @@ header {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  opacity: var(--glare-opacity, 1);
+  transition: opacity 0.1s ease;
 }
 
 .glare-line-item {
@@ -655,11 +665,10 @@ header {
 .glare-line-item.l-2 { top: 50%; left: -10%; }
 .glare-line-item.l-3 { top: 75%; left: -10%; transform: rotate(15deg); }
 
-
-
 /* ON State: Comfortable dimmed neutral whitepoint with protection shield */
 .browser-dimmed {
-  background: #cccccc !important; /* Neutral reduced whitepoint (no yellow tint) */
+  background: var(--slider-browser-bg, #cccccc) !important; /* Neutral reduced whitepoint (no yellow tint) */
+  transition: background 0.05s ease;
 }
 
 .browser-dimmed .browser-line {
@@ -684,6 +693,8 @@ header {
   white-space: nowrap;
   box-shadow: 0 0 12px rgba(245, 158, 11, 0.18);
   z-index: 3;
+  opacity: var(--shield-opacity, 1);
+  transition: opacity 0.1s ease;
 }
 
 .shield-badge svg {
