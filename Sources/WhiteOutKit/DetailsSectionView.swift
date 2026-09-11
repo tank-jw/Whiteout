@@ -437,6 +437,7 @@ public struct AppRulesCard: View {
 
 public struct TechPrinciplesCard: View {
     @ObservedObject var dm: DisplayManager
+    @State private var isExpanded: Bool = false
 
     public init(dm: DisplayManager) {
         self.dm = dm
@@ -444,36 +445,55 @@ public struct TechPrinciplesCard: View {
 
     public var body: some View {
         let isEN = dm.language == "en"
-        VStack(alignment: .leading, spacing: 10) {
-            Label(LocalizedStrings.detailsSectionTitle(isEN: isEN), systemImage: "info.circle")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Color.secondary)
-
-            // Exponent Explanation
-            VStack(alignment: .leading, spacing: 3) {
-                Text(curveTypeTitle)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.orange)
-                Text(curveTypeDescription)
-                    .font(.system(size: 9.5))
-                    .foregroundStyle(.secondary)
-                    .lineSpacing(1.8)
+        VStack(alignment: .leading, spacing: 8) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                HStack {
+                    Label(LocalizedStrings.detailsSectionTitle(isEN: isEN), systemImage: "info.circle")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Color.secondary)
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(Color.secondary.opacity(0.7))
+                }
+                .contentShape(Rectangle())
             }
-            .padding(8)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.orange.opacity(0.06))
-            .cornerRadius(6)
+            .buttonStyle(.plain)
 
-            // Method Comparison
-            VStack(alignment: .leading, spacing: 5) {
-                bulletPoint(
-                    title: LocalizedStrings.compareOurApp(isEN: isEN),
-                    desc: LocalizedStrings.compareOurAppDesc(isEN: isEN)
-                )
-                bulletPoint(
-                    title: LocalizedStrings.compareOverlay(isEN: isEN),
-                    desc: LocalizedStrings.compareOverlayDesc(isEN: isEN)
-                )
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 8) {
+                    // Exponent Explanation
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(curveTypeTitle)
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.orange)
+                        Text(curveTypeDescription)
+                            .font(.system(size: 9.5))
+                            .foregroundStyle(.secondary)
+                            .lineSpacing(1.8)
+                    }
+                    .padding(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.orange.opacity(0.06))
+                    .cornerRadius(6)
+
+                    // Method Comparison
+                    VStack(alignment: .leading, spacing: 5) {
+                        bulletPoint(
+                            title: LocalizedStrings.compareOurApp(isEN: isEN),
+                            desc: LocalizedStrings.compareOurAppDesc(isEN: isEN)
+                        )
+                        bulletPoint(
+                            title: LocalizedStrings.compareOverlay(isEN: isEN),
+                            desc: LocalizedStrings.compareOverlayDesc(isEN: isEN)
+                        )
+                    }
+                }
+                .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .padding(12)
