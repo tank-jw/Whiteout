@@ -8,7 +8,7 @@ struct WhiteoutApp: App {
     @StateObject private var updateChecker  = UpdateChecker()
 
     var body: some Scene {
-        MenuBarExtra(isInserted: .constant(true)) {
+        MenuBarExtra {
             ContentView()
                 .environmentObject(displayManager)
                 .environmentObject(updateChecker)

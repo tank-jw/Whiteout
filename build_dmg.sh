@@ -74,10 +74,6 @@ cat > "${APP_DIR}/Contents/Info.plist" << EOF
   <true/>
   <key>LSUIElement</key>
   <true/>
-  <key>NSSupportsAutomaticTermination</key>
-  <false/>
-  <key>NSSupportsSuddenTermination</key>
-  <false/>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
 </dict>
