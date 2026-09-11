@@ -74,10 +74,6 @@ cat > "${APP_DIR}/Contents/Info.plist" << EOF
   <true/>
   <key>LSUIElement</key>
   <true/>
-  <key>NSSupportsAutomaticTermination</key>
-  <false/>
-  <key>NSSupportsSuddenTermination</key>
-  <false/>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
 </dict>
@@ -157,9 +153,7 @@ tell application "Finder"
         update every item of containerWindow
     end try
     delay 2
-    try
-        close containerWindow
-    end try
+    close containerWindow
 end tell
 EOF
 

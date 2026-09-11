@@ -331,7 +331,6 @@ Sources/Whiteout/
   - [2026-09-11] TimeRule/AppRule의 Swift struct 값 복사(Snapshot) 캐싱으로 인해 규칙 활성 중 슬라이더 변경 시 CoreGraphics 감마 테이블에 이전 복사본 값이 재인가되던 버그를 계산 프로퍼티(Live Computed Property) 구조로 전면 리팩토링하여 해결함.
   - [2026-09-11] 메뉴바 아이콘 라벨 텍스트 변경 시 AppKit 레벨에서 발생하는 팝오버 윈도우의 좌우 축 흔들림을 NSWindow setFrameOrigin 가로채기(WindowPositionStabilizer)로 고정하고, On 시 나타나는 t=지수값 뱃지의 헤더 행 높이 고정(frame height 16) 및 opacity 토글을 통해 On/Off 전환 시 창 크기가 아래로 밀려나거나 요동치는 현상을 완벽 차단함.
   - [2026-09-11] 시간대별 규칙(Time-based Rule) 및 앱 규칙의 감쇄율/곡선지수 Picker가 좁은 프레임폭(44~48pt) 및 비매칭 실수값 태그로 인해 '...' 말줄임표로 표시되던 결함을 고정 크기(fixedSize) 커스텀 Menu 버튼 및 실시간 백분율 텍스트 연동 구조로 전면 교체하여, 어떤 수치에서도 잘림 없이 정확한 숫자가 표시되도록 해결함.
-  - [2026-09-11] 2페이지 스택 네비게이션(톱니바퀴 및 뒤로가기)의 밋밋함과 맥락 단절을 해결하기 위해 상단 세그먼트 탭 바([제어 | 규칙 | 설정]) 일체형 팝오버 아키텍처로 리팩토링하고, 중복 그래프 제거 및 310pt 고정 높이 컨테이너 설계를 통해 탭 전환 시 윈도우 크기 요동이 없는 안정적인 조작감을 완성함. 또한 macOS ControlCenter의 NSStatusItemChangeVisibilityAction으로 인한 돌발 종료를 AppDelegate의 terminateCancel 가드와 NSSupportsAutomaticTermination 비활성화로 완벽히 차단함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:
