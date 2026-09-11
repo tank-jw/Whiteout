@@ -331,8 +331,6 @@ Sources/Whiteout/
   - [2026-09-11] TimeRule/AppRule의 Swift struct 값 복사(Snapshot) 캐싱으로 인해 규칙 활성 중 슬라이더 변경 시 CoreGraphics 감마 테이블에 이전 복사본 값이 재인가되던 버그를 계산 프로퍼티(Live Computed Property) 구조로 전면 리팩토링하여 해결함.
   - [2026-09-11] 메뉴바 아이콘 라벨 텍스트 변경 시 AppKit 레벨에서 발생하는 팝오버 윈도우의 좌우 축 흔들림을 NSWindow setFrameOrigin 가로채기(WindowPositionStabilizer)로 고정하고, On 시 나타나는 t=지수값 뱃지의 헤더 행 높이 고정(frame height 16) 및 opacity 토글을 통해 On/Off 전환 시 창 크기가 아래로 밀려나거나 요동치는 현상을 완벽 차단함.
   - [2026-09-11] 시간대별 규칙(Time-based Rule) 및 앱 규칙의 감쇄율/곡선지수 Picker가 좁은 프레임폭(44~48pt) 및 비매칭 실수값 태그로 인해 '...' 말줄임표로 표시되던 결함을 고정 크기(fixedSize) 커스텀 Menu 버튼 및 실시간 백분율 텍스트 연동 구조로 전면 교체하여, 어떤 수치에서도 잘림 없이 정확한 숫자가 표시되도록 해결함.
-  - [2026-09-11] 분리되어 있던 톱니바퀴 환경설정(Preferences) 페이지의 모든 컴포넌트(단축키 및 시스템, 시간별 자동화, 앱별 자동화, 기술 원리 및 감쇄 모드 설명)를 메인 화면 단일 ScrollView(maxHeight: 520) 내 인셋 카드(Inset Grouped Card)로 전면 통합하여, 페이지 전환 없이 한 화면에서 모든 설정을 직관적으로 제어할 수 있는 올인원 네이티브 제어 센터 UX를 완성함.
-  - [2026-09-11] NSWindow의 setFrame 계열 전역 swizzling 시 macOS 13+ FrontBoard/ControlCenter와의 프레임 협상 실패로 MenuBarExtra가 즉시 종료(terminate:)되는 크래시 원인을 규명하여 swizzling을 제거하고 MenuBarExtra(isInserted: .constant(true))로 메뉴바 상주 무결성을 확립함. 또한 TechPrinciplesCard를 접이식으로 리팩토링하여 단축키, 시간별 및 앱별 자동화(+Add) 핵심 기능들이 스크롤에 가려지지 않고 메인 화면에서 한눈에 직관적으로 조작되도록 완성함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:
@@ -346,7 +344,7 @@ Sources/Whiteout/
   - [2026-09-11] Hero 비교 슬라이더 조작 시 밝기 변화가 체감되지 않던 원인(노트북 화면 내 브라우저의 정적 배경색 하드코딩, 좌측 다크 IDE 구간 드래그 시 우측 화면 불변 현상, 구 다크 모드 잔재 배경색)을 진단하고, 노트북 브라우저 모의 화면 배경을 CSS 변수(--slider-browser-bg)와 60fps 실시간 연동하며 포인터 캡처(setPointerCapture) 및 에셋 캐시 버스팅(?v=2.1.0)을 적용해 슬라이더 조작 전 구간에서 즉각적인 화이트포인트 감쇄 반응성을 확보함.
   - [2026-09-11] script.js 내 isDragging 중복 선언(SyntaxError)으로 인한 슬라이더 비동작 및 --slider-width 미설정으로 인한 노트북 우측 치우침 버그를 해결함. .comparison-slider에 container-type: inline-size를 도입하여 JS 실행 전후 무관하게 노트북 및 상단 눈 그래픽의 50% 분할선 정렬을 완벽 보장하고, 포인터·마우스·터치 통합 드래그 리스너 및 캐시 버스팅(?v=2.2.0)을 적용해 60fps 무결성 조작을 복원함.
   - [2026-09-11] 슬라이더 조작 시 분할된 서로 다른 창(IDE/브라우저)이 튀어나오며 노트북 위치가 왜곡되던 문제를 해결하기 위해, 단일 웹 문서 창 및 CSS clip-path 마스킹 구조로 전면 리팩토링함. 노트북을 화면 정중앙에 영구 고정하고 슬라이더 핸들 좌우로 오직 WhiteOut ON(감쇄 및 보호 쉴드)/OFF(눈부신 순백색 및 플래시뱅) 시각 효과만 실시간 대비되도록 구현하여 비교 UX의 직관성과 무결성을 완성함.
-  - [2026-09-11] AI 템플릿의 흔적(유치한 눈알 일러스트, 뼈대 막대기 와이어프레임, 조잡한 인라인 SVG)을 완전히 일소하고 Apple/Linear 수준의 장인정신 디자인으로 전면 리빌딩함: Hero 슬라이더 상단 눈알을 미니멀 듀얼 상태 뱃지로 정돈하고, 노트북 내부를 실제 개발자가 야간에 눈부셔하는 Apple Developer Docs(`CGSetDisplayTransferByTable` 실제 문서 + Swift 코드 블록 + breadcrumbs)로 교체하였으며, #contrast 섹션에 네이티브 2.0 핵심 엔진인 실시간 하드웨어 감마 전달 곡선 모니터(Live Transfer Curve Canvas Oscilloscope)를 완벽 이식하여 지수(2.5/4.0/6.0) 및 0~30% 감쇄율 조작 시 60fps로 반응하도록 구현함.
+  - [2026-09-11] 슬라이더 내부 노트북 화면에 떠있던 중복 쉴드 뱃지('Hardware Protection Active')를 제거하여 Apple Developer Docs 본문의 가독성을 온전히 확보하고, 기존 구 다크모드 잔재였던 어두운 갈색/검정 슬라이더 배경을 홈페이지의 화이트/라이트 톤에 완벽히 부합하는 정밀 스튜디오 캔버스(Linear/Apple 스타일의 마이크로 도트 패턴 + WhiteOut ON의 차분한 옵티컬 릴리프 vs OFF의 과노출 피크 광량 오로라) 및 반투명 프로스티드 글래스 뱃지로 전면 리뉴얼함.
 * **DevOps & Web Hosting Consultant**:
   - [2026-09-11] Cloudflare Pages와 GitHub master 브랜치(docs/ 타겟) 연동을 통해 정적 리소스 캐시 버스팅(?v=2.1.0) 및 무중단 글로벌 CDN 배포 무결성을 실시간 검증하고, GitHub Releases v2.0.0 바이너리(WhiteOut.dmg)와의 다운로드 엔드포인트 연동 상태를 최종 확인 완료함.
 * **Business Strategist**:

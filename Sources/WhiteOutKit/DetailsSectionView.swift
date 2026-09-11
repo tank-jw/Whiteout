@@ -1,6 +1,8 @@
 import SwiftUI
 
-public struct ShortcutsAndSystemCard: View {
+// MARK: - Rules Section View (Tab 2: Rules)
+
+public struct RulesSectionView: View {
     @ObservedObject var dm: DisplayManager
 
     public init(dm: DisplayManager) {
@@ -9,77 +11,23 @@ public struct ShortcutsAndSystemCard: View {
 
     public var body: some View {
         let isEN = dm.language == "en"
-        VStack(spacing: 10) {
-            HStack {
-                Label(LocalizedStrings.shortcutsAndLaunchSection(isEN: isEN), systemImage: "keyboard")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color.secondary)
-                Spacer()
+        ScrollView {
+            VStack(spacing: 9) {
+                // 1. Time-Based Rules Card
+                timeRulesCard(isEN: isEN)
+
+                // 2. App-Specific Rules Card
+                appRulesCard(isEN: isEN)
             }
-
-            // Shortcut row
-            VStack(spacing: 6) {
-                HStack {
-                    Text(LocalizedStrings.shortcutToggle(isEN: isEN))
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color.primary)
-                    Spacer()
-                    Toggle("", isOn: $dm.isShortcutEnabled)
-                        .toggleStyle(.switch)
-                        .labelsHidden()
-                        .tint(.orange)
-                        .scaleEffect(0.8)
-                }
-
-                if dm.isShortcutEnabled {
-                    HStack {
-                        Text(LocalizedStrings.shortcutRecord(isEN: isEN))
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.secondary)
-                        Spacer()
-                        ShortcutRecorderView(shortcut: $dm.shortcut)
-                            .frame(width: 120, height: 22)
-                    }
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                }
-            }
-
-            Divider().opacity(0.3)
-
-            // Launch at login row
-            HStack {
-                Text(LocalizedStrings.launchAtLogin(isEN: isEN))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.primary)
-                Spacer()
-                Toggle("", isOn: $dm.launchAtLogin)
-                    .toggleStyle(.switch)
-                    .labelsHidden()
-                    .tint(.orange)
-                    .scaleEffect(0.8)
-            }
+            .padding(.horizontal, 14)
+            .padding(.top, 2)
+            .padding(.bottom, 8)
         }
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.5))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
-        )
-    }
-}
-
-public struct TimeRulesCard: View {
-    @ObservedObject var dm: DisplayManager
-
-    public init(dm: DisplayManager) {
-        self.dm = dm
     }
 
-    public var body: some View {
-        let isEN = dm.language == "en"
+    // MARK: - 1. Time Rules Card
+
+    private func timeRulesCard(isEN: Bool) -> some View {
         VStack(spacing: 8) {
             HStack {
                 Label(LocalizedStrings.timeRulesSectionTitle(isEN: isEN), systemImage: "clock")
@@ -244,17 +192,10 @@ public struct TimeRulesCard: View {
                 .stroke(isActive ? Color.orange.opacity(0.2) : Color.clear, lineWidth: 0.5)
         )
     }
-}
 
-public struct AppRulesCard: View {
-    @ObservedObject var dm: DisplayManager
+    // MARK: - 3. App Rules Card
 
-    public init(dm: DisplayManager) {
-        self.dm = dm
-    }
-
-    public var body: some View {
-        let isEN = dm.language == "en"
+    private func appRulesCard(isEN: Bool) -> some View {
         VStack(spacing: 8) {
             HStack {
                 Label(LocalizedStrings.appRulesSectionTitle(isEN: isEN), systemImage: "app.badge")
@@ -289,8 +230,8 @@ public struct AppRulesCard: View {
                     .padding(.vertical, 6)
             } else {
                 VStack(spacing: 6) {
-                    ForEach(Array(dm.appRules.enumerated()), id: \.element.id) { index, rule in
-                        appRuleRow(index: index, rule: rule, isEN: isEN)
+                    ForEach(dm.appRules) { rule in
+                        appRuleRow(rule: rule, isEN: isEN)
                     }
                 }
             }
@@ -306,7 +247,7 @@ public struct AppRulesCard: View {
         )
     }
 
-    private func appRuleRow(index: Int, rule: AppRule, isEN: Bool) -> some View {
+    private func appRuleRow(rule: AppRule, isEN: Bool) -> some View {
         let active = dm.activeRuleAppName == rule.appName
 
         return VStack(spacing: 4) {
@@ -333,14 +274,16 @@ public struct AppRulesCard: View {
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
                         .background(Color.orange.opacity(0.12))
-                        .clipShape(Capsule())
+                        .cornerRadius(3)
                 }
 
                 Spacer()
 
                 Button {
-                    withAnimation {
-                        dm.deleteAppRule(at: index)
+                    if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
+                        withAnimation {
+                            dm.deleteAppRule(at: idx)
+                        }
                     }
                 } label: {
                     Image(systemName: "trash")
@@ -435,9 +378,10 @@ public struct AppRulesCard: View {
     }
 }
 
-public struct TechPrinciplesCard: View {
+// MARK: - Settings Section View (Tab 3: Settings)
+
+public struct SettingsSectionView: View {
     @ObservedObject var dm: DisplayManager
-    @State private var isExpanded: Bool = false
 
     public init(dm: DisplayManager) {
         self.dm = dm
@@ -445,55 +389,117 @@ public struct TechPrinciplesCard: View {
 
     public var body: some View {
         let isEN = dm.language == "en"
-        VStack(alignment: .leading, spacing: 8) {
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    isExpanded.toggle()
-                }
-            } label: {
-                HStack {
-                    Label(LocalizedStrings.detailsSectionTitle(isEN: isEN), systemImage: "info.circle")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(Color.secondary)
-                    Spacer()
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 9, weight: .semibold))
-                        .foregroundStyle(Color.secondary.opacity(0.7))
-                }
-                .contentShape(Rectangle())
+        ScrollView {
+            VStack(spacing: 9) {
+                // 1. Shortcuts & System Card
+                shortcutsAndSystemCard(isEN: isEN)
+
+                // 2. Principles & Curve Analysis Card
+                curveDiagnosticsCard(isEN: isEN)
             }
-            .buttonStyle(.plain)
+            .padding(.horizontal, 14)
+            .padding(.top, 2)
+            .padding(.bottom, 8)
+        }
+    }
 
-            if isExpanded {
-                VStack(alignment: .leading, spacing: 8) {
-                    // Exponent Explanation
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(curveTypeTitle)
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(.orange)
-                        Text(curveTypeDescription)
-                            .font(.system(size: 9.5))
-                            .foregroundStyle(.secondary)
-                            .lineSpacing(1.8)
-                    }
-                    .padding(8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.orange.opacity(0.06))
-                    .cornerRadius(6)
+    // MARK: - 1. Shortcuts & System Card
 
-                    // Method Comparison
-                    VStack(alignment: .leading, spacing: 5) {
-                        bulletPoint(
-                            title: LocalizedStrings.compareOurApp(isEN: isEN),
-                            desc: LocalizedStrings.compareOurAppDesc(isEN: isEN)
-                        )
-                        bulletPoint(
-                            title: LocalizedStrings.compareOverlay(isEN: isEN),
-                            desc: LocalizedStrings.compareOverlayDesc(isEN: isEN)
-                        )
-                    }
+    private func shortcutsAndSystemCard(isEN: Bool) -> some View {
+        VStack(spacing: 10) {
+            HStack {
+                Label(LocalizedStrings.shortcutsAndLaunchSection(isEN: isEN), systemImage: "keyboard")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(Color.secondary)
+                Spacer()
+            }
+
+            // Shortcut row
+            VStack(spacing: 6) {
+                HStack {
+                    Text(LocalizedStrings.shortcutToggle(isEN: isEN))
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color.primary)
+                    Spacer()
+                    Toggle("", isOn: $dm.isShortcutEnabled)
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                        .tint(.orange)
+                        .scaleEffect(0.8)
                 }
-                .transition(.opacity.combined(with: .move(edge: .top)))
+
+                if dm.isShortcutEnabled {
+                    HStack {
+                        Text(LocalizedStrings.shortcutRecord(isEN: isEN))
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color.secondary)
+                        Spacer()
+                        ShortcutRecorderView(shortcut: $dm.shortcut)
+                            .frame(width: 120, height: 22)
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
+            }
+
+            Divider().opacity(0.3)
+
+            // Launch at login row
+            HStack {
+                Text(LocalizedStrings.launchAtLogin(isEN: isEN))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.primary)
+                Spacer()
+                Toggle("", isOn: $dm.launchAtLogin)
+                    .toggleStyle(.switch)
+                    .labelsHidden()
+                    .tint(.orange)
+                    .scaleEffect(0.8)
+            }
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.5))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 0.5)
+        )
+    }
+
+    // MARK: - 2. Curve Diagnostics Card
+
+    private func curveDiagnosticsCard(isEN: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label(LocalizedStrings.detailsSectionTitle(isEN: isEN), systemImage: "waveform.path.ecg")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Color.secondary)
+
+            // Exponent Explanation
+            VStack(alignment: .leading, spacing: 3) {
+                Text(curveTypeTitle)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.orange)
+                Text(curveTypeDescription)
+                    .font(.system(size: 9.5))
+                    .foregroundStyle(.secondary)
+                    .lineSpacing(1.8)
+            }
+            .padding(8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.orange.opacity(0.06))
+            .cornerRadius(6)
+
+            // Method Comparison
+            VStack(alignment: .leading, spacing: 5) {
+                bulletPoint(
+                    title: LocalizedStrings.compareOurApp(isEN: isEN),
+                    desc: LocalizedStrings.compareOurAppDesc(isEN: isEN)
+                )
+                bulletPoint(
+                    title: LocalizedStrings.compareOverlay(isEN: isEN),
+                    desc: LocalizedStrings.compareOverlayDesc(isEN: isEN)
+                )
             }
         }
         .padding(12)
@@ -542,40 +548,37 @@ public struct TechPrinciplesCard: View {
         let isEN = dm.language == "en"
         switch dm.curveExponent {
         case 2.5:
-            return isEN
+            return isEN 
                 ? "Lowers brightness smoothly and naturally across the whole screen. Recommended for daily tasks."
                 : "전반적으로 자연스럽고 부드럽게 밝기를 낮춥니다. 웹서핑 및 일상 작업에 가장 권장됩니다."
         case 4.0:
-            return isEN
+            return isEN 
                 ? "Perfectly preserves text contrast while compressing glaring white backgrounds. Ideal for reading."
                 : "텍스트의 선명한 블랙을 완벽히 유지하면서 눈부신 흰 배경만 집중 감쇄합니다. 독서와 문서 작업에 적합합니다."
         case 6.0:
-            return isEN
+            return isEN 
                 ? "Maximally preserves dark and mid-tones, compressing only peak bright highlights. Tailored for dark rooms."
                 : "어두운 톤과 중간 톤을 최대로 보존하고 가장 밝은 극단적 광원만 눌러줍니다. 어두운 환경에 특화되어 있습니다."
         default:
-            return isEN
+            return isEN 
                 ? "Nonlinear dimming is applied based on the configured exponent."
                 : "설정된 곡선 지수에 따라 비선형 감쇄가 적용됩니다."
         }
     }
 }
 
+// MARK: - Backward Compatibility Wrapper
+
 public struct DetailsSectionView: View {
     @ObservedObject var dm: DisplayManager
     @Binding var showDetails: Bool
 
-    public init(dm: DisplayManager, showDetails: Binding<Bool> = .constant(true)) {
+    public init(dm: DisplayManager, showDetails: Binding<Bool>) {
         self.dm = dm
         self._showDetails = showDetails
     }
 
     public var body: some View {
-        VStack(spacing: 9) {
-            ShortcutsAndSystemCard(dm: dm)
-            TimeRulesCard(dm: dm)
-            AppRulesCard(dm: dm)
-            TechPrinciplesCard(dm: dm)
-        }
+        SettingsSectionView(dm: dm)
     }
 }

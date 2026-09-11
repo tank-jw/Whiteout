@@ -153,7 +153,9 @@ tell application "Finder"
         update every item of containerWindow
     end try
     delay 2
-    close containerWindow
+    try
+        close containerWindow
+    end try
 end tell
 EOF
 

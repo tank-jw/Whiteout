@@ -130,4 +130,13 @@ struct LocalizedStrings {
     static func liveCurveTitle(isEN: Bool) -> String {
         isEN ? "Live Transfer Curve" : "실시간 감마 변환 곡선"
     }
+    static func tabControl(isEN: Bool) -> String {
+        isEN ? "Control" : "제어"
+    }
+    static func tabRules(isEN: Bool) -> String {
+        isEN ? "Rules" : "규칙"
+    }
+    static func tabSettings(isEN: Bool) -> String {
+        isEN ? "Settings" : "설정"
+    }
 }

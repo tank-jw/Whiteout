@@ -1,8 +1,31 @@
 import SwiftUI
 
+public enum PopoverTab: String, CaseIterable {
+    case control
+    case rules
+    case settings
+
+    var icon: String {
+        switch self {
+        case .control: return "slider.horizontal.3"
+        case .rules: return "clock.badge.checkmark"
+        case .settings: return "gearshape"
+        }
+    }
+
+    func title(isEN: Bool) -> String {
+        switch self {
+        case .control: return LocalizedStrings.tabControl(isEN: isEN)
+        case .rules: return LocalizedStrings.tabRules(isEN: isEN)
+        case .settings: return LocalizedStrings.tabSettings(isEN: isEN)
+        }
+    }
+}
+
 public struct ContentView: View {
     @EnvironmentObject var dm: DisplayManager
     @EnvironmentObject var updater: UpdateChecker
+    @State private var selectedTab: PopoverTab = .control
 
     public init() {}
 
@@ -37,30 +60,20 @@ public struct ContentView: View {
 
     public var body: some View {
         let isEN = dm.language == "en"
-        return VStack(spacing: 0) {
+        VStack(spacing: 0) {
             headerSection(isEN: isEN)
 
-            ScrollView(showsIndicators: true) {
-                VStack(spacing: 9) {
-                    activeRuleBanner(isEN: isEN)
-                    liveCurveCard(isEN: isEN)
-                    reductionAndProfileCard(isEN: isEN)
-                    ShortcutsAndSystemCard(dm: dm)
-                    TimeRulesCard(dm: dm)
-                    AppRulesCard(dm: dm)
-                    TechPrinciplesCard(dm: dm)
-                }
-                .padding(.horizontal, 14)
-                .padding(.top, 2)
-                .padding(.bottom, 8)
-            }
-            .frame(maxHeight: 520)
+            activeRuleBanner(isEN: isEN)
+
+            tabBar(isEN: isEN)
+
+            contentForSelectedTab(isEN: isEN)
 
             Divider().opacity(0.4)
 
             footerSection(isEN: isEN)
         }
-        .frame(width: 320)
+        .frame(width: 310)
         .background(.ultraThinMaterial)
         .background(
             WindowPositionLock()
@@ -70,10 +83,73 @@ public struct ContentView: View {
         .onDisappear {
             WindowPositionStabilizer.shared.releaseLock()
         }
-        .alert(LocalizedStrings.updateNetworkErrorTitle(isEN: dm.language == "en"), isPresented: $updater.showNetworkErrorAlert) {
-            Button(dm.language == "en" ? "OK" : "확인", role: .cancel) {}
+        .animation(.easeInOut(duration: 0.16), value: selectedTab)
+        .alert(LocalizedStrings.updateNetworkErrorTitle(isEN: isEN), isPresented: $updater.showNetworkErrorAlert) {
+            Button(isEN ? "OK" : "확인", role: .cancel) {}
         } message: {
-            Text(LocalizedStrings.updateNetworkErrorMsg(isEN: dm.language == "en"))
+            Text(LocalizedStrings.updateNetworkErrorMsg(isEN: isEN))
+        }
+    }
+
+    // MARK: - Tab Bar
+
+    private func tabBar(isEN: Bool) -> some View {
+        HStack(spacing: 4) {
+            ForEach(PopoverTab.allCases, id: \.self) { tab in
+                let isSelected = selectedTab == tab
+                Button {
+                    withAnimation(.easeInOut(duration: 0.16)) {
+                        selectedTab = tab
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: tab.icon)
+                            .font(.system(size: 10, weight: isSelected ? .bold : .regular))
+                        Text(tab.title(isEN: isEN))
+                            .font(.system(size: 11, weight: isSelected ? .semibold : .regular))
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 5)
+                    .background(
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .fill(isSelected ? Color.orange.opacity(0.15) : Color.primary.opacity(0.04))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .strokeBorder(isSelected ? Color.orange.opacity(0.35) : Color.clear, lineWidth: 0.5)
+                    )
+                    .foregroundStyle(isSelected ? Color.orange : Color.secondary)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.bottom, 8)
+    }
+
+    // MARK: - Tab Contents
+
+    @ViewBuilder
+    private func contentForSelectedTab(isEN: Bool) -> some View {
+        switch selectedTab {
+        case .control:
+            VStack(spacing: 9) {
+                liveCurveCard(isEN: isEN)
+                reductionAndProfileCard(isEN: isEN)
+            }
+            .padding(.horizontal, 14)
+            .padding(.top, 2)
+            .padding(.bottom, 8)
+            .frame(height: 310)
+            .transition(.opacity)
+        case .rules:
+            RulesSectionView(dm: dm)
+                .frame(height: 310)
+                .transition(.opacity)
+        case .settings:
+            SettingsSectionView(dm: dm)
+                .frame(height: 310)
+                .transition(.opacity)
         }
     }
 
