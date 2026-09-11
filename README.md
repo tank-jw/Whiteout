@@ -345,6 +345,7 @@ Sources/Whiteout/
   - [2026-09-11] Hero 비교 슬라이더 조작 시 밝기 변화가 체감되지 않던 원인(노트북 화면 내 브라우저의 정적 배경색 하드코딩, 좌측 다크 IDE 구간 드래그 시 우측 화면 불변 현상, 구 다크 모드 잔재 배경색)을 진단하고, 노트북 브라우저 모의 화면 배경을 CSS 변수(--slider-browser-bg)와 60fps 실시간 연동하며 포인터 캡처(setPointerCapture) 및 에셋 캐시 버스팅(?v=2.1.0)을 적용해 슬라이더 조작 전 구간에서 즉각적인 화이트포인트 감쇄 반응성을 확보함.
   - [2026-09-11] script.js 내 isDragging 중복 선언(SyntaxError)으로 인한 슬라이더 비동작 및 --slider-width 미설정으로 인한 노트북 우측 치우침 버그를 해결함. .comparison-slider에 container-type: inline-size를 도입하여 JS 실행 전후 무관하게 노트북 및 상단 눈 그래픽의 50% 분할선 정렬을 완벽 보장하고, 포인터·마우스·터치 통합 드래그 리스너 및 캐시 버스팅(?v=2.2.0)을 적용해 60fps 무결성 조작을 복원함.
   - [2026-09-11] 슬라이더 조작 시 분할된 서로 다른 창(IDE/브라우저)이 튀어나오며 노트북 위치가 왜곡되던 문제를 해결하기 위해, 단일 웹 문서 창 및 CSS clip-path 마스킹 구조로 전면 리팩토링함. 노트북을 화면 정중앙에 영구 고정하고 슬라이더 핸들 좌우로 오직 WhiteOut ON(감쇄 및 보호 쉴드)/OFF(눈부신 순백색 및 플래시뱅) 시각 효과만 실시간 대비되도록 구현하여 비교 UX의 직관성과 무결성을 완성함.
+  - [2026-09-11] AI 템플릿의 흔적(유치한 눈알 일러스트, 뼈대 막대기 와이어프레임, 조잡한 인라인 SVG)을 완전히 일소하고 Apple/Linear 수준의 장인정신 디자인으로 전면 리빌딩함: Hero 슬라이더 상단 눈알을 미니멀 듀얼 상태 뱃지로 정돈하고, 노트북 내부를 실제 개발자가 야간에 눈부셔하는 Apple Developer Docs(`CGSetDisplayTransferByTable` 실제 문서 + Swift 코드 블록 + breadcrumbs)로 교체하였으며, #contrast 섹션에 네이티브 2.0 핵심 엔진인 실시간 하드웨어 감마 전달 곡선 모니터(Live Transfer Curve Canvas Oscilloscope)를 완벽 이식하여 지수(2.5/4.0/6.0) 및 0~30% 감쇄율 조작 시 60fps로 반응하도록 구현함.
 * **DevOps & Web Hosting Consultant**:
   - [2026-09-11] Cloudflare Pages와 GitHub master 브랜치(docs/ 타겟) 연동을 통해 정적 리소스 캐시 버스팅(?v=2.1.0) 및 무중단 글로벌 CDN 배포 무결성을 실시간 검증하고, GitHub Releases v2.0.0 바이너리(WhiteOut.dmg)와의 다운로드 엔드포인트 연동 상태를 최종 확인 완료함.
 * **Business Strategist**:

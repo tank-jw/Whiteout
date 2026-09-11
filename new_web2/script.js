@@ -173,46 +173,194 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Infinite Synchronized Mock Web Page Scrolling Simulator ---
-    const browserContainers = document.querySelectorAll('.browser-content-mock');
-    let browserScrollY = 0;
+    // --- Live Transfer Curve Monitor Widget (Oscilloscope) ---
+    const curveCanvas = document.getElementById('liveCurveCanvas');
+    const curveSlider = document.getElementById('curveReductionRange');
+    const curveSliderVal = document.getElementById('curveSliderVal');
+    const curveModeBtns = document.querySelectorAll('.curve-mode-btn');
 
-    function createBrowserLine(widthPercent) {
-        const line = document.createElement('div');
-        line.className = 'browser-line';
-        line.style.width = `${widthPercent}%`;
-        return line;
-    }
+    if (curveCanvas) {
+        let currentExp = 2.5;
+        let currentReduction = curveSlider ? parseInt(curveSlider.value, 10) : 20;
 
-    function addBrowserLine() {
-        const width = Math.floor(Math.random() * 45) + 35;
-        browserContainers.forEach(container => {
-            const line = createBrowserLine(width);
-            container.appendChild(line);
-        });
+        const uSplit = 0.2;
+        const tSplit = 0.3;
+        const base = 10.0;
 
-        browserScrollY += 14;
-        browserContainers.forEach(container => {
-            container.style.transform = `translateY(-${browserScrollY}px)`;
-        });
-
-        // Prune old lines seamlessly to prevent infinite DOM expansion
-        const firstContainer = browserContainers[0];
-        if (firstContainer && firstContainer.children.length > 20) {
-            browserContainers.forEach(container => {
-                if (container.firstChild) {
-                    container.removeChild(container.firstChild);
-                }
-                container.style.transition = 'none';
-                container.style.transform = `translateY(-${browserScrollY - 14}px)`;
-                container.offsetHeight;
-                container.style.transition = 'transform 0.4s ease-in-out';
-            });
-            browserScrollY -= 14;
+        function getT(u) {
+            if (u < uSplit) {
+                const ratio = u / uSplit;
+                return (Math.pow(base, ratio) - 1.0) / (base - 1.0) * tSplit;
+            } else {
+                const ratio = (u - uSplit) / (1.0 - uSplit);
+                return tSplit + ratio * (1.0 - tSplit);
+            }
         }
-    }
 
-    setInterval(addBrowserLine, 1200);
+        function drawCurve() {
+            const ctx = curveCanvas.getContext('2d');
+            if (!ctx) return;
+
+            const dpr = window.devicePixelRatio || 1;
+            const rect = curveCanvas.getBoundingClientRect();
+            const w = rect.width;
+            const h = rect.height;
+
+            if (w === 0 || h === 0) return;
+
+            curveCanvas.width = w * dpr;
+            curveCanvas.height = h * dpr;
+            ctx.scale(dpr, dpr);
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Padding around graph area for crisp visuals
+            const padX = 14;
+            const padY = 16;
+            const graphW = w - padX * 2;
+            const graphH = h - padY * 2;
+
+            // 1. Grid Lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.07)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+
+            // Horizontal grid lines
+            [0.25, 0.5, 0.75].forEach(ratio => {
+                const y = padY + graphH * (1 - ratio);
+                ctx.beginPath();
+                ctx.moveTo(padX, y);
+                ctx.lineTo(padX + graphW, y);
+                ctx.stroke();
+            });
+
+            // Vertical grid lines
+            [0.1, 0.2, 0.5, 0.75].forEach(t => {
+                let u;
+                if (t < tSplit) {
+                    const ratio = Math.log10((t / tSplit) * 9.0 + 1.0);
+                    u = ratio * uSplit;
+                } else {
+                    const ratio = (t - tSplit) / (1.0 - tSplit);
+                    u = uSplit + ratio * (1.0 - tSplit);
+                }
+                const x = padX + u * graphW;
+                ctx.beginPath();
+                ctx.moveTo(x, padY);
+                ctx.lineTo(x, padY + graphH);
+                ctx.stroke();
+            });
+
+            // 2. Unreduced Baseline Reference (Diagonal y = x)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([2, 2]);
+            ctx.beginPath();
+            const steps = 80;
+            for (let i = 0; i <= steps; i++) {
+                const u = i / steps;
+                const t = getT(u);
+                const x = padX + u * graphW;
+                const y = padY + graphH * (1 - t);
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+            ctx.setLineDash([]); // Reset dash
+
+            // 3. Calculate Transfer Curve Points
+            const maxOutput = 1.0 - (currentReduction / 100.0);
+            const exp = currentExp;
+
+            const points = [];
+            for (let i = 0; i <= steps; i++) {
+                const u = i / steps;
+                const t = getT(u);
+                const sf = 1.0 - Math.pow(t, exp) * (1.0 - maxOutput);
+                const finalVal = t * sf;
+                const x = padX + u * graphW;
+                const y = padY + graphH * (1 - finalVal);
+                points.push({ x, y, finalVal });
+            }
+
+            // 4. Gradient Fill Under the Curve
+            const grad = ctx.createLinearGradient(0, padY, 0, padY + graphH);
+            grad.addColorStop(0, 'rgba(245, 158, 11, 0.26)');
+            grad.addColorStop(1, 'rgba(245, 158, 11, 0.01)');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.lineTo(padX + graphW, padY + graphH);
+            ctx.lineTo(padX, padY + graphH);
+            ctx.closePath();
+            ctx.fill();
+
+            // 5. Curve Line Stroke with Glow
+            ctx.shadowColor = 'rgba(245, 158, 11, 0.45)';
+            ctx.shadowBlur = 10;
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.beginPath();
+            ctx.moveTo(points[0].x, points[0].y);
+            for (let i = 1; i < points.length; i++) {
+                ctx.lineTo(points[i].x, points[i].y);
+            }
+            ctx.stroke();
+
+            // Reset shadow
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+
+            // 6. Suppressed Peak White Endpoint Indicator Dot
+            const peak = points[points.length - 1];
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(peak.x, peak.y, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // Peak badge text
+            ctx.font = '600 10px monospace';
+            ctx.fillStyle = '#fbbf24';
+            ctx.textAlign = 'right';
+            const peakPct = Math.round(maxOutput * 100);
+            ctx.fillText(`${peakPct}% White`, padX + graphW - 8, peak.y - 8);
+        }
+
+        // Event Listeners for Curve Controls
+        if (curveSlider) {
+            curveSlider.addEventListener('input', (e) => {
+                currentReduction = parseInt(e.target.value, 10);
+                if (curveSliderVal) {
+                    curveSliderVal.textContent = `${currentReduction}%`;
+                }
+                drawCurve();
+            });
+        }
+
+        curveModeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                curveModeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentExp = parseFloat(btn.dataset.exp) || 2.5;
+                drawCurve();
+            });
+        });
+
+        // Initial render & resize handler
+        drawCurve();
+        window.addEventListener('resize', drawCurve);
+    }
 });
 
 // ─── i18n: Language-based content switching + manual toggle ───────────────

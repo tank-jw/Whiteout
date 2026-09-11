@@ -13,7 +13,7 @@
     <meta name="app-id" content="whiteout-health-landing-page">
     
     <!-- CSS -->
-    <link rel="stylesheet" href="style.css?v=2.3.0">
+    <link rel="stylesheet" href="style.css?v=2.4.0">
     
     <!-- i18n Language Detection Script -->
     <script>
@@ -64,10 +64,7 @@
     <section class="hero">
         <div class="container hero-grid">
             <div class="hero-content">
-                <div class="badge">
-                    <div class="badge-dot"></div>
-                    <span data-ko="극지 화이트아웃 현상에서 영감받은, 눈을 지키는 앱" data-en="Inspired by Arctic whiteout — the original eye destroyer">Inspired by Arctic whiteout — the original eye destroyer</span>
-                </div>
+                <div class="section-eyebrow" data-ko="극지 화이트아웃 현상에서 영감받은 눈 보호 솔루션" data-en="HARDWARE-LEVEL EYE STRAIN PREVENTION">HARDWARE-LEVEL EYE STRAIN PREVENTION</div>
                 <h1 class="hero-title">
                     <span data-ko="극지 탐험가들은 흰빛에 눈이 멀었습니다." data-en="Arctic explorers go blind from white.">Arctic explorers go blind from white.</span><br>
                     <span class="highlight-tech" data-ko="당신의 화면도 같은 일을 하고 있습니다." data-en="Your screen is doing the same thing.">Your screen is doing the same thing.</span>
@@ -89,22 +86,10 @@
                 <!-- Under Panel (Before: WhiteOut OFF - Blinding Max Glare) -->
                 <div class="slider-panel panel-before">
                     <div class="panel-content">
-                        <!-- Irritated Eye (Constricted Pupil) -->
-                        <svg class="eye-svg-top eye-fatigued" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10,50 Q50,15 90,50 Q50,85 10,50 Z" fill="#20293a" stroke="#ef4444" stroke-width="2"/>
-                            <path d="M18,48 Q28,43 35,46" stroke="#ef4444" stroke-width="1.2" fill="none" class="eye-vein"/>
-                            <path d="M20,53 Q30,56 37,53" stroke="#ef4444" stroke-width="1" fill="none" class="eye-vein"/>
-                            <path d="M82,48 Q72,43 65,46" stroke="#ef4444" stroke-width="1.2" fill="none" class="eye-vein"/>
-                            <path d="M80,53 Q70,56 63,53" stroke="#ef4444" stroke-width="1" fill="none" class="eye-vein"/>
-                            <circle cx="50" cy="50" r="20" fill="#2d3748" stroke="#4a5568" stroke-width="1"/>
-                            <circle cx="50" cy="50" r="5" fill="#000000" class="eye-pupil-constricted"/>
-                            <g class="glare-beams">
-                                <path d="M50,10 L50,22" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-                                <path d="M22,22 L31,31" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-                                <path d="M78,22 L69,31" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-                            </g>
-                            <circle cx="47" cy="47" r="2" fill="#ffffff" opacity="0.8"/>
-                        </svg>
+                        <div class="slider-status-pill status-before">
+                            <span class="status-indicator red"></span>
+                            <span class="status-title" data-ko="순정 디스플레이 • 눈부심 100% (피크 백색광 자극)" data-en="Native Display • Max Glare (100% Peak Whitepoint)">Native Display • Max Glare (100% Peak Whitepoint)</span>
+                        </div>
                         <div class="laptop-container">
                             <div class="laptop-screen">
                                 <div class="laptop-window-chrome">
@@ -114,8 +99,8 @@
                                         <span class="dot dot-green"></span>
                                     </div>
                                     <div class="window-url-pill">
-                                        <svg class="url-lock-icon" viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                        <span>docs.developer.apple.com</span>
+                                        <svg class="url-lock-icon" viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        <span>developer.apple.com/documentation/coregraphics</span>
                                     </div>
                                 </div>
                                 <div class="laptop-window-body browser-glaring">
@@ -127,28 +112,33 @@
                                     <svg class="glare-star" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M50,10 L55,40 L85,45 L55,50 L50,80 L45,50 L15,45 L45,40 Z" fill="#f59e0b" class="flashbang-anim"/>
                                     </svg>
-                                    <div class="mock-page-layout">
-                                        <div class="mock-sidebar">
-                                            <div class="mock-nav-item active"></div>
-                                            <div class="mock-nav-item"></div>
-                                            <div class="mock-nav-item"></div>
-                                            <div class="mock-nav-item"></div>
-                                            <div class="mock-nav-item"></div>
+                                    <div class="mock-doc-layout">
+                                        <div class="mock-doc-sidebar">
+                                            <div class="doc-sidebar-header">CoreGraphics</div>
+                                            <div class="doc-sidebar-item">Overview</div>
+                                            <div class="doc-sidebar-item active">Display Services</div>
+                                            <div class="doc-sidebar-subitem active">CGSetDisplayTransfer...</div>
+                                            <div class="doc-sidebar-subitem">CGDisplayRestoreColor...</div>
+                                            <div class="doc-sidebar-item">Gamma Tables</div>
                                         </div>
-                                        <div class="mock-main-content">
-                                            <div class="browser-scroll-container">
-                                                <div class="browser-content-mock">
-                                                    <div class="browser-line title-line" style="width: 75%;"></div>
-                                                    <div class="browser-line w-50"></div>
-                                                    <div class="browser-line w-80"></div>
-                                                    <div class="browser-line w-60"></div>
-                                                    <div class="browser-line w-75"></div>
-                                                    <div class="browser-line w-40"></div>
-                                                    <div class="browser-line w-80"></div>
-                                                    <div class="browser-line w-50"></div>
-                                                    <div class="browser-line w-70"></div>
-                                                    <div class="browser-line w-60"></div>
-                                                </div>
+                                        <div class="mock-doc-content">
+                                            <div class="doc-breadcrumb">Documentation &gt; CoreGraphics &gt; Display Services</div>
+                                            <div class="doc-header-row">
+                                                <span class="doc-badge-func">Function</span>
+                                                <h4 class="doc-title">CGSetDisplayTransferByTable</h4>
+                                            </div>
+                                            <p class="doc-summary">Directly modifies hardware gamma lookup tables of target displays to attenuate peak luminance without contrast degradation.</p>
+                                            <div class="doc-code-block">
+                                                <span class="code-kw">func</span> <span class="code-fn">CGSetDisplayTransferByTable</span>(<br>
+                                                &nbsp;&nbsp;_ display: <span class="code-type">CGDirectDisplayID</span>,<br>
+                                                &nbsp;&nbsp;_ count: <span class="code-type">UInt32</span>,<br>
+                                                &nbsp;&nbsp;_ redTable: <span class="code-type">UnsafePointer&lt;CGGammaValue&gt;</span><br>
+                                                ) -&gt; <span class="code-type">CGError</span>
+                                            </div>
+                                            <div class="doc-meta-pills">
+                                                <span class="doc-pill">macOS 13.0+</span>
+                                                <span class="doc-pill">Hardware LUT</span>
+                                                <span class="doc-pill">Zero Contrast Loss</span>
                                             </div>
                                         </div>
                                     </div>
@@ -163,14 +153,10 @@
                 <!-- Over Panel (After: WhiteOut ON - Comfortable Reduced Whitepoint) -->
                 <div class="slider-panel panel-after" id="panelAfter">
                     <div class="panel-content">
-                        <!-- Relaxed Eye (Dilated Pupil) -->
-                        <svg class="eye-svg-top eye-relaxed" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M10,50 Q50,15 90,50 Q50,85 10,50 Z" fill="#1c1914" stroke="#f59e0b" stroke-width="2"/>
-                            <circle cx="50" cy="50" r="20" fill="#78350f" stroke="#f59e0b" stroke-width="1"/>
-                            <circle cx="50" cy="50" r="11" fill="#000000" class="eye-pupil-relaxed"/>
-                            <path d="M8,50 Q50,8 92,50" stroke="#fbbf24" stroke-width="1.5" fill="none" class="eye-shield-wave"/>
-                            <circle cx="46" cy="46" r="2.5" fill="#fef3c7" opacity="0.9"/>
-                        </svg>
+                        <div class="slider-status-pill status-after">
+                            <span class="status-indicator green"></span>
+                            <span class="status-title" data-ko="WhiteOut 하드웨어 감마 제어 • 트루 블랙 100% 보존" data-en="WhiteOut Calibrated • 100% True Black Preserved">WhiteOut Calibrated • 100% True Black Preserved</span>
+                        </div>
                         <div class="laptop-container">
                             <div class="laptop-screen">
                                 <div class="laptop-window-chrome">
@@ -180,8 +166,8 @@
                                         <span class="dot dot-green"></span>
                                     </div>
                                     <div class="window-url-pill">
-                                        <svg class="url-lock-icon" viewBox="0 0 24 24" width="8" height="8" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                                        <span>docs.developer.apple.com</span>
+                                        <svg class="url-lock-icon" viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                        <span>developer.apple.com/documentation/coregraphics</span>
                                     </div>
                                 </div>
                                 <div class="laptop-window-body browser-dimmed">
@@ -189,30 +175,35 @@
                                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" xmlns="http://www.w3.org/2000/svg">
                                             <polyline points="20 6 9 17 4 12"/>
                                         </svg>
-                                        <span data-ko="눈 보호 작동중" data-en="Protection Active">Protection Active</span>
+                                        <span data-ko="하드웨어 감마 감쇄 작동중" data-en="Hardware Protection Active">Hardware Protection Active</span>
                                     </div>
-                                    <div class="mock-page-layout">
-                                        <div class="mock-sidebar">
-                                            <div class="mock-nav-item active"></div>
-                                            <div class="mock-nav-item"></div>
-                                            <div class="mock-nav-item"></div>
-                                            <div class="mock-nav-item"></div>
-                                            <div class="mock-nav-item"></div>
+                                    <div class="mock-doc-layout">
+                                        <div class="mock-doc-sidebar">
+                                            <div class="doc-sidebar-header">CoreGraphics</div>
+                                            <div class="doc-sidebar-item">Overview</div>
+                                            <div class="doc-sidebar-item active">Display Services</div>
+                                            <div class="doc-sidebar-subitem active">CGSetDisplayTransfer...</div>
+                                            <div class="doc-sidebar-subitem">CGDisplayRestoreColor...</div>
+                                            <div class="doc-sidebar-item">Gamma Tables</div>
                                         </div>
-                                        <div class="mock-main-content">
-                                            <div class="browser-scroll-container">
-                                                <div class="browser-content-mock">
-                                                    <div class="browser-line title-line" style="width: 75%;"></div>
-                                                    <div class="browser-line w-50"></div>
-                                                    <div class="browser-line w-80"></div>
-                                                    <div class="browser-line w-60"></div>
-                                                    <div class="browser-line w-75"></div>
-                                                    <div class="browser-line w-40"></div>
-                                                    <div class="browser-line w-80"></div>
-                                                    <div class="browser-line w-50"></div>
-                                                    <div class="browser-line w-70"></div>
-                                                    <div class="browser-line w-60"></div>
-                                                </div>
+                                        <div class="mock-doc-content">
+                                            <div class="doc-breadcrumb">Documentation &gt; CoreGraphics &gt; Display Services</div>
+                                            <div class="doc-header-row">
+                                                <span class="doc-badge-func">Function</span>
+                                                <h4 class="doc-title">CGSetDisplayTransferByTable</h4>
+                                            </div>
+                                            <p class="doc-summary">Directly modifies hardware gamma lookup tables of target displays to attenuate peak luminance without contrast degradation.</p>
+                                            <div class="doc-code-block">
+                                                <span class="code-kw">func</span> <span class="code-fn">CGSetDisplayTransferByTable</span>(<br>
+                                                &nbsp;&nbsp;_ display: <span class="code-type">CGDirectDisplayID</span>,<br>
+                                                &nbsp;&nbsp;_ count: <span class="code-type">UInt32</span>,<br>
+                                                &nbsp;&nbsp;_ redTable: <span class="code-type">UnsafePointer&lt;CGGammaValue&gt;</span><br>
+                                                ) -&gt; <span class="code-type">CGError</span>
+                                            </div>
+                                            <div class="doc-meta-pills">
+                                                <span class="doc-pill">macOS 13.0+</span>
+                                                <span class="doc-pill">Hardware LUT</span>
+                                                <span class="doc-pill">Zero Contrast Loss</span>
                                             </div>
                                         </div>
                                     </div>
@@ -241,77 +232,64 @@
     <section id="pain-points" class="pain-points">
         <div class="container">
             <div class="section-header">
-                <div class="badge" style="background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.3); color: #ef4444" data-ko="우리가 놓친 시력의 사각지대" data-en="The Empathy Gap">The Empathy Gap</div>
-                <h2 class="section-title" data-ko="눈보라는 피했지만,<br>화이트아웃은 실내에서 당신을 찾아옵니다." data-en="You escaped the blizzard.<br>But the whiteout found you indoors.">You escaped the blizzard.<br>But the whiteout found you indoors.</h2>
-                <p class="section-subtitle" data-ko="맥북과 주요 개발 툴은 어둡게 설정했지만, 작업 중 불쑥 마주치는 새하얀 화면은 기상 현상인 '화이트아웃'처럼 우리 눈의 시야를 흐리고 피로하게 만듭니다." data-en="Your Mac and dev tools are dark. But the moment you open a link, a dashboard, or a PDF — your eyes pay the price. It's a low-grade whiteout, happening right on your desk.">Your Mac and dev tools are dark. But the moment you open a link, a dashboard, or a PDF — your eyes pay the price. It's a low-grade whiteout, happening right on your desk.</p>
+                <div class="section-eyebrow" data-ko="실내 설맹 현상" data-en="INDOOR WHITEOUT">INDOOR WHITEOUT</div>
+                <h2 class="section-title" data-ko="눈보라는 피했지만,<br>화이트아웃은 실내에서 당신을 찾아옵니다." data-en="You escaped the blizzard.<br>The whiteout found you indoors.">You escaped the blizzard.<br>The whiteout found you indoors.</h2>
+                <p class="section-subtitle" data-ko="맥북과 개발 툴은 다크 모드로 설정했지만, 불쑥 열리는 웹 브라우저와 문서는 기상 현상인 '화이트아웃'처럼 망막을 습격합니다." data-en="Your Mac and dev tools are set to dark. But the second you open docs, spreadsheets, or internal tools, an uncalibrated blast of white hits your retinas.">Your Mac and dev tools are set to dark. But the second you open docs, spreadsheets, or internal tools, an uncalibrated blast of white hits your retinas.</p>
             </div>
             
             <div class="pain-grid">
                 <div class="pain-card">
-                    <div class="pain-visual">
-                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="25" y="15" width="150" height="90" rx="6" fill="#1e293b" stroke="#334155" stroke-width="2"/>
-                            <rect x="15" y="105" width="170" height="6" rx="2" fill="#475569"/>
-                            <rect x="30" y="20" width="140" height="80" rx="3" fill="#ffffff"/>
-                            <rect x="30" y="20" width="70" height="80" fill="#0f172a"/>
-                            <line x1="40" y1="35" x2="80" y2="35" stroke="#334155" stroke-width="3"/>
-                            <line x1="40" y1="50" x2="90" y2="50" stroke="#f59e0b" stroke-width="3"/>
-                            <line x1="40" y1="65" x2="60" y2="65" stroke="#fbbf24" stroke-width="3"/>
-                            <path d="M105,30 L180,10" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 2" class="glare-line-anim"/>
-                            <path d="M105,60 L185,60" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 2" class="glare-line-anim"/>
-                            <path d="M105,90 L180,110" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 2" class="glare-line-anim"/>
-                            <path d="M140,60 L145,50 L155,47 L145,44 L140,34 L135,44 L125,47 L135,50 Z" fill="#f59e0b" class="flashbang-anim"/>
-                        </svg>
+                    <div class="pain-visual-modern">
+                        <div class="pain-tag-row">
+                            <span class="pain-chip">02:14 AM</span>
+                            <span class="pain-lux-badge danger">300% Peak White</span>
+                        </div>
+                        <div class="pain-split-mini">
+                            <div class="mini-pane dark">
+                                <span class="mini-pane-label">Dark IDE</span>
+                                <div class="mini-code-line"></div>
+                                <div class="mini-code-line short"></div>
+                            </div>
+                            <div class="mini-pane bright">
+                                <span class="mini-pane-label">Docs / Web</span>
+                                <div class="mini-glare-burst"></div>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="pain-card-title" data-ko="1. 구글링 / 레퍼런스 문서 습격" data-en="1. The Flashbang of Reference Docs">1. The Flashbang of Reference Docs</h3>
-                    <p class="pain-card-desc" data-ko="개발 툴은 다크 모드로 설정하여 편안하게 코딩하고 있었는데, 코드 에러 해결을 위해 구글링을 하거나 라이브러리 공식 Docs, 위키피디아 등을 여는 순간 밤하늘의 섬광탄처럼 눈을 강타하는 흰색 화면을 마주합니다. 극지 탐험가들의 눈을 멀게 하는 설맹 현상이 당신의 모니터 앞에서도 소리 없이 재현되는 순간입니다." data-en="You're coding comfortably in dark mode, but the second you open Google, official docs, or Wikipedia, a blinding white screen hits your eyes like a flashbang in the dark. Explorers call this snow blindness; developers call it opening the docs.">You're coding comfortably in dark mode, but the second you open Google, official docs, or Wikipedia, a blinding white screen hits your eyes like a flashbang in the dark. Explorers call this snow blindness; developers call it opening the docs.</p>
+                    <h3 class="pain-card-title" data-ko="1. 심야 문서 검색의 섬광탄" data-en="1. The 2 AM Flashbang">1. The 2 AM Flashbang</h3>
+                    <p class="pain-card-desc" data-ko="어두운 방에서 다크 모드 에디터로 코딩하다가, 레퍼런스 문서나 검색창을 여는 순간 쏟아지는 300% 피크 백색광. 동공이 급격히 수축하며 순간적인 시야 마비와 안구 통증을 유발합니다." data-en="You're coding in dark mode at 2 AM. The second you open Google or developer docs, an unmitigated 300% peak white glare hits your eyes like a flashbang in the dark.">You're coding in dark mode at 2 AM. The second you open Google or developer docs, an unmitigated 300% peak white glare hits your eyes like a flashbang in the dark.</p>
                 </div>
                 
                 <div class="pain-card">
-                    <div class="pain-visual">
-                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="25" y="15" width="150" height="90" rx="6" fill="#1e293b" stroke="#334155" stroke-width="2"/>
-                            <rect x="15" y="105" width="170" height="6" rx="2" fill="#475569"/>
-                            <rect x="30" y="20" width="140" height="80" rx="3" fill="#f8fafc"/>
-                            <line x1="30" y1="35" x2="170" y2="35" stroke="#cbd5e1" stroke-width="1"/>
-                            <line x1="30" y1="50" x2="170" y2="50" stroke="#cbd5e1" stroke-width="1"/>
-                            <line x1="30" y1="65" x2="170" y2="65" stroke="#cbd5e1" stroke-width="1"/>
-                            <line x1="30" y1="80" x2="170" y2="80" stroke="#cbd5e1" stroke-width="1"/>
-                            <line x1="75" y1="20" x2="75" y2="100" stroke="#cbd5e1" stroke-width="1"/>
-                            <line x1="120" y1="20" x2="120" y2="100" stroke="#cbd5e1" stroke-width="1"/>
-                            <circle cx="100" cy="60" r="25" fill="url(#glareGlow)" class="glare-pulse"/>
-                            <defs>
-                                <radialGradient id="glareGlow" cx="50%" cy="50%" r="50%">
-                                    <stop offset="0%" stop-color="#fef08a"/>
-                                    <stop offset="100%" stop-color="#fef08a" stop-opacity="0"/>
-                                </radialGradient>
-                            </defs>
-                        </svg>
+                    <div class="pain-visual-modern">
+                        <div class="pain-tag-row">
+                            <span class="pain-chip">DATA &amp; DOCS</span>
+                            <span class="pain-lux-badge warning">No Dark Mode</span>
+                        </div>
+                        <div class="pain-sheet-mini">
+                            <div class="sheet-grid-header"></div>
+                            <div class="sheet-grid-row"><span></span><span></span><span></span></div>
+                            <div class="sheet-grid-row"><span></span><span></span><span></span></div>
+                        </div>
                     </div>
-                    <h3 class="pain-card-title" data-ko="2. 다크 모드가 없는 웹 앱 / 대시보드" data-en="2. No-Dark-Mode Dashboards">2. No-Dark-Mode Dashboards</h3>
-                    <p class="pain-card-desc" data-ko="사내 인프라 모니터링 대시보드, 스프레드시트(Excel), 혹은 Notion 페이지 등 기본적으로 밝은 백색 바탕만 제공하는 생산성 툴을 야간에 장시간 사용해야 할 때 눈의 피로는 걷잡을 수 없이 증폭됩니다. 눈 덮인 설원에 갇힌 것처럼, 사방에서 반사되는 백색광이 눈의 방어 한계를 넘어섭니다." data-en="Working late on internal analytics, spreadsheets, or dashboards that only offer high-contrast light modes? Your eye strain multiplies exponentially. Like being trapped in an endless snowfield, the white glare constantly bombards your retinas.">Working late on internal analytics, spreadsheets, or dashboards that only offer high-contrast light modes? Your eye strain multiplies exponentially. Like being trapped in an endless snowfield, the white glare constantly bombards your retinas.</p>
+                    <h3 class="pain-card-title" data-ko="2. 다크 모드가 없는 필수 업무 툴" data-en="2. Inflexible Light Dashboards">2. Inflexible Light Dashboards</h3>
+                    <p class="pain-card-desc" data-ko="스프레드시트, 사내 어드민 대시보드, Notion 등 순백색 배경만 제공하는 업무 툴을 오래 볼 때, 눈 덮인 설원에 갇힌 듯 끝없는 반사광이 망막을 혹사시킵니다." data-en="Spreadsheets, analytics dashboards, and Notion docs with no dark mode option. Prolonged exposure forces your eyes into continuous constriction stress.">Spreadsheets, analytics dashboards, and Notion docs with no dark mode option. Prolonged exposure forces your eyes into continuous constriction stress.</p>
                 </div>
                 
                 <div class="pain-card">
-                    <div class="pain-visual">
-                        <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="15" y="25" width="75" height="50" rx="3" fill="#0f172a" stroke="#334155" stroke-width="2"/>
-                            <rect x="47" y="75" width="10" height="20" fill="#475569"/>
-                            <rect x="37" y="95" width="30" height="4" fill="#475569"/>
-                            <rect x="110" y="25" width="75" height="50" rx="3" fill="#ffffff" stroke="#334155" stroke-width="2"/>
-                            <rect x="142" y="75" width="10" height="20" fill="#475569"/>
-                            <rect x="132" y="95" width="30" height="4" fill="#475569"/>
-                            <path d="M95,45 Q102,40 105,45" stroke="#ef4444" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
-                            <path d="M105,55 Q102,60 95,55" stroke="#ef4444" stroke-width="1.5" fill="none" marker-end="url(#arrow)"/>
-                            <defs>
-                                <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444"/>
-                                </marker>
-                            </defs>
-                        </svg>
+                    <div class="pain-visual-modern">
+                        <div class="pain-tag-row">
+                            <span class="pain-chip">MULTI-MONITOR</span>
+                            <span class="pain-lux-badge alert">Dilation Shock</span>
+                        </div>
+                        <div class="pain-dual-mini">
+                            <div class="dual-screen screen-left"><span>Display 1 (Dark)</span></div>
+                            <div class="dual-pulse-arrow">⇄</div>
+                            <div class="dual-screen screen-right"><span>Display 2 (Bright)</span></div>
+                        </div>
                     </div>
-                    <h3 class="pain-card-title" data-ko="3. 듀얼 모니터 시선 전환의 피로" data-en="3. Dual-Monitor Focus Shift">3. Dual-Monitor Focus Shift</h3>
-                    <p class="pain-card-desc" data-ko="한쪽 모니터에는 어두운 테마의 코드를 띄우고, 다른 쪽 모니터에는 흰 배경의 기획서나 PDF를 띄워두었을 때, 양쪽을 번갈아 볼 때마다 동공 조절근이 급격히 수축과 이완을 반복하여 실시간으로 무리를 줍니다. 어두운 숲과 눈부신 설원을 몇 초 간격으로 왕복하는 것과 같은 극심한 피로가 누적됩니다." data-en="Looking back and forth between a dark IDE on one screen and a bright PDF on the other forces your pupils to rapidly constrict and dilate, causing cumulative visual fatigue. It is the anatomical equivalent of stepping in and out of a blinding blizzard every few seconds.">Looking back and forth between a dark IDE on one screen and a bright PDF on the other forces your pupils to rapidly constrict and dilate, causing cumulative visual fatigue. It is the anatomical equivalent of stepping in and out of a blinding blizzard every few seconds.</p>
+                    <h3 class="pain-card-title" data-ko="3. 듀얼 모니터 시선 전환의 피로" data-en="3. Dual-Screen Focus Whiplash">3. Dual-Screen Focus Whiplash</h3>
+                    <p class="pain-card-desc" data-ko="어두운 모니터와 밝은 모니터를 수초 간격으로 번갈아 볼 때마다, 동공괄약근이 쉴 새 없이 수축과 이완을 반복하며 관자놀이까지 뻐근한 심한 눈 피로를 유발합니다." data-en="Glancing between a dark IDE and a bright reference monitor forces repeated, violent pupil dilation shocks — the hidden anatomical root of digital fatigue.">Glancing between a dark IDE and a bright reference monitor forces repeated, violent pupil dilation shocks — the hidden anatomical root of digital fatigue.</p>
                 </div>
             </div>
         </div>
@@ -382,19 +360,41 @@
     <!-- Contrast & Tech Section -->
     <section id="contrast">
         <div class="container graphic-section-grid">
-            <div class="math-card">
-                <div class="math-formula">
-                    W = <span style="display:inline-flex; flex-direction:column; vertical-align:middle; text-align:center; font-size: 0.85em; font-family: var(--font-sans)">
-                        <span>L<sub>b</sub> - L<sub>t</sub></span>
-                        <span style="border-top:1px solid currentColor; padding-top:2px">L<sub>b</sub></span>
-                    </span>
+            <div class="curve-monitor-card" id="curveMonitorCard">
+                <div class="curve-card-header">
+                    <div>
+                        <div class="curve-badge" data-ko="실시간 하드웨어 감마 곡선 모니터" data-en="LIVE HARDWARE GAMMA MONITOR">LIVE HARDWARE GAMMA MONITOR</div>
+                        <h4 class="curve-card-title">scaleFactor(t) = 1 - t<sup>n</sup> × (1 - maxOutput)</h4>
+                    </div>
+                    <div class="curve-mode-selector">
+                        <button class="curve-mode-btn active" data-exp="2.5">Normal 2.5</button>
+                        <button class="curve-mode-btn" data-exp="4.0">Document 4.0</button>
+                        <button class="curve-mode-btn" data-exp="6.0">Highlight 6.0</button>
+                    </div>
                 </div>
-                <h4 style="font-size:1.15rem; margin-bottom:0.75rem; text-align:center;" data-ko="웨버 대비 공식 (Weber Contrast Formula)" data-en="Weber Contrast Formula">Weber Contrast Formula</h4>
-                <p class="math-desc" data-ko="텍스트의 인지 성능을 좌우하는 것은 배경 휘도(<i>L</i><sub>b</sub>)와 텍스트 휘도(<i>L</i><sub>t</sub>)의 비율 차이인 Weber Contrast입니다. 기존 오버레이 앱은 <i>L</i><sub>b</sub>와 <i>L</i><sub>t</sub>를 불균등하게 뭉개 검은색 영역까지 밝은 회색으로 밀어 올려 대비값을 붕괴시킵니다. 화이트아웃은 비선형 감마 보정 곡선 알고리즘을 사용해 대비 지수(W)의 완벽한 100% 유지를 지향합니다." data-en="Text readability is governed by the ratio between background luminance (<i>L</i><sub>b</sub>) and text luminance (<i>L</i><sub>t</sub>) — the Weber Contrast. Standard overlay apps crush both <i>L</i><sub>b</sub> and <i>L</i><sub>t</sub> unevenly, lifting blacks to grey and collapsing contrast. WhiteOut uses a non-linear gamma correction algorithm to preserve the contrast index (<i>W</i>) at 100%.">Text readability is governed by the ratio between background luminance (<i>L</i><sub>b</sub>) and text luminance (<i>L</i><sub>t</sub>) — the Weber Contrast. Standard overlay apps crush both <i>L</i><sub>b</sub> and <i>L</i><sub>t</sub> unevenly, lifting blacks to grey and collapsing contrast. WhiteOut uses a non-linear gamma correction algorithm to preserve the contrast index (<i>W</i>) at 100%.</p>
+                <div class="curve-canvas-wrapper">
+                    <canvas id="liveCurveCanvas" width="480" height="220"></canvas>
+                    <div class="curve-axis-label top-left">Output 100%</div>
+                    <div class="curve-axis-label top-right">Input 100%</div>
+                    <div class="curve-axis-label bot-left">True Black 0%</div>
+                </div>
+                <div class="curve-controls-row">
+                    <div class="curve-slider-wrap">
+                        <div class="curve-slider-header">
+                            <span class="curve-slider-title" data-ko="화이트포인트 감소량" data-en="Whitepoint Reduction">Whitepoint Reduction</span>
+                            <span class="curve-slider-val" id="curveSliderVal">20%</span>
+                        </div>
+                        <input type="range" id="curveReductionRange" min="0" max="30" value="20" step="5">
+                    </div>
+                    <div class="curve-readout">
+                        <span class="readout-label" data-ko="트루 블랙 보존" data-en="True Black">True Black</span>
+                        <span class="readout-val">100.0%</span>
+                    </div>
+                </div>
             </div>
             
             <div class="tech-explanation">
-                <div class="badge" data-ko="독보적인 기술 정밀도" data-en="Technical Precision">Technical Precision</div>
+                <div class="section-eyebrow" data-ko="하드웨어 아키텍처" data-en="HARDWARE ARCHITECTURE">HARDWARE ARCHITECTURE</div>
                 <h2 style="font-size:2.25rem; margin-bottom:1.5rem;" data-ko="디스플레이 화질 보존을 위한 독보적인 GPU 감마 제어" data-en="Proprietary GPU Gamma Control for True Display Preservation">Proprietary GPU Gamma Control for True Display Preservation</h2>
                 <p style="margin-bottom:1.5rem;" data-ko="대부분의 눈 보호 앱들은 편의성을 위해 화면 위에 단순 회색 레이어를 얹는 방식으로 눈을 속입니다. 이러한 쉐도우 오버레이는 수백만 원 가치의 고성능 레티나 디스플레이의 트루 블랙(True Black) 표현력을 전부 휴지조각으로 만들어 버립니다." data-en="Most eye protection apps take the shortcut of drawing a semi-transparent grey overlay across your screen. This cheap shadow ruins the true black capabilities and contrast of your premium Retina display.">Most eye protection apps take the shortcut of drawing a semi-transparent grey overlay across your screen. This cheap shadow ruins the true black capabilities and contrast of your premium Retina display.</p>
                 <ul class="bullet-list">
@@ -513,6 +513,6 @@
     </footer>
 
     <!-- Script for interactive comparison slider -->
-    <script src="script.js?v=2.3.0"></script>
+    <script src="script.js?v=2.4.0"></script>
 </body>
 </html>

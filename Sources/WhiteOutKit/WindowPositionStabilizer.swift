@@ -13,25 +13,7 @@ public final class WindowPositionStabilizer: NSObject {
     private var lockedX: CGFloat?
 
     public func start() {
-        guard !isSwizzled else { return }
-        isSwizzled = true
-
-        let windowClass: AnyClass = NSWindow.self
-
-        if let origOrigin = class_getInstanceMethod(windowClass, #selector(NSWindow.setFrameOrigin(_:))),
-           let swizOrigin = class_getInstanceMethod(windowClass, #selector(NSWindow.whiteout_setFrameOrigin(_:))) {
-            method_exchangeImplementations(origOrigin, swizOrigin)
-        }
-
-        if let origFrame = class_getInstanceMethod(windowClass, #selector(NSWindow.setFrame(_:display:))),
-           let swizFrame = class_getInstanceMethod(windowClass, #selector(NSWindow.whiteout_setFrame(_:display:))) {
-            method_exchangeImplementations(origFrame, swizFrame)
-        }
-
-        if let origFrameAnim = class_getInstanceMethod(windowClass, #selector(NSWindow.setFrame(_:display:animate:))),
-           let swizFrameAnim = class_getInstanceMethod(windowClass, #selector(NSWindow.whiteout_setFrame(_:display:animate:))) {
-            method_exchangeImplementations(origFrameAnim, swizFrameAnim)
-        }
+        // Disabled global NSWindow swizzling to prevent NSSceneStatusItem dismissal by macOS ControlCenter
     }
 
     public func attach(to window: NSWindow) {
