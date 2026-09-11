@@ -80,8 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (position < 0) position = 0;
         if (position > 100) position = 100;
         
-        // Apply position to slider UI
-        panelAfter.style.width = `${position}%`;
+        // Apply position to slider UI via clip-path and handle left
+        panelAfter.style.clipPath = `polygon(0 0, ${position}% 0, ${position}% 100%, 0 100%)`;
+        panelAfter.style.webkitClipPath = `polygon(0 0, ${position}% 0, ${position}% 100%, 0 100%)`;
         handle.style.left = `${position}%`;
 
         // Apply real-time Whiteout to entire webpage & mock screens
@@ -89,7 +90,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Initialize with 50% slider position (10% reduction) and set inline styles
-    panelAfter.style.width = '50%';
+    panelAfter.style.clipPath = 'polygon(0 0, 50% 0, 50% 100%, 0 100%)';
+    panelAfter.style.webkitClipPath = 'polygon(0 0, 50% 0, 50% 100%, 0 100%)';
     handle.style.left = '50%';
     applyLiveWhiteout(50);
     
@@ -171,252 +173,46 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // --- Infinite Synchronized Coding and Scrolling Simulator ---
-    const ideContainers = document.querySelectorAll('.ide-code-scroll');
+    // --- Infinite Synchronized Mock Web Page Scrolling Simulator ---
     const browserContainers = document.querySelectorAll('.browser-content-mock');
-    const terminalContainers = document.querySelectorAll('.terminal-scroll');
-    
-    let phase = 'typing'; // 'typing' or 'scrolling'
-    let actionCounter = 0;
-    let ideLinesCount = 0;
-    let ideScrollY = 0;
     let browserScrollY = 0;
-    let terminalLinesCount = 0;
-    let terminalScrollY = 0;
-    
-    // Clean initial content
-    ideContainers.forEach(c => c.innerHTML = '');
-    browserContainers.forEach(c => c.innerHTML = '');
-    terminalContainers.forEach(c => c.innerHTML = '');
-    
-    // Helper to generate VS Code styled tokenized lines
-    function generateTokensData() {
-        const rand = Math.random();
-        let tokens = [];
-        if (rand < 0.15) {
-            // Comment line
-            tokens.push({ width: Math.floor(Math.random() * 30) + 40, type: 'token-comment' });
-        } else if (rand < 0.5) {
-            // Declaration: const/let x = value
-            tokens.push({ width: Math.floor(Math.random() * 8) + 12, type: 'token-keyword' });
-            tokens.push({ width: Math.floor(Math.random() * 15) + 18, type: 'token-variable' });
-            tokens.push({ width: 8, type: 'token-operator' });
-            tokens.push({ width: Math.floor(Math.random() * 15) + 15, type: 'token-value' });
-        } else if (rand < 0.8) {
-            // Function call: console.log(x) or method()
-            tokens.push({ width: Math.floor(Math.random() * 12) + 12, type: 'token-variable' });
-            tokens.push({ width: Math.floor(Math.random() * 15) + 20, type: 'token-yellow' });
-            tokens.push({ width: Math.floor(Math.random() * 8) + 8, type: 'token-value' });
-        } else {
-            // Class/Type or Return statement
-            tokens.push({ width: Math.floor(Math.random() * 8) + 12, type: 'token-keyword' });
-            tokens.push({ width: Math.floor(Math.random() * 15) + 15, type: 'token-type' });
-            tokens.push({ width: Math.floor(Math.random() * 10) + 12, type: 'token-variable' });
-        }
-        return tokens;
-    }
 
-    function buildLineFromData(tokensData, animate = true) {
-        const line = document.createElement('div');
-        line.className = 'ide-code-line';
-        line.style.opacity = animate ? '0' : '1';
-        
-        // Append tokens as spans using the identical tokensData
-        tokensData.forEach(tok => {
-            const span = document.createElement('span');
-            span.className = `code-token ${tok.type}`;
-            span.style.width = animate ? '0%' : `${tok.width}%`;
-            if (animate) {
-                span.style.transition = 'width 0.4s ease-out';
-                setTimeout(() => {
-                    span.style.width = `${tok.width}%`;
-                }, 50);
-            }
-            line.appendChild(span);
-        });
-        
-        if (animate) {
-            setTimeout(() => {
-                line.style.opacity = '1';
-            }, 50);
-        }
-        
-        return line;
-    }
-    
     function createBrowserLine(widthPercent) {
         const line = document.createElement('div');
         line.className = 'browser-line';
         line.style.width = `${widthPercent}%`;
         return line;
     }
-    
-    function createTerminalLine(widthPercent, animate = true) {
-        const line = document.createElement('div');
-        line.className = 'terminal-line';
-        line.style.width = animate ? '0%' : `${widthPercent}%`;
-        line.style.opacity = animate ? '0' : '1';
-        if (animate) {
-            setTimeout(() => {
-                line.style.width = `${widthPercent}%`;
-                line.style.opacity = '1';
-            }, 50);
-        }
-        return line;
-    }
-    
-    // Add initial mock IDE lines (rendered instantly using synchronized token data)
-    for (let i = 0; i < 7; i++) {
-        const tokensData = generateTokensData();
-        ideContainers.forEach(container => {
-            const line = buildLineFromData(tokensData, false);
-            container.appendChild(line);
-        });
-        ideLinesCount++;
-    }
-    
-    // Add initial mock Browser lines (12 lines to fill screen)
-    for (let i = 0; i < 12; i++) {
-        const width = Math.floor(Math.random() * 50) + 35;
-        browserContainers.forEach(container => {
-            const line = createBrowserLine(width);
-            container.appendChild(line);
-        });
-    }
 
-    // Add initial mock Terminal lines
-    for (let i = 0; i < 4; i++) {
-        const width = Math.floor(Math.random() * 45) + 20; // 20% to 65%
-        terminalContainers.forEach(container => {
-            const line = createTerminalLine(width, false);
-            container.appendChild(line);
-        });
-        terminalLinesCount++;
-    }
-    
-    function addIdeLine() {
-        const tokensData = generateTokensData();
-        
-        // Append identical line to all IDE containers in sync
-        ideContainers.forEach(container => {
-            const line = buildLineFromData(tokensData, true);
-            container.appendChild(line);
-        });
-        
-        ideLinesCount++;
-        
-        // Scroll up if we have more than 7 lines
-        if (ideLinesCount > 7) {
-            ideScrollY += 14;
-            ideContainers.forEach(container => {
-                container.style.transform = `translateY(-${ideScrollY}px)`;
-            });
-        }
-        
-        // Prune old lines seamlessly to prevent infinite DOM expansion
-        const firstContainer = ideContainers[0];
-        if (firstContainer && firstContainer.children.length > 25) {
-            ideContainers.forEach(container => {
-                if (container.firstChild) {
-                    container.removeChild(container.firstChild);
-                }
-                // Temporarily disable transition during layout shift correction
-                container.style.transition = 'none';
-                container.style.transform = `translateY(-${ideScrollY - 14}px)`;
-                container.offsetHeight; // trigger reflow
-                container.style.transition = 'transform 0.4s ease-in-out';
-            });
-            ideScrollY -= 14;
-        }
-    }
-    
     function addBrowserLine() {
-        const width = Math.floor(Math.random() * 50) + 35;
-        
-        // Append identical browser line to all containers
+        const width = Math.floor(Math.random() * 45) + 35;
         browserContainers.forEach(container => {
             const line = createBrowserLine(width);
             container.appendChild(line);
         });
-        
-        // Scroll up by one line height
+
         browserScrollY += 14;
         browserContainers.forEach(container => {
             container.style.transform = `translateY(-${browserScrollY}px)`;
         });
-        
-        // Prune old browser lines seamlessly
+
+        // Prune old lines seamlessly to prevent infinite DOM expansion
         const firstContainer = browserContainers[0];
-        if (firstContainer && firstContainer.children.length > 25) {
+        if (firstContainer && firstContainer.children.length > 20) {
             browserContainers.forEach(container => {
                 if (container.firstChild) {
                     container.removeChild(container.firstChild);
                 }
                 container.style.transition = 'none';
                 container.style.transform = `translateY(-${browserScrollY - 14}px)`;
-                container.offsetHeight; // trigger reflow
+                container.offsetHeight;
                 container.style.transition = 'transform 0.4s ease-in-out';
             });
             browserScrollY -= 14;
         }
     }
 
-    function addTerminalLog() {
-        const width = Math.floor(Math.random() * 45) + 20; // 20% to 65%
-        
-        // Append identical terminal line to all containers in sync
-        terminalContainers.forEach(container => {
-            const line = createTerminalLine(width, true);
-            container.appendChild(line);
-        });
-        
-        terminalLinesCount++;
-        
-        // Scroll terminal up if it has more than 5 lines
-        if (terminalLinesCount > 5) {
-            terminalScrollY += 8; // 4px height + 4px margin-bottom
-            terminalContainers.forEach(container => {
-                container.style.transform = `translateY(-${terminalScrollY}px)`;
-            });
-        }
-        
-        // Prune old terminal lines seamlessly
-        const firstContainer = terminalContainers[0];
-        if (firstContainer && firstContainer.children.length > 15) {
-            terminalContainers.forEach(container => {
-                if (container.firstChild) {
-                    container.removeChild(container.firstChild);
-                }
-                container.style.transition = 'none';
-                container.style.transform = `translateY(-${terminalScrollY - 8}px)`;
-                container.offsetHeight; // trigger reflow
-                container.style.transition = 'transform 0.3s ease-in-out';
-            });
-            terminalScrollY -= 8;
-        }
-    }
-    
-    // Alternate typing and scrolling infinitely
-    setInterval(() => {
-        if (phase === 'typing') {
-            addIdeLine();
-            actionCounter++;
-            if (actionCounter >= 7) {
-                phase = 'scrolling';
-                actionCounter = 0;
-            }
-        } else {
-            addBrowserLine();
-            actionCounter++;
-            if (actionCounter >= 7) {
-                phase = 'typing';
-                actionCounter = 0;
-            }
-        }
-    }, 900);
-
-    // Run terminal logs continuously and independently
-    setInterval(addTerminalLog, 1400);
+    setInterval(addBrowserLine, 1200);
 });
 
 // ─── i18n: Language-based content switching + manual toggle ───────────────

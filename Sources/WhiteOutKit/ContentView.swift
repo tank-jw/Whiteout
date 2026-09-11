@@ -54,6 +54,14 @@ public struct ContentView: View {
         }
         .frame(width: 310)
         .background(.ultraThinMaterial)
+        .background(
+            WindowPositionLock()
+                .frame(width: 0, height: 0)
+                .allowsHitTesting(false)
+        )
+        .onDisappear {
+            WindowPositionStabilizer.shared.releaseLock()
+        }
         .animation(.spring(response: 0.35, dampingFraction: 0.84), value: showingPreferences)
         .alert(LocalizedStrings.updateNetworkErrorTitle(isEN: dm.language == "en"), isPresented: $updater.showNetworkErrorAlert) {
             Button(dm.language == "en" ? "OK" : "확인", role: .cancel) {}

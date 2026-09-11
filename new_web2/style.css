@@ -381,9 +381,7 @@ header {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100cqw;
-  width: var(--slider-width, 100cqw);
-  max-width: 100%;
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -440,13 +438,14 @@ header {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
   background: radial-gradient(circle at 35% 55%, #1c1914 0%, #12100d 60%, #0a0907 100%);
   color: #ffffff;
-  width: 50%;
-  height: 100%;
   overflow: hidden;
   z-index: 3;
-  border-right: 3px solid var(--accent-tech);
+  clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
+  -webkit-clip-path: polygon(0 0, 50% 0, 50% 100%, 0 100%);
 }
 
 /* Laptop Mock styles inside Slider */
@@ -454,7 +453,7 @@ header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
   width: 100%;
   max-width: 440px;
 }
@@ -462,10 +461,11 @@ header {
 .laptop-screen {
   width: 360px;
   height: 220px;
-  background: #000000;
+  background: #1e293b;
   border: 10px solid #1f2937; /* Bezel */
   border-radius: 12px 12px 0 0;
   display: flex;
+  flex-direction: column;
   position: relative;
   overflow: hidden;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
@@ -492,129 +492,139 @@ header {
   border-radius: 0 0 3px 3px;
 }
 
-.screen-half {
-  width: 50%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 1.25rem 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.half-dark-ide {
-  background: #1e1e1e; /* VS Code dark theme background */
-  border-right: 1px solid #2d2d2d;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: 0.75rem 0.75rem 0.5rem 0.75rem;
-}
-
-.ide-editor-area {
-  height: 60%;
+/* macOS Window Chrome at top of laptop screen */
+.laptop-window-chrome {
+  height: 24px;
   width: 100%;
-  overflow: hidden;
-  position: relative;
-}
-
-.ide-code-scroll {
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.4s ease-in-out;
-  width: 100%;
-}
-
-.ide-code-line {
-  height: 6px;
-  margin-bottom: 0.5rem;
-  width: 100%;
-  opacity: 0;
   display: flex;
   align-items: center;
-  transition: opacity 0.4s ease-out;
-}
-
-/* IDE Terminal Area inside Left Screen Mock */
-.ide-terminal-area {
-  height: 40%;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 4px;
-  margin-top: 2px;
-}
-
-.terminal-header {
-  font-size: 7px;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.4);
-  margin-bottom: 4px;
-  letter-spacing: 0.5px;
-  font-family: monospace;
-}
-
-.terminal-scroll-container {
-  height: calc(100% - 12px);
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-}
-
-.terminal-scroll {
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease-in-out;
-  width: 100%;
-}
-
-.terminal-line {
-  height: 4px;
-  margin-bottom: 4px;
-  border-radius: 1px;
+  padding: 0 10px;
+  gap: 12px;
   flex-shrink: 0;
-  opacity: 0;
-  transition: opacity 0.3s ease-out, width 0.3s ease-out;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-.panel-before .terminal-line {
-  background: #ffffff !important; /* Pure white logs */
+.panel-before .laptop-window-chrome {
+  background: #f1f5f9;
+  border-bottom-color: #e2e8f0;
 }
 
-.panel-after .terminal-line {
-  background: rgba(255, 255, 255, 0.35); /* Dimmed safe whitepoint logs */
+.panel-after .laptop-window-chrome {
+  background: #cbd5e1;
+  border-bottom-color: #94a3b8;
 }
 
-/* VS Code Token Highlights */
-.code-token {
+.window-dots {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.window-dots .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
   display: inline-block;
-  height: 6px;
-  border-radius: 2px;
-  margin-right: 4px;
-  vertical-align: middle;
 }
-.token-keyword { background: #569cd6; } /* Blue */
-.token-variable { background: #9cdcfe; } /* Light Blue */
-.token-operator { background: #d4d4d4; } /* White/Gray */
-.token-value { background: #ce9178; } /* Orange/Red */
-.token-type { background: #4ec9b0; } /* Teal */
-.token-comment { background: #6a9955; } /* Green */
-.token-yellow { background: #dcdcaa; } /* Yellow */
 
-.half-light-browser {
-  transition: var(--transition-smooth);
+.dot-red { background: #ff5f56; }
+.dot-yellow { background: #ffbd2e; }
+.dot-green { background: #27c93f; }
+
+.window-url-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 8px;
+  font-family: var(--font-mono);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.panel-before .window-url-pill {
+  background: #ffffff;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.panel-after .window-url-pill {
+  background: #cbd5e1;
+  color: #1e293b;
+  border: 1px solid #94a3b8;
+}
+
+.url-lock-icon {
+  width: 8px;
+  height: 8px;
+  opacity: 0.6;
+}
+
+/* Laptop Window Body */
+.laptop-window-body {
+  flex: 1;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+}
+
+/* Mock Page Layout with Sidebar & Main Content */
+.mock-page-layout {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.mock-sidebar {
+  width: 75px;
+  height: 100%;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+}
+
+.panel-before .mock-sidebar {
+  background: #f8fafc;
+  border-right-color: #e2e8f0;
+}
+
+.panel-after .mock-sidebar {
+  background: #e2e8f0;
+  border-right-color: #cbd5e1;
+}
+
+.mock-nav-item {
+  height: 5px;
+  border-radius: 2px;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.mock-nav-item.active {
+  background: var(--accent-tech);
+  width: 85%;
+}
+
+.mock-main-content {
+  flex: 1;
+  height: 100%;
+  padding: 10px 14px;
+  overflow: hidden;
   position: relative;
 }
 
-.browser-scroll-container {
+.mock-main-content .browser-scroll-container {
   height: 100%;
   width: 100%;
   overflow: hidden;
   position: relative;
-  padding-top: 0.75rem; /* Start naturally from the top with standard margin */
 }
 
 .browser-content-mock {
@@ -678,7 +688,7 @@ header {
 
 /* ON State: Comfortable dimmed neutral whitepoint with protection shield */
 .browser-dimmed {
-  background: #cccccc !important; /* Neutral reduced whitepoint (no yellow tint) */
+  background: var(--slider-browser-bg, #cccccc) !important; /* Neutral dynamic reduced whitepoint */
 }
 
 .browser-dimmed .browser-line {
@@ -712,6 +722,20 @@ header {
   height: 12px;
 }
 
+.title-line {
+  height: 8px !important;
+  margin-bottom: 8px !important;
+  border-radius: 2px;
+}
+
+.browser-glaring .title-line {
+  background: #000000 !important;
+}
+
+.browser-dimmed .title-line {
+  background: #000000 !important;
+}
+
 /* Animations */
 @keyframes flashbangPulse {
   0%, 100% { transform: translate(-50%, -50%) scale(0.9) rotate(0deg); opacity: 0.7; }
@@ -741,6 +765,10 @@ header {
   .laptop-base {
     width: 330px;
   }
+  .mock-sidebar {
+    width: 55px;
+    padding: 8px 5px;
+  }
   .eye-svg-top {
     width: 80px;
     height: 80px;
@@ -754,6 +782,10 @@ header {
   }
   .laptop-base {
     width: 280px;
+  }
+  .mock-sidebar {
+    width: 45px;
+    padding: 6px 4px;
   }
   .eye-svg-top {
     width: 68px;
