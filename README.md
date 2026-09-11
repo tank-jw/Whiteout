@@ -345,6 +345,7 @@ Sources/Whiteout/
   - [2026-09-11] script.js 내 isDragging 중복 선언(SyntaxError)으로 인한 슬라이더 비동작 및 --slider-width 미설정으로 인한 노트북 우측 치우침 버그를 해결함. .comparison-slider에 container-type: inline-size를 도입하여 JS 실행 전후 무관하게 노트북 및 상단 눈 그래픽의 50% 분할선 정렬을 완벽 보장하고, 포인터·마우스·터치 통합 드래그 리스너 및 캐시 버스팅(?v=2.2.0)을 적용해 60fps 무결성 조작을 복원함.
   - [2026-09-11] 슬라이더 조작 시 분할된 서로 다른 창(IDE/브라우저)이 튀어나오며 노트북 위치가 왜곡되던 문제를 해결하기 위해, 단일 웹 문서 창 및 CSS clip-path 마스킹 구조로 전면 리팩토링함. 노트북을 화면 정중앙에 영구 고정하고 슬라이더 핸들 좌우로 오직 WhiteOut ON(감쇄 및 보호 쉴드)/OFF(눈부신 순백색 및 플래시뱅) 시각 효과만 실시간 대비되도록 구현하여 비교 UX의 직관성과 무결성을 완성함.
   - [2026-09-11] 슬라이더 내부 노트북 화면에 떠있던 중복 쉴드 뱃지('Hardware Protection Active')를 제거하여 Apple Developer Docs 본문의 가독성을 온전히 확보하고, 기존 구 다크모드 잔재였던 어두운 갈색/검정 슬라이더 배경을 홈페이지의 화이트/라이트 톤에 완벽히 부합하는 정밀 스튜디오 캔버스(Linear/Apple 스타일의 마이크로 도트 패턴 + WhiteOut ON의 차분한 옵티컬 릴리프 vs OFF의 과노출 피크 광량 오로라) 및 반투명 프로스티드 글래스 뱃지로 전면 리뉴얼함.
+  - [2026-09-11] 전형적인 AI SaaS 생성 템플릿의 대표적 지표였던 Plus Jakarta Sans를 전면 퇴출하고, macOS 네이티브 시스템 타이포그래피(SF Pro Display/Text, SF Mono)와 크로스플랫폼 완성형 CJK 가변 폰트(Pretendard Variable) 스택으로 전면 전환함. 헤드라인 음수 자간(-0.038em)과 광학적 커닝을 적용하여 영문과 국문 간의 글꼴 단절을 제거하고 장인정신이 깃든 하이엔드 Mac 엔지니어링 유틸리티의 품격을 완성함.
 * **DevOps & Web Hosting Consultant**:
   - [2026-09-11] Cloudflare Pages와 GitHub master 브랜치(docs/ 타겟) 연동을 통해 정적 리소스 캐시 버스팅(?v=2.1.0) 및 무중단 글로벌 CDN 배포 무결성을 실시간 검증하고, GitHub Releases v2.0.0 바이너리(WhiteOut.dmg)와의 다운로드 엔드포인트 연동 상태를 최종 확인 완료함.
 * **Business Strategist**:
