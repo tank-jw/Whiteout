@@ -365,6 +365,7 @@ header {
   user-select: none;
   touch-action: none;
   cursor: ew-resize;
+  container-type: inline-size;
 }
 
 .slider-panel {
@@ -380,22 +381,29 @@ header {
   position: absolute;
   top: 0;
   left: 0;
-  width: var(--slider-width, 700px);
+  width: 100cqw;
+  width: var(--slider-width, 100cqw);
+  max-width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 2rem;
+  padding: 1.5rem 1rem;
+  box-sizing: border-box;
   font-family: var(--font-sans);
   pointer-events: none;
 }
 
 .panel-before {
-  background: radial-gradient(circle at center, #ffffff 0%, #f8fafc 40%, #f1f5f9 70%, #e2e8f0 100%);
-  color: var(--text-primary);
-  z-index: 1; /* Establish stacking context to fix label overlap bug */
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 65% 55%, rgba(255, 255, 255, 0.95) 0%, rgba(245, 158, 11, 0.35) 25%, rgba(25, 20, 15, 0.98) 65%, #100e0b 100%);
+  color: #a89f91;
+  z-index: 1;
   overflow: hidden;
 }
 
@@ -429,11 +437,15 @@ header {
 }
 
 .panel-after {
-  background: radial-gradient(circle at center, var(--bg-surface) 0%, var(--bg-card) 60%, var(--border-color) 100%);
-  color: var(--text-primary);
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle at 35% 55%, #1c1914 0%, #12100d 60%, #0a0907 100%);
+  color: #ffffff;
   width: 50%;
+  height: 100%;
   overflow: hidden;
-  z-index: 3; /* Renders above .panel-before (updated to 3 to stay above the pseudo-element) */
+  z-index: 3;
   border-right: 3px solid var(--accent-tech);
 }
 
@@ -620,10 +632,9 @@ header {
 .browser-line.w-80 { width: 80%; }
 .browser-line.w-50 { width: 50%; }
 
-/* OFF State: Blinding white screen with flashbang glare (dynamically dimmed by Whiteout slider) */
+/* OFF State: Blinding white screen with flashbang glare */
 .browser-glaring {
-  background: var(--slider-browser-bg, #ffffff) !important;
-  transition: background 0.05s ease;
+  background: #ffffff !important;
 }
 
 .browser-glaring .browser-line {
@@ -667,8 +678,7 @@ header {
 
 /* ON State: Comfortable dimmed neutral whitepoint with protection shield */
 .browser-dimmed {
-  background: var(--slider-browser-bg, #cccccc) !important; /* Neutral reduced whitepoint (no yellow tint) */
-  transition: background 0.05s ease;
+  background: #cccccc !important; /* Neutral reduced whitepoint (no yellow tint) */
 }
 
 .browser-dimmed .browser-line {
@@ -722,14 +732,60 @@ header {
   animation: glareLineMove 1s infinite linear;
 }
 
-/* Responsive tweaks for laptop */
-@media (max-width: 400px) {
+/* Responsive tweaks for laptop inside slider */
+@container (max-width: 440px) {
   .laptop-screen {
-    width: 280px;
-    height: 170px;
+    width: 290px;
+    height: 175px;
   }
   .laptop-base {
-    width: 320px;
+    width: 330px;
+  }
+  .eye-svg-top {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@container (max-width: 360px) {
+  .laptop-screen {
+    width: 250px;
+    height: 150px;
+  }
+  .laptop-base {
+    width: 280px;
+  }
+  .eye-svg-top {
+    width: 68px;
+    height: 68px;
+  }
+}
+
+@media (max-width: 480px) {
+  .laptop-screen {
+    width: 290px;
+    height: 175px;
+  }
+  .laptop-base {
+    width: 330px;
+  }
+  .eye-svg-top {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 360px) {
+  .laptop-screen {
+    width: 250px;
+    height: 150px;
+  }
+  .laptop-base {
+    width: 280px;
+  }
+  .eye-svg-top {
+    width: 64px;
+    height: 64px;
   }
 }
 
@@ -813,32 +869,32 @@ header {
 .slider-label {
   position: absolute;
   bottom: 1.2rem;
-  padding: 0.4rem 0.85rem;
+  padding: 0.35rem 0.75rem;
   border-radius: 8px;
-  font-size: 0.76rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.02em;
   z-index: 5;
   white-space: nowrap;
-  max-width: 44%;
+  max-width: 42%;
   overflow: hidden;
   text-overflow: ellipsis;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
   pointer-events: none;
 }
 
 .label-before {
-  right: 1.5rem;
-  background: rgba(254, 242, 242, 0.95);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  color: #dc2626;
+  right: 1.25rem;
+  background: rgba(30, 15, 15, 0.92);
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  color: #ef4444;
 }
 
 .label-after {
-  left: 1.5rem;
-  background: rgba(236, 253, 245, 0.95);
-  border: 1px solid rgba(5, 150, 105, 0.35);
-  color: #059669;
+  left: 1.25rem;
+  background: rgba(16, 28, 22, 0.92);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  color: #10b981;
 }
 
 /* Eye Simulation Graphic inside slider */

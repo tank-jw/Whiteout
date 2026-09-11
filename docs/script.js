@@ -93,65 +93,66 @@ document.addEventListener('DOMContentLoaded', () => {
     handle.style.left = '50%';
     applyLiveWhiteout(50);
     
-    // Modern unified Pointer Events for smooth 60fps drag across Mouse, Trackpad, and Touch
-    let isDragging = false;
-
-    slider.addEventListener('pointerdown', (e) => {
+    // Modern unified Pointer and Touch Events for smooth 60fps drag across Mouse, Trackpad, and Touch
+    function startDrag(clientX) {
         isDragging = true;
+        moveSlider(clientX);
+    }
+
+    function onDrag(clientX) {
+        if (!isDragging) return;
+        moveSlider(clientX);
+    }
+
+    function stopDrag() {
+        isDragging = false;
+    }
+
+    // Pointer events on slider
+    slider.addEventListener('pointerdown', (e) => {
+        startDrag(e.clientX);
         try {
             slider.setPointerCapture(e.pointerId);
         } catch (err) {}
-        moveSlider(e.clientX);
         e.preventDefault();
     });
 
     slider.addEventListener('pointermove', (e) => {
         if (!isDragging) return;
-        moveSlider(e.clientX);
+        onDrag(e.clientX);
         e.preventDefault();
     });
 
-    const stopDragging = (e) => {
-        if (isDragging) {
-            isDragging = false;
-            try {
-                slider.releasePointerCapture(e.pointerId);
-            } catch (err) {}
-        }
-    };
+    slider.addEventListener('pointerup', (e) => {
+        stopDrag();
+        try {
+            slider.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+    });
 
-    slider.addEventListener('pointerup', stopDragging);
-    slider.addEventListener('pointercancel', stopDragging);
+    slider.addEventListener('pointercancel', stopDrag);
 
-    // Fallback mouse and touch events
+    // Global window listeners for mouse and touch fallback
     window.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        moveSlider(e.clientX);
+        if (isDragging) onDrag(e.clientX);
     });
-    window.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
+
+    window.addEventListener('mouseup', stopDrag);
 
     slider.addEventListener('touchstart', (e) => {
-        isDragging = true;
         if (e.touches && e.touches[0]) {
-            moveSlider(e.touches[0].clientX);
+            startDrag(e.touches[0].clientX);
         }
     }, { passive: true });
-    
+
     window.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        if (e.touches && e.touches[0]) {
-            moveSlider(e.touches[0].clientX);
+        if (isDragging && e.touches && e.touches[0]) {
+            onDrag(e.touches[0].clientX);
         }
     }, { passive: true });
-    
-    window.addEventListener('touchend', () => {
-        isDragging = false;
-    });
-    window.addEventListener('touchcancel', () => {
-        isDragging = false;
-    });
+
+    window.addEventListener('touchend', stopDrag);
+    window.addEventListener('touchcancel', stopDrag);
     
     // Optional: Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {

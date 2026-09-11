@@ -138,6 +138,7 @@ Sources/Whiteout/
 
 | 버전 | 내용 |
 |---|---|
+| **v2.0.1** | **시간 기반 규칙 밝기 동기화 버그 픽스 및 메뉴바 팝오버 윈도우 축 안정화**<br>- `DisplayManager`의 struct 값 복사 캐싱(`activeTimeRule`, `activeAppRule`)을 실시간 계산 프로퍼티로 리팩토링하여 시간/앱 규칙 활성화 중 슬라이더 및 Picker 조절 시 화면 밝기 미반영 버그 완벽 해결<br>- 자동화 규칙 활성화 중 슬라이더 조작 시 사용자의 기본 영구 설정(`UserDefaults`)이 오버라이트되지 않도록 가드 보강<br>- 메뉴바 온/오프 토글 시 비율 수치 노출로 인한 가로 너비 확장 및 팝오버 창 좌우 흔들림(축 이동) 현상을 방지하기 위해 메뉴바 아이콘 프레임 너비(46pt)를 고정 안정화 |
 | **v2.0.0** | **차세대 네이티브 2.0 카드형 UI 전면 리디자인 및 웹 디자인 동기화**<br>- macOS Control Center 스타일의 인셋 카드(Inset Grouped Card) 아키텍처 및 톱니바퀴 Preferences 슬라이드 네비게이션 적용<br>- 110pt 실시간 전달 곡선 모니터(Live Transfer Curve)를 메인 화면에 전면 배치하여 60fps 하이테크 캘리브레이터 시각화 완성<br>- Shortcuts 특수문자 키코드 매핑 보강 및 앱 규칙 즉시 감지(`getFrontmostApplication`) 구조 도입<br>- 웹 랜딩 페이지 100% 무채색 순수 화이트포인트 감쇄 통일 및 순백색(#ffffff) 배경 리디자인 배포 |
 | **v1.7.4** | **정밀 코드 감사 개선 및 엣지 케이스 안정성 강화**<br>- 규칙 삭제 시 인덱스 경계 검사(Bounds Check) 가드 추가로 삭제 연타 크래시 원천 차단<br>- 단축키 녹화기에서 보조키 조합 Delete 키(`Cmd+Delete` 등) 등록 지원<br>- 외장 모니터 연결 해제 시 디스플레이 Picker 목록 실시간 동기화(`activeDisplaySettings`)<br>- 인앱 업데이터 스크립트 실행 후 자체 파일 자동 청소(`rm -f "$0"`) 적용<br>- `DisplayManager`에 `@MainActor` 적용으로 Swift 6 엄격 동시성(Concurrency) 대비<br>- `build_dmg.sh` 이전 잔여 볼륨 자동 언마운트 가드 및 랜딩 페이지 최신 릴리즈 다운로드 링크(`latest`) 연결 |
 | **v1.7.3** | **코드 품질 전수 점검 및 안정성/호환성 강화**<br>- `build_dmg.sh` 내 `Info.plist` 중복 CFBundleIconFile 선언 정리 및 유니버셜 바이너리(arm64+x86_64) 패키징 무결성 강화<br>- `DisplayManager`의 NotificationCenter 옵저버 해제(deinit) 누수 방지 로직 추가<br>- `ContentView` 슬라이더 바인딩 내 중복 감마 적용 연산 제거로 슬라이더 조작 반응성 향상<br>- Apple Silicon 및 Intel Mac, macOS 13+ 전 기종 무결성 전수 검증 통과 |
@@ -327,6 +328,7 @@ Sources/Whiteout/
   - [2026-09-11] 메인 제어 카드의 실시간 감마 변환 곡선 모니터(Live Transfer Curve)를 설정창 내 진단 그래프와 동일한 110pt 높이로 규격을 일치시키고 하단 반투명 오렌지 그라데이션 면적 채우기와 상/하단 100%·0% 축 레이블을 완비하여, 슬라이더 감쇄율 조절 및 T계수 모드 전환 시 60fps로 즉각 반응하는 하이테크 디스플레이 캘리브레이터 시각화 UX를 완성함.
   - [2026-09-11] Main develop의 앱별 자동화 규칙 추가 버튼 구조(실제 앱 아이콘, 오렌지 강조 바, 동적 앱 명칭)를 원형 그대로 복원하고, DisplayManager의 lastActiveApp 속성을 @Published 및 DI 프로토콜(WorkspaceServiceProtocol.getFrontmostApplication) 기반 즉시 감지 구조로 보강하여 앱 시작 직후나 포커스 전환 시에도 추가 버튼이 누락 없이 즉각 반응하도록 안정성을 확보함.
   - [2026-09-11] 네이티브 2.0 카드형 UI 리디자인, 110pt 실시간 전달 곡선 모니터 전면 배치 및 Preferences 슬라이드 전환을 완성하여 v2.0.0으로 정식 배포함.
+  - [2026-09-11] TimeRule/AppRule의 Swift struct 값 복사(Snapshot) 캐싱으로 인해 규칙 활성 중 슬라이더 변경 시 CoreGraphics 감마 테이블에 이전 복사본 값이 재인가되던 버그를 계산 프로퍼티(Live Computed Property) 구조로 전면 리팩토링하여 해결하고, MenuBarExtra 라벨의 고정 프레임(46pt)을 설정하여 온/오프 시 팝오버 윈도우의 좌우 축 흔들림을 완벽 차단함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:
@@ -338,6 +340,7 @@ Sources/Whiteout/
   - [2026-09-11] 웹 전체의 테마를 순백색(0% 감쇄)부터 20% 감쇄된 웜 오프화이트까지 Hero 인터랙티브 비교 슬라이더의 위치(0~100%)와 60fps로 실시간 연동되는 Dynamic Whiteout Lerp 시스템을 구현하고, 텍스트 대비(Contrast) 100% 보존 가독성 및 핸들 실시간 감쇄율 뱃지, 슬라이더 하단 라벨 겹침 방지 레이아웃을 완성함.
   - [2026-09-11] 화이트포인트 낮추기(Reduce White Point)는 Night Shift와 달리 색온도 왜곡(누르스름한 웜톤) 없이 화이트 스펙트럼의 피크 휘도만 순수하게 감쇄하는 기능이므로, 웹 전체 색상 체계 및 슬라이더 보간 공식을 완전한 무채색 중립 그레이(R=G=B) 감쇄로 전환하여 제품 본연의 정체성을 완벽히 일치시킴.
   - [2026-09-11] Hero 비교 슬라이더 조작 시 밝기 변화가 체감되지 않던 원인(노트북 화면 내 브라우저의 정적 배경색 하드코딩, 좌측 다크 IDE 구간 드래그 시 우측 화면 불변 현상, 구 다크 모드 잔재 배경색)을 진단하고, 노트북 브라우저 모의 화면 배경을 CSS 변수(--slider-browser-bg)와 60fps 실시간 연동하며 포인터 캡처(setPointerCapture) 및 에셋 캐시 버스팅(?v=2.1.0)을 적용해 슬라이더 조작 전 구간에서 즉각적인 화이트포인트 감쇄 반응성을 확보함.
+  - [2026-09-11] script.js 내 isDragging 중복 선언(SyntaxError)으로 인한 슬라이더 비동작 및 --slider-width 미설정으로 인한 노트북 우측 치우침 버그를 해결함. .comparison-slider에 container-type: inline-size를 도입하여 JS 실행 전후 무관하게 노트북 및 상단 눈 그래픽의 50% 분할선 정렬을 완벽 보장하고, 포인터·마우스·터치 통합 드래그 리스너 및 캐시 버스팅(?v=2.2.0)을 적용해 60fps 무결성 조작을 복원함.
 * **DevOps & Web Hosting Consultant**:
   - [2026-09-11] Cloudflare Pages와 GitHub master 브랜치(docs/ 타겟) 연동을 통해 정적 리소스 캐시 버스팅(?v=2.1.0) 및 무중단 글로벌 CDN 배포 무결성을 실시간 검증하고, GitHub Releases v2.0.0 바이너리(WhiteOut.dmg)와의 다운로드 엔드포인트 연동 상태를 최종 확인 완료함.
 * **Business Strategist**:

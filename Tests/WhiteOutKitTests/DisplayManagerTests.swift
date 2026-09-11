@@ -283,6 +283,13 @@ final class DisplayManagerTests: XCTestCase {
         XCTAssertTrue(dm.isEnabled)
         XCTAssertEqual(dm.activeRuleAppName, "Safari")
         
+        // Adjust slider while app rule is active
+        dm.reduction = 0.28
+        XCTAssertEqual(dm.appRules[0].reduction, 0.28)
+        if let table = displayService.setDisplayTables[1] {
+            XCTAssertEqual(Double(table.red[255]), 1.0 - 0.28 * 0.3, accuracy: 0.001)
+        }
+        
         // Simulate activating Finder (no rules)
         workspaceService.activeAppHandler?("com.apple.finder", "Finder")
         
@@ -334,12 +341,29 @@ final class DisplayManagerTests: XCTestCase {
         dm.evaluateTimeRules()
         XCTAssertEqual(dm.activeTimeRuleId, rule.id)
         XCTAssertEqual(dm.reduction, 0.15)
+        if let applied = displayService.setDisplayTables[1] {
+            XCTAssertEqual(Double(applied.red[255]), 1.0 - 0.15 * 0.3, accuracy: 0.001)
+        }
+        
+        // 3a. Verify slider adjustment updates both rule and actual display brightness
+        dm.reduction = 0.25
+        XCTAssertEqual(dm.timeRules[0].reduction, 0.25)
+        if let applied = displayService.setDisplayTables[1] {
+            XCTAssertEqual(Double(applied.red[255]), 1.0 - 0.25 * 0.3, accuracy: 0.001)
+        }
+        
+        // 3b. Verify direct time rule reduction change syncs slider and display brightness
+        dm.timeRules[0].reduction = 0.20
+        XCTAssertEqual(dm.reduction, 0.20)
+        if let applied = displayService.setDisplayTables[1] {
+            XCTAssertEqual(Double(applied.red[255]), 1.0 - 0.20 * 0.3, accuracy: 0.001)
+        }
         
         // 4. Set mock clock time to 05:59
         clockService.mockedDate = createMockDate(hour: 5, minute: 59)
         dm.evaluateTimeRules()
         XCTAssertEqual(dm.activeTimeRuleId, rule.id)
-        XCTAssertEqual(dm.reduction, 0.15)
+        XCTAssertEqual(dm.reduction, 0.20)
         
         // 5. Set mock clock time to 06:00
         clockService.mockedDate = createMockDate(hour: 6, minute: 0)

@@ -24,8 +24,10 @@ struct WhiteoutApp: App {
             if displayManager.isEnabled && displayManager.reduction > 0.01 {
                 Text("\(Int((displayManager.reduction * 30).rounded()))%")
                     .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .frame(width: 24, alignment: .leading)
             }
         }
+        .frame(width: 46, alignment: .center)
     }
 }
 

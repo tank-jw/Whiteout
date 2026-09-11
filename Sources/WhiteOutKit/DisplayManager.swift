@@ -21,7 +21,7 @@ public class DisplayManager: ObservableObject {
 
     @Published public var reduction: Double {
         didSet {
-            if !isSyncingProperties {
+            if !isSyncingProperties && activeRuleAppName == nil && activeTimeRuleId == nil {
                 UserDefaults.standard.set(reduction, forKey: Keys.reduction)
             }
             handleUserAdjustedReduction(reduction)
@@ -30,7 +30,7 @@ public class DisplayManager: ObservableObject {
 
     @Published public var isEnabled: Bool {
         didSet {
-            if !isSyncingProperties {
+            if !isSyncingProperties && activeRuleAppName == nil && activeTimeRuleId == nil {
                 UserDefaults.standard.set(isEnabled, forKey: Keys.isEnabled)
             }
             handleUserAdjustedEnabled(isEnabled)
@@ -39,7 +39,7 @@ public class DisplayManager: ObservableObject {
 
     @Published public var curveExponent: Double {
         didSet {
-            if !isSyncingProperties {
+            if !isSyncingProperties && activeRuleAppName == nil && activeTimeRuleId == nil {
                 UserDefaults.standard.set(curveExponent, forKey: Keys.curveExponent)
             }
             handleUserAdjustedExponent(curveExponent)
@@ -114,16 +114,10 @@ public class DisplayManager: ObservableObject {
             if let data = try? JSONEncoder().encode(appRules) {
                 UserDefaults.standard.set(data, forKey: Keys.appRules)
             }
-            // Update cached active app rule if current application matches
-            updateActiveAppRuleCachedPointer()
         }
     }
 
-    @Published public var activeRuleAppName: String? = nil {
-        didSet {
-            updateActiveAppRuleCachedPointer()
-        }
-    }
+    @Published public var activeRuleAppName: String? = nil
 
     @Published public var timeRules: [TimeRule] = [] {
         didSet {
@@ -134,15 +128,18 @@ public class DisplayManager: ObservableObject {
         }
     }
 
-    @Published public var activeTimeRuleId: UUID? = nil {
-        didSet {
-            updateActiveTimeRuleCachedPointer()
-        }
+    @Published public var activeTimeRuleId: UUID? = nil
+
+    // MARK: - Active Rule Pointers (Dynamic Live Access)
+    public var currentActiveAppRule: AppRule? {
+        guard let activeAppName = activeRuleAppName else { return nil }
+        return appRules.first(where: { $0.appName == activeAppName })
     }
 
-    // MARK: - Cached Rule Pointers (O(1) Access)
-    private var activeAppRule: AppRule? = nil
-    private var activeTimeRule: TimeRule? = nil
+    public var currentActiveTimeRule: TimeRule? {
+        guard let activeTimeId = activeTimeRuleId else { return nil }
+        return timeRules.first(where: { $0.id == activeTimeId })
+    }
 
     // MARK: - Services (Dependency Injection)
     private let displayService: DisplayServiceProtocol
@@ -236,9 +233,6 @@ public class DisplayManager: ObservableObject {
         self.appRules          = loadedAppRules
         self.timeRules         = loadedTimeRules
 
-        updateActiveAppRuleCachedPointer()
-        updateActiveTimeRuleCachedPointer()
-
         // Must happen after properties initialization
         saveOriginalTables()
         syncLaunchAtLogin()
@@ -317,8 +311,8 @@ public class DisplayManager: ObservableObject {
 
     /// Apply the current `reduction` value to active displays.
     public func applyReduction() {
-        let currentActiveAppRule = activeAppRule
-        let currentActiveTimeRule = activeTimeRule
+        let currentActiveAppRule = self.currentActiveAppRule
+        let currentActiveTimeRule = self.currentActiveTimeRule
 
         for (displayID, tables) in originalTables {
             let targetReduction: Double
@@ -500,6 +494,14 @@ public class DisplayManager: ObservableObject {
                 isSyncingProperties = false
                 
                 applyReduction()
+            } else {
+                // Same rule remains active, but check if reduction property changed
+                if abs(self.reduction - rule.reduction) > 0.001 {
+                    isSyncingProperties = true
+                    self.reduction = rule.reduction
+                    isSyncingProperties = false
+                    applyReduction()
+                }
             }
         } else {
             if activeTimeRuleId != nil {
@@ -716,22 +718,6 @@ public class DisplayManager: ObservableObject {
     }
 
     // MARK: - Private Refactoring Helpers
-
-    private func updateActiveAppRuleCachedPointer() {
-        if let activeAppName = activeRuleAppName {
-            activeAppRule = appRules.first(where: { $0.appName == activeAppName })
-        } else {
-            activeAppRule = nil
-        }
-    }
-
-    private func updateActiveTimeRuleCachedPointer() {
-        if let activeTimeId = activeTimeRuleId {
-            activeTimeRule = timeRules.first(where: { $0.id == activeTimeId })
-        } else {
-            activeTimeRule = nil
-        }
-    }
 
     private func isTableDistorted(red: [CGGammaValue], green: [CGGammaValue], blue: [CGGammaValue]) -> Bool {
         guard red.count == tableSize, green.count == tableSize, blue.count == tableSize else { return true }
