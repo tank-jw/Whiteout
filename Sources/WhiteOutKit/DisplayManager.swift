@@ -371,7 +371,7 @@ public class DisplayManager: ObservableObject {
     /// Restore original tables and quit.
     public func quit() {
         restoreOriginalTables()
-        NSApplication.shared.terminate(nil)
+        exit(0)
     }
 
     // MARK: - Monitor/App Rule Management
