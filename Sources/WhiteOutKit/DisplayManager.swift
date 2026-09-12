@@ -371,7 +371,7 @@ public class DisplayManager: ObservableObject {
     /// Restore original tables and quit.
     public func quit() {
         restoreOriginalTables()
-        NSApplication.shared.terminate(nil)
+        exit(0)
     }
 
     // MARK: - Monitor/App Rule Management
@@ -597,6 +597,15 @@ public class DisplayManager: ObservableObject {
             self.reduction = setting.reduction
             self.isEnabled = setting.isEnabled
             self.curveExponent = setting.curveExponent
+        } else {
+            self.selectedDisplayID = "all"
+            let savedReduction = UserDefaults.standard.double(forKey: Keys.reduction)
+            let savedEnabled   = UserDefaults.standard.bool(forKey: Keys.isEnabled)
+            let savedExponent  = UserDefaults.standard.object(forKey: Keys.curveExponent) as? Double ?? 4.0
+
+            self.reduction = savedReduction
+            self.isEnabled = savedEnabled
+            self.curveExponent = savedExponent
         }
     }
 

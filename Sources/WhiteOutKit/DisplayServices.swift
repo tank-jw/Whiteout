@@ -95,9 +95,9 @@ public final class LiveWorkspaceService: WorkspaceServiceProtocol {
     }
 
     public func getFrontmostApplication() -> (bundleIdentifier: String, appName: String)? {
-        let myBundleID = Bundle.main.bundleIdentifier ?? "com.tankjw.whiteout"
-        if let frontApp = NSWorkspace.shared.runningApplications.first(where: { $0.isActive && $0.bundleIdentifier != myBundleID }) ?? NSWorkspace.shared.frontmostApplication {
-            if let bid = frontApp.bundleIdentifier, bid != myBundleID, let name = frontApp.localizedName {
+        let myBundleID = Bundle.main.bundleIdentifier ?? "com.tankjw.WhiteOut"
+        if let frontApp = NSWorkspace.shared.runningApplications.first(where: { $0.isActive && $0.bundleIdentifier?.caseInsensitiveCompare(myBundleID) != .orderedSame }) ?? NSWorkspace.shared.frontmostApplication {
+            if let bid = frontApp.bundleIdentifier, bid.caseInsensitiveCompare(myBundleID) != .orderedSame, let name = frontApp.localizedName {
                 return (bid, name)
             }
         }
@@ -124,8 +124,8 @@ private final class WorkspaceObserver: WorkspaceSubscription {
                   let bundleID = app.bundleIdentifier,
                   let appName = app.localizedName else { return }
             
-            let myBundleID = Bundle.main.bundleIdentifier ?? "com.tankjw.whiteout"
-            if bundleID == myBundleID {
+            let myBundleID = Bundle.main.bundleIdentifier ?? "com.tankjw.WhiteOut"
+            if bundleID.caseInsensitiveCompare(myBundleID) == .orderedSame {
                 return
             }
             self.handler(bundleID, appName)

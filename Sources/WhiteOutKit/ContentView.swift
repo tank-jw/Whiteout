@@ -3,8 +3,6 @@ import SwiftUI
 public struct ContentView: View {
     @EnvironmentObject var dm: DisplayManager
     @EnvironmentObject var updater: UpdateChecker
-    @State private var showingPreferences = false
-
     public init() {}
 
     // MARK: - Bindings
@@ -37,22 +35,35 @@ public struct ContentView: View {
     // MARK: - Body
 
     public var body: some View {
-        ZStack {
-            if showingPreferences {
-                DetailsSectionView(dm: dm, showDetails: $showingPreferences)
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .trailing).combined(with: .opacity),
-                        removal: .move(edge: .trailing).combined(with: .opacity)
-                    ))
-            } else {
-                mainControlsView
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .leading).combined(with: .opacity),
-                        removal: .move(edge: .leading).combined(with: .opacity)
-                    ))
+        let isEN = dm.language == "en"
+        VStack(spacing: 0) {
+            headerSection(isEN: isEN)
+
+            activeRuleBanner(isEN: isEN)
+
+            ScrollViewReader { proxy in
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 10) {
+                        Color.clear.frame(height: 0).id("topAnchor")
+                        liveCurveCard(isEN: isEN)
+                        reductionAndProfileCard(isEN: isEN)
+                        DetailsSectionView(dm: dm)
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.top, 2)
+                    .padding(.bottom, 10)
+                }
+                .frame(height: 520)
+                .onAppear {
+                    proxy.scrollTo("topAnchor", anchor: .top)
+                }
             }
+
+            Divider().opacity(0.4)
+
+            footerSection(isEN: isEN)
         }
-        .frame(width: 310)
+        .frame(width: 320)
         .background(.ultraThinMaterial)
         .background(
             WindowPositionLock()
@@ -62,34 +73,10 @@ public struct ContentView: View {
         .onDisappear {
             WindowPositionStabilizer.shared.releaseLock()
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.84), value: showingPreferences)
-        .alert(LocalizedStrings.updateNetworkErrorTitle(isEN: dm.language == "en"), isPresented: $updater.showNetworkErrorAlert) {
-            Button(dm.language == "en" ? "OK" : "확인", role: .cancel) {}
+        .alert(LocalizedStrings.updateNetworkErrorTitle(isEN: isEN), isPresented: $updater.showNetworkErrorAlert) {
+            Button(isEN ? "OK" : "확인", role: .cancel) {}
         } message: {
-            Text(LocalizedStrings.updateNetworkErrorMsg(isEN: dm.language == "en"))
-        }
-    }
-
-    // MARK: - Main Controls View
-
-    private var mainControlsView: some View {
-        let isEN = dm.language == "en"
-        return VStack(spacing: 0) {
-            headerSection(isEN: isEN)
-
-            activeRuleBanner(isEN: isEN)
-
-            VStack(spacing: 9) {
-                liveCurveCard(isEN: isEN)
-                reductionAndProfileCard(isEN: isEN)
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 2)
-            .padding(.bottom, 6)
-
-            Divider().opacity(0.4)
-
-            footerSection(isEN: isEN)
+            Text(LocalizedStrings.updateNetworkErrorMsg(isEN: isEN))
         }
     }
 
@@ -139,22 +126,6 @@ public struct ContentView: View {
             }
 
             Spacer()
-
-            // Settings Gear Button
-            Button {
-                withAnimation(.spring(response: 0.35, dampingFraction: 0.84)) {
-                    showingPreferences = true
-                }
-            } label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color.secondary)
-                    .padding(6)
-                    .background(Color.primary.opacity(0.05))
-                    .clipShape(Circle())
-            }
-            .buttonStyle(.plain)
-            .help(LocalizedStrings.settingsGear(isEN: isEN))
 
             // Master Toggle
             Toggle("", isOn: enabledBinding)
@@ -297,25 +268,23 @@ public struct ContentView: View {
 
     private func reductionAndProfileCard(isEN: Bool) -> some View {
         VStack(spacing: 10) {
-            // Display Picker Row (only if multi-monitor)
-            if dm.activeDisplaySettings.count > 1 {
-                HStack {
-                    Label(LocalizedStrings.displayLabel(isEN: isEN), systemImage: "display")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
-                    Spacer()
-                    Picker("", selection: $dm.selectedDisplayID) {
-                        Text(LocalizedStrings.allDisplays(isEN: isEN)).tag("all")
-                        ForEach(dm.activeDisplaySettings) { setting in
-                            Text(setting.name).tag(String(setting.displayID))
-                        }
+            // Display Picker Row (Always visible)
+            HStack {
+                Label(LocalizedStrings.displayLabel(isEN: isEN), systemImage: "display")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
+                Spacer()
+                Picker("", selection: $dm.selectedDisplayID) {
+                    Text(LocalizedStrings.allDisplays(isEN: isEN)).tag("all")
+                    ForEach(dm.activeDisplaySettings) { setting in
+                        Text(setting.name).tag(String(setting.displayID))
                     }
-                    .pickerStyle(.menu)
-                    .labelsHidden()
-                    .scaleEffect(0.9)
                 }
-                Divider().opacity(0.3)
+                .pickerStyle(.menu)
+                .labelsHidden()
+                .scaleEffect(0.9)
             }
+            Divider().opacity(0.3)
 
             // Slider & Percentage Header
             HStack {

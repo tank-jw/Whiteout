@@ -28,6 +28,7 @@ class RecorderNSView: NSView {
     private var isRecording = false
 
     override var acceptsFirstResponder: Bool { true }
+    override var canBecomeKeyView: Bool { false }
     override var intrinsicContentSize: NSSize { NSSize(width: 120, height: 22) }
 
     override func draw(_ dirtyRect: NSRect) {

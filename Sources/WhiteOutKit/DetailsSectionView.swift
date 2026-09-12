@@ -2,68 +2,22 @@ import SwiftUI
 
 struct DetailsSectionView: View {
     @ObservedObject var dm: DisplayManager
-    @Binding var showDetails: Bool
 
     var body: some View {
         let isEN = dm.language == "en"
-        VStack(spacing: 0) {
-            // Navigation Bar
-            HStack {
-                Button {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
-                        showDetails = false
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 11, weight: .bold))
-                        Text(LocalizedStrings.backButton(isEN: isEN))
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .foregroundStyle(Color.orange)
-                    .padding(.vertical, 4)
-                    .padding(.horizontal, 6)
-                    .background(Color.orange.opacity(0.08))
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
+        VStack(spacing: 10) {
+            // 1. Time-Based Rules Card
+            timeRulesCard(isEN: isEN)
 
-                Spacer()
+            // 2. App-Specific Rules Card
+            appRulesCard(isEN: isEN)
 
-                Text(LocalizedStrings.settingsTitle(isEN: isEN))
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(Color.primary)
+            // 3. Shortcuts & System Card
+            shortcutsAndSystemCard(isEN: isEN)
 
-                Spacer()
-
-                // Balancing spacer
-                Color.clear.frame(width: 48, height: 16)
-            }
-            .padding(.horizontal, 14)
-            .padding(.top, 14)
-            .padding(.bottom, 10)
-
-            Divider().opacity(0.4)
-
-            // Scrollable Content
-            ScrollView {
-                VStack(spacing: 12) {
-                    // 1. Shortcuts & System Card
-                    shortcutsAndSystemCard(isEN: isEN)
-
-                    // 2. Time-Based Rules Card
-                    timeRulesCard(isEN: isEN)
-
-                    // 3. App-Specific Rules Card
-                    appRulesCard(isEN: isEN)
-
-                    // 4. Live Curve Diagnostics & Principles Card
-                    curveDiagnosticsCard(isEN: isEN)
-                }
-                .padding(14)
-            }
+            // 4. Principles & Mode Guide Card
+            principlesCard(isEN: isEN)
         }
-        .frame(width: 310)
     }
 
     // MARK: - 1. Shortcuts & System Card
@@ -198,7 +152,9 @@ struct DetailsSectionView: View {
             .labelsHidden()
             .tint(.orange)
             .scaleEffect(0.65)
-            .frame(width: 26)
+            .frame(width: 28)
+
+            Spacer().frame(width: 6)
 
             DatePicker("", selection: Binding(
                 get: { rule.startDate },
@@ -288,8 +244,8 @@ struct DetailsSectionView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.vertical, 3)
-        .padding(.horizontal, 4)
+        .padding(.vertical, 4)
+        .padding(.horizontal, 6)
         .background(isActive ? Color.orange.opacity(0.06) : Color.clear)
         .cornerRadius(6)
         .overlay(
@@ -355,7 +311,7 @@ struct DetailsSectionView: View {
     private func appRuleRow(rule: AppRule, isEN: Bool) -> some View {
         let active = dm.activeRuleAppName == rule.appName
 
-        return VStack(spacing: 4) {
+        return VStack(spacing: 5) {
             HStack(spacing: 6) {
                 if let icon = dm.getAppIcon(bundleIdentifier: rule.bundleIdentifier) {
                     Image(nsImage: icon)
@@ -383,22 +339,9 @@ struct DetailsSectionView: View {
                 }
 
                 Spacer()
-
-                Button {
-                    if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
-                        withAnimation {
-                            dm.deleteAppRule(at: idx)
-                        }
-                    }
-                } label: {
-                    Image(systemName: "trash")
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.red.opacity(0.8))
-                }
-                .buttonStyle(.plain)
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: 4) {
                 Toggle("", isOn: Binding(
                     get: { rule.isEnabled },
                     set: { newVal in
@@ -412,7 +355,9 @@ struct DetailsSectionView: View {
                 .labelsHidden()
                 .tint(.orange)
                 .scaleEffect(0.65)
-                .frame(width: 26)
+                .frame(width: 28)
+
+                Spacer().frame(width: 6)
 
                 Slider(value: Binding(
                     get: { rule.reduction },
@@ -470,10 +415,23 @@ struct DetailsSectionView: View {
                 .buttonStyle(.plain)
                 .fixedSize()
                 .disabled(!rule.isEnabled)
+
+                Button {
+                    if let idx = dm.appRules.firstIndex(where: { $0.bundleIdentifier == rule.bundleIdentifier }) {
+                        withAnimation {
+                            dm.deleteAppRule(at: idx)
+                        }
+                    }
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.red.opacity(0.8))
+                }
+                .buttonStyle(.plain)
             }
-            .padding(.leading, 20)
         }
-        .padding(8)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 6)
         .background(active ? Color.orange.opacity(0.04) : Color.primary.opacity(0.02))
         .cornerRadius(6)
         .overlay(
@@ -482,49 +440,13 @@ struct DetailsSectionView: View {
         )
     }
 
-    // MARK: - 4. Curve Diagnostics Card
+    // MARK: - 4. Principles & Mode Guide Card
 
-    private func curveDiagnosticsCard(isEN: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label(LocalizedStrings.detailsSectionTitle(isEN: isEN), systemImage: "waveform.path.ecg")
+    private func principlesCard(isEN: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(LocalizedStrings.detailsSectionTitle(isEN: isEN), systemImage: "info.circle")
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(Color.secondary)
-
-            ZStack(alignment: .bottomTrailing) {
-                CurveGraphView(
-                    isEnabled: dm.isEnabled,
-                    reduction: dm.reduction,
-                    curveExponent: dm.curveExponent
-                )
-                .frame(height: 110)
-                .background(Color.black.opacity(0.15))
-                .cornerRadius(6)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
-                )
-
-                Text("100%")
-                    .font(.system(size: 7, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .padding(.leading, 6)
-                    .padding(.top, 4)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-
-                Text("0%")
-                    .font(.system(size: 7, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .padding(.leading, 6)
-                    .padding(.bottom, 4)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-
-                Text("100%")
-                    .font(.system(size: 7, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    .padding(.trailing, 6)
-                    .padding(.bottom, 4)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-            }
 
             // Exponent Explanation
             VStack(alignment: .leading, spacing: 3) {

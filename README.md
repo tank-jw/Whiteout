@@ -138,6 +138,7 @@ Sources/Whiteout/
 
 | 버전 | 내용 |
 |---|---|
+| **v2.1.0** | **설정창 단일 윈도우 전면 통합, 디스플레이별 개별 조절 UI 복원 및 중복 그래프 정리**<br>- 메인 화면과 분리되어 있던 환경설정/규칙 화면(2페이지 슬라이드 네비게이션)을 단일 통합 세로 스크롤 팝오버 윈도우로 전면 통합<br>- 단일 모니터 환경에서 가려져 있던 디스플레이 선택 Picker 가드를 해제하여 항상 현재 활성 모니터 및 전체 디스플레이 제어 선택이 가능하도록 UI 전면 복원<br>- 하단 설정 섹션 내 중복 배치되었던 진단용 곡선 그래프를 제거하고 현재 모드 설명 및 하드웨어 GPU 감마 원리 안내 카드로 최적화<br>- 연결 해제된 디스플레이 선택 시 '전체 디스플레이'로 자동 안전 롤백하는 예외 방어 로직 강화 |
 | **v2.0.1** | **시간 기반 규칙 밝기 동기화 버그 픽스, 메뉴바 팝오버 윈도우 축/크기 안정화 및 수치 표시 개선**<br>- `DisplayManager`의 struct 값 복사 캐싱(`activeTimeRule`, `activeAppRule`)을 실시간 계산 프로퍼티로 리팩토링하여 시간/앱 규칙 활성화 중 슬라이더 및 Picker 조절 시 화면 밝기 미반영 버그 완벽 해결<br>- 자동화 규칙 활성화 중 슬라이더 조작 시 사용자의 기본 영구 설정(`UserDefaults`)이 오버라이트되지 않도록 가드 보강<br>- 메뉴바 온/오프 토글 시 비율 수치 노출로 인한 버튼 너비 변화 시 팝오버 창 좌우 흔들림(축 이동) 현상을 `WindowPositionStabilizer`로 완벽 고정<br>- On 시 그래프 상단 `t=2.5` 뱃지 등장으로 인한 팝오버 창 세로 크기 흔들림(밀려남) 방지<br>- 시간대별 규칙(Time-based Rule) 및 앱 규칙의 수치가 `'...'` 말줄임표로 표시되던 결함을 커스텀 `Menu` 버튼 및 실시간 백분율 텍스트 연동으로 전면 개편 |
 | **v2.0.0** | **차세대 네이티브 2.0 카드형 UI 전면 리디자인 및 웹 디자인 동기화**<br>- macOS Control Center 스타일의 인셋 카드(Inset Grouped Card) 아키텍처 및 톱니바퀴 Preferences 슬라이드 네비게이션 적용<br>- 110pt 실시간 전달 곡선 모니터(Live Transfer Curve)를 메인 화면에 전면 배치하여 60fps 하이테크 캘리브레이터 시각화 완성<br>- Shortcuts 특수문자 키코드 매핑 보강 및 앱 규칙 즉시 감지(`getFrontmostApplication`) 구조 도입<br>- 웹 랜딩 페이지 100% 무채색 순수 화이트포인트 감쇄 통일 및 순백색(#ffffff) 배경 리디자인 배포 |
 | **v1.7.4** | **정밀 코드 감사 개선 및 엣지 케이스 안정성 강화**<br>- 규칙 삭제 시 인덱스 경계 검사(Bounds Check) 가드 추가로 삭제 연타 크래시 원천 차단<br>- 단축키 녹화기에서 보조키 조합 Delete 키(`Cmd+Delete` 등) 등록 지원<br>- 외장 모니터 연결 해제 시 디스플레이 Picker 목록 실시간 동기화(`activeDisplaySettings`)<br>- 인앱 업데이터 스크립트 실행 후 자체 파일 자동 청소(`rm -f "$0"`) 적용<br>- `DisplayManager`에 `@MainActor` 적용으로 Swift 6 엄격 동시성(Concurrency) 대비<br>- `build_dmg.sh` 이전 잔여 볼륨 자동 언마운트 가드 및 랜딩 페이지 최신 릴리즈 다운로드 링크(`latest`) 연결 |
@@ -331,6 +332,9 @@ Sources/Whiteout/
   - [2026-09-11] TimeRule/AppRule의 Swift struct 값 복사(Snapshot) 캐싱으로 인해 규칙 활성 중 슬라이더 변경 시 CoreGraphics 감마 테이블에 이전 복사본 값이 재인가되던 버그를 계산 프로퍼티(Live Computed Property) 구조로 전면 리팩토링하여 해결함.
   - [2026-09-11] 메뉴바 아이콘 라벨 텍스트 변경 시 AppKit 레벨에서 발생하는 팝오버 윈도우의 좌우 축 흔들림을 NSWindow setFrameOrigin 가로채기(WindowPositionStabilizer)로 고정하고, On 시 나타나는 t=지수값 뱃지의 헤더 행 높이 고정(frame height 16) 및 opacity 토글을 통해 On/Off 전환 시 창 크기가 아래로 밀려나거나 요동치는 현상을 완벽 차단함.
   - [2026-09-11] 시간대별 규칙(Time-based Rule) 및 앱 규칙의 감쇄율/곡선지수 Picker가 좁은 프레임폭(44~48pt) 및 비매칭 실수값 태그로 인해 '...' 말줄임표로 표시되던 결함을 고정 크기(fixedSize) 커스텀 Menu 버튼 및 실시간 백분율 텍스트 연동 구조로 전면 교체하여, 어떤 수치에서도 잘림 없이 정확한 숫자가 표시되도록 해결함.
+  - [2026-09-11] macOS Sequoia(15+)에서 ControlCenter의 내부 stale 차단 목록(Moving host to blocked list) 및 Hidden Bar 등 서드파티 메뉴바 관리 유틸리티의 접힘 상태로 인해 메뉴바 아이콘이 화면 밖(X=-3900)으로 밀려나거나 NSStatusItemChangeVisibilityAction으로 강제 조기 종료되던 시스템 현상을 규명함. 번들 ID를 고유화(com.tankjw.WhiteOut)하고 AppDelegate에서 NSStatusItem Preferred Position(250) 및 VisibleCC(true)를 명시 초기화하여 항상 보이는 메뉴바 상단 영역에 100% 안착되도록 해결함.
+  - [2026-09-12] 분리되어 있던 메인 제어부와 설정/규칙 화면(2페이지 슬라이드)을 단일 세로 스크롤 카드형 윈도우(320pt)로 전면 통합하고, 단일 모니터 환경에서 감춰져 있던 디스플레이 선택 Picker 가드를 해제하여 항상 활성 모니터 및 전체 디스플레이 제어가 노출되도록 복원함. 또한 macOS MenuBarExtra 윈도우 내 ScrollView가 maxHeight만 가질 때 0으로 높이가 붕괴(수축)되던 현상을 `frame(height: 520)` 및 ShortcutRecorderView의 `canBecomeKeyView: false` 가드로 해결하여 v2.1.0을 완성함.
+  - [2026-09-12] 시간대별 규칙(Time-based Rules)의 토글과 시작 시간 피커 간 여백(Spacer 6pt)을 확보하고, 앱별 규칙(App-specific Rules)의 휴지통 아이콘을 컨트롤 라인 우측 끝으로 재배치하여 두 규칙 카드 간 토글 스위치 및 삭제 버튼의 X축 위치를 완벽하게 일렬 정렬함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:

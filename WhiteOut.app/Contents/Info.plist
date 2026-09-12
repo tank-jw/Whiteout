@@ -8,15 +8,15 @@
   <key>CFBundleExecutable</key>
   <string>WhiteOut</string>
   <key>CFBundleIdentifier</key>
-  <string>com.tankjw.whiteout</string>
+  <string>com.tankjw.WhiteOut</string>
   <key>CFBundleName</key>
   <string>WhiteOut</string>
   <key>CFBundleDisplayName</key>
   <string>WhiteOut</string>
   <key>CFBundleVersion</key>
-  <string>2.0.1</string>
+  <string>2.1.0</string>
   <key>CFBundleShortVersionString</key>
-  <string>2.0.1</string>
+  <string>2.1.0</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleSignature</key>
