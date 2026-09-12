@@ -78,6 +78,11 @@ public class DisplayManager: ObservableObject {
         didSet { UserDefaults.standard.set(language, forKey: Keys.language) }
     }
 
+    public var appLanguage: AppLanguage {
+        get { AppLanguage(rawValue: language) ?? .en }
+        set { language = newValue.rawValue }
+    }
+
     @Published public var launchAtLogin: Bool {
         didSet {
             UserDefaults.standard.set(launchAtLogin, forKey: Keys.launchAtLogin)
@@ -173,6 +178,21 @@ public class DisplayManager: ObservableObject {
     private var originalTables: [CGDirectDisplayID: GammaTable] = [:]
     private var isSyncingProperties = false
 
+    // MARK: - Continuous Display Brightness Transitions
+    public var isAnimationEnabled: Bool = true
+    private struct DisplayTransitionState {
+        var startReduction: Double
+        var targetReduction: Double
+        var startExponent: Double
+        var targetExponent: Double
+        var startTime: Date
+        var duration: TimeInterval
+    }
+    private var transitionTimer: ClockTimer?
+    private var displayTransitions: [CGDirectDisplayID: DisplayTransitionState] = [:]
+    private var currentAppliedReductions: [CGDirectDisplayID: Double] = [:]
+    private var currentAppliedExponents: [CGDirectDisplayID: Double] = [:]
+
     public var lastActiveAppBundleIdentifier: String?
     public var lastActiveAppName: String?
 
@@ -247,7 +267,7 @@ public class DisplayManager: ObservableObject {
 
         // Re-apply saved setting on launch
         if savedEnabled && savedReduction > 0 {
-            applyReduction()
+            applyReduction(animated: false)
         }
 
         // 글로벌 단축키 설정 (Carbon ShortcutManager)
@@ -296,6 +316,7 @@ public class DisplayManager: ObservableObject {
     }
 
     deinit {
+        transitionTimer?.invalidate()
         timeRuleTimer?.invalidate()
         workspaceSubscription?.unsubscribe()
         if let obs = willTerminateObserver {
@@ -310,11 +331,18 @@ public class DisplayManager: ObservableObject {
     // MARK: - Public API
 
     /// Apply the current `reduction` value to active displays.
-    public func applyReduction() {
+    public func applyReduction(animated: Bool = true) {
         let currentActiveAppRule = self.currentActiveAppRule
         let currentActiveTimeRule = self.currentActiveTimeRule
+        let shouldAnimate = animated && isAnimationEnabled
 
-        for (displayID, tables) in originalTables {
+        if !shouldAnimate {
+            transitionTimer?.invalidate()
+            transitionTimer = nil
+            displayTransitions.removeAll()
+        }
+
+        for (displayID, _) in originalTables {
             let targetReduction: Double
             let targetExponent: Double
             let targetEnabled: Bool
@@ -335,31 +363,125 @@ public class DisplayManager: ObservableObject {
                 targetEnabled = setting.isEnabled
             }
 
-            guard targetEnabled, targetReduction > 0.001 else {
-                // Restore original tables for this display
-                var r = tables.red
-                var g = tables.green
-                var b = tables.blue
-                _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+            let finalTargetReduction = targetEnabled ? targetReduction : 0.0
+            let finalTargetExponent = targetExponent
+
+            if !shouldAnimate {
+                currentAppliedReductions[displayID] = finalTargetReduction
+                currentAppliedExponents[displayID] = finalTargetExponent
+                applyHardwareGamma(displayID: displayID, reduction: finalTargetReduction, exponent: finalTargetExponent)
                 continue
             }
 
-            let maxOutput = CGGammaValue(1.0 - targetReduction * 0.3)
-            let exp = CGGammaValue(targetExponent)
+            // Animated mode
+            let currentRed = currentAppliedReductions[displayID] ?? 0.0
+            let currentExp = currentAppliedExponents[displayID] ?? curveExponent
 
-            var r = [CGGammaValue](repeating: 0, count: tableSize)
-            var g = [CGGammaValue](repeating: 0, count: tableSize)
-            var b = [CGGammaValue](repeating: 0, count: tableSize)
+            let redDiff = abs(finalTargetReduction - currentRed)
+            let expDiff = abs(finalTargetExponent - currentExp)
 
-            for i in 0..<tableSize {
-                let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
-                let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
-                r[i] = tables.red[i]   * sf
-                g[i] = tables.green[i] * sf
-                b[i] = tables.blue[i]  * sf
+            if redDiff < 0.001 && expDiff < 0.01 {
+                displayTransitions.removeValue(forKey: displayID)
+                currentAppliedReductions[displayID] = finalTargetReduction
+                currentAppliedExponents[displayID] = finalTargetExponent
+                applyHardwareGamma(displayID: displayID, reduction: finalTargetReduction, exponent: finalTargetExponent)
+                continue
             }
-            _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+
+            // Calibrated duration: ~0.20-0.22s for large jumps, ~0.12-0.15s for small slider adjustments
+            let duration: TimeInterval = min(0.22, max(0.12, redDiff * 0.8))
+            displayTransitions[displayID] = DisplayTransitionState(
+                startReduction: currentRed,
+                targetReduction: finalTargetReduction,
+                startExponent: currentExp,
+                targetExponent: finalTargetExponent,
+                startTime: clockService.currentDate(),
+                duration: duration
+            )
         }
+
+        if shouldAnimate {
+            if displayTransitions.isEmpty {
+                transitionTimer?.invalidate()
+                transitionTimer = nil
+            } else if transitionTimer == nil {
+                transitionTimer = clockService.scheduleRepeatingTimer(interval: 1.0 / 60.0) { [weak self] in
+                    self?.transitionTick()
+                }
+            }
+        }
+    }
+
+    private func transitionTick() {
+        guard !displayTransitions.isEmpty else {
+            transitionTimer?.invalidate()
+            transitionTimer = nil
+            return
+        }
+
+        let now = clockService.currentDate()
+        var completedDisplays: [CGDirectDisplayID] = []
+
+        for (displayID, state) in displayTransitions {
+            let elapsed = now.timeIntervalSince(state.startTime)
+            let progress = min(1.0, max(0.0, elapsed / state.duration))
+
+            // Cubic ease-out: f(p) = 1.0 - (1.0 - p)^3
+            let eased = 1.0 - pow(1.0 - progress, 3.0)
+
+            let interpRed = state.startReduction + (state.targetReduction - state.startReduction) * eased
+            let interpExp = state.startExponent + (state.targetExponent - state.startExponent) * eased
+
+            currentAppliedReductions[displayID] = interpRed
+            currentAppliedExponents[displayID] = interpExp
+            applyHardwareGamma(displayID: displayID, reduction: interpRed, exponent: interpExp)
+
+            if progress >= 1.0 {
+                completedDisplays.append(displayID)
+            }
+        }
+
+        for displayID in completedDisplays {
+            if let state = displayTransitions[displayID] {
+                currentAppliedReductions[displayID] = state.targetReduction
+                currentAppliedExponents[displayID] = state.targetExponent
+                applyHardwareGamma(displayID: displayID, reduction: state.targetReduction, exponent: state.targetExponent)
+            }
+            displayTransitions.removeValue(forKey: displayID)
+        }
+
+        if displayTransitions.isEmpty {
+            transitionTimer?.invalidate()
+            transitionTimer = nil
+        }
+    }
+
+    private func applyHardwareGamma(displayID: CGDirectDisplayID, reduction: Double, exponent: Double) {
+        guard let tables = originalTables[displayID] else { return }
+
+        guard reduction > 0.001 else {
+            var r = tables.red
+            var g = tables.green
+            var b = tables.blue
+            _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+            return
+        }
+
+        let maxOutput = CGGammaValue(1.0 - reduction * 0.3)
+        let exp = CGGammaValue(exponent)
+
+        var r = [CGGammaValue](repeating: 0, count: tableSize)
+        var g = [CGGammaValue](repeating: 0, count: tableSize)
+        var b = [CGGammaValue](repeating: 0, count: tableSize)
+
+        for i in 0..<tableSize {
+            let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
+            let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
+            r[i] = tables.red[i]   * sf
+            g[i] = tables.green[i] * sf
+            b[i] = tables.blue[i]  * sf
+        }
+        _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
     }
 
     /// Toggle the effect on/off.
@@ -662,6 +784,11 @@ public class DisplayManager: ObservableObject {
 
     /// 모든 디스플레이를 원본 감마로 복원
     private func restoreOriginalTables() {
+        transitionTimer?.invalidate()
+        transitionTimer = nil
+        displayTransitions.removeAll()
+        currentAppliedReductions.removeAll()
+        currentAppliedExponents.removeAll()
         guard !originalTables.isEmpty else { return }
         for (displayID, tables) in originalTables {
             var r = tables.red
@@ -700,9 +827,12 @@ public class DisplayManager: ObservableObject {
         // 연결 해제된 모니터: 테이블 제거
         for id in knownIDs.subtracting(currentIDs) {
             originalTables.removeValue(forKey: id)
+            displayTransitions.removeValue(forKey: id)
+            currentAppliedReductions.removeValue(forKey: id)
+            currentAppliedExponents.removeValue(forKey: id)
         }
 
-        applyReduction()
+        applyReduction(animated: false)
     }
 
     /// 로그인 시 자동 실행 등록/해제 동기화

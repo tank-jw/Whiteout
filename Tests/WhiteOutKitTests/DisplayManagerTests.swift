@@ -164,6 +164,7 @@ final class DisplayManagerTests: XCTestCase {
             appService: appService,
             shortcutService: shortcutService
         )
+        dm.isAnimationEnabled = false
     }
     
     override func tearDown() {
@@ -454,5 +455,120 @@ final class DisplayManagerTests: XCTestCase {
         // Next opening origin is accepted:
         let newOrigin = stabilizer.shouldLock(window: window, newOrigin: NSPoint(x: 86, y: 200))
         XCTAssertEqual(newOrigin.x, 86)
+    }
+
+    func testContinuousTransitionAnimation() {
+        dm.isAnimationEnabled = true
+        dm.isEnabled = true
+        dm.reduction = 0.2
+        
+        let initialDate = Date()
+        clockService.mockedDate = initialDate
+        dm.applyReduction(animated: true)
+
+        XCTAssertNotNil(clockService.scheduledTimerBlock, "Animation timer should be scheduled")
+
+        // Advance by 0.08s (approx halfway through ease-out)
+        clockService.mockedDate = initialDate.addingTimeInterval(0.08)
+        clockService.scheduledTimerBlock?()
+
+        // Verify intermediate gamma was applied
+        XCTAssertEqual(displayService.setDisplayTables.count, 1)
+        if let table = displayService.setDisplayTables[1] {
+            let lastVal = table.red.last!
+            // Full reduction maxOutput = 1.0 - 0.2 * 0.3 = 0.94.
+            // Halfway through transition, it should be between 0.94 and 1.0
+            XCTAssertLessThan(lastVal, 1.0)
+            XCTAssertGreaterThan(lastVal, 0.94)
+        }
+
+        // Advance past duration (0.25s)
+        clockService.mockedDate = initialDate.addingTimeInterval(0.25)
+        clockService.scheduledTimerBlock?()
+
+        // Verify final reduction is reached (0.94)
+        if let table = displayService.setDisplayTables[1] {
+            let lastVal = table.red.last!
+            XCTAssertEqual(Double(lastVal), 0.94, accuracy: 0.001)
+        }
+    }
+
+    func testContinuousTransitionInterruption() {
+        dm.isAnimationEnabled = true
+        dm.isEnabled = true
+        dm.reduction = 0.1
+
+        let initialDate = Date()
+        clockService.mockedDate = initialDate
+        dm.applyReduction(animated: true)
+
+        // Advance by 0.05s
+        clockService.mockedDate = initialDate.addingTimeInterval(0.05)
+        clockService.scheduledTimerBlock?()
+
+        // Interrupt with new target 0.3
+        dm.reduction = 0.3
+        let interruptDate = initialDate.addingTimeInterval(0.05)
+        clockService.mockedDate = interruptDate
+        dm.applyReduction(animated: true)
+
+        // Advance to full completion of new transition
+        clockService.mockedDate = interruptDate.addingTimeInterval(0.35)
+        clockService.scheduledTimerBlock?()
+
+        // Verify final reduction reaches 0.3 target (maxOutput = 1.0 - 0.3 * 0.3 = 0.91)
+        if let table = displayService.setDisplayTables[1] {
+            let lastVal = table.red.last!
+            XCTAssertEqual(Double(lastVal), 0.91, accuracy: 0.001)
+        }
+    }
+
+    func testAppLanguageAndLocalization() {
+        XCTAssertEqual(AppLanguage.allCases.count, 6)
+
+        // Test dm.appLanguage bridging
+        dm.appLanguage = .ja
+        XCTAssertEqual(dm.language, "ja")
+        XCTAssertEqual(dm.appLanguage, .ja)
+
+        dm.appLanguage = .zhHans
+        XCTAssertEqual(dm.language, "zh-Hans")
+        XCTAssertEqual(dm.appLanguage, .zhHans)
+
+        dm.appLanguage = .zhHant
+        XCTAssertEqual(dm.language, "zh-Hant")
+        XCTAssertEqual(dm.appLanguage, .zhHant)
+
+        dm.appLanguage = .de
+        XCTAssertEqual(dm.language, "de")
+        XCTAssertEqual(dm.appLanguage, .de)
+
+        dm.appLanguage = .ko
+        XCTAssertEqual(dm.language, "ko")
+        XCTAssertEqual(dm.appLanguage, .ko)
+
+        dm.appLanguage = .en
+        XCTAssertEqual(dm.language, "en")
+        XCTAssertEqual(dm.appLanguage, .en)
+
+        // Test LocalizedStrings returns non-empty strings for all languages
+        for lang in AppLanguage.allCases {
+            XCTAssertFalse(LocalizedStrings.title(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.activeStatus(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.inactiveStatus(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.reductionLabel(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.liveCurveTitle(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.displayLabel(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.allDisplays(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.curveGeneral(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.curveDocs(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.curveHighlights(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.quitLabel(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.manualCheckHelp(lang: lang).isEmpty)
+        }
+
+        // Test backward-compatibility bridge
+        XCTAssertEqual(LocalizedStrings.activeStatus(isEN: true), LocalizedStrings.activeStatus(lang: .en))
+        XCTAssertEqual(LocalizedStrings.activeStatus(isEN: false), LocalizedStrings.activeStatus(lang: .ko))
     }
 }

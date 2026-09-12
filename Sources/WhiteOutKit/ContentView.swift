@@ -35,18 +35,18 @@ public struct ContentView: View {
     // MARK: - Body
 
     public var body: some View {
-        let isEN = dm.language == "en"
+        let lang = dm.appLanguage
         VStack(spacing: 0) {
-            headerSection(isEN: isEN)
+            headerSection(lang: lang)
 
-            activeRuleBanner(isEN: isEN)
+            activeRuleBanner(lang: lang)
 
             ScrollViewReader { proxy in
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 10) {
                         Color.clear.frame(height: 0).id("topAnchor")
-                        liveCurveCard(isEN: isEN)
-                        reductionAndProfileCard(isEN: isEN)
+                        liveCurveCard(lang: lang)
+                        reductionAndProfileCard(lang: lang)
                         DetailsSectionView(dm: dm)
                     }
                     .padding(.horizontal, 14)
@@ -61,7 +61,7 @@ public struct ContentView: View {
 
             Divider().opacity(0.4)
 
-            footerSection(isEN: isEN)
+            footerSection(lang: lang)
         }
         .frame(width: 320)
         .background(.ultraThinMaterial)
@@ -73,16 +73,16 @@ public struct ContentView: View {
         .onDisappear {
             WindowPositionStabilizer.shared.releaseLock()
         }
-        .alert(LocalizedStrings.updateNetworkErrorTitle(isEN: isEN), isPresented: $updater.showNetworkErrorAlert) {
-            Button(isEN ? "OK" : "확인", role: .cancel) {}
+        .alert(LocalizedStrings.updateNetworkErrorTitle(lang: lang), isPresented: $updater.showNetworkErrorAlert) {
+            Button(LocalizedStrings.ok(lang: lang), role: .cancel) {}
         } message: {
-            Text(LocalizedStrings.updateNetworkErrorMsg(isEN: isEN))
+            Text(LocalizedStrings.updateNetworkErrorMsg(lang: lang))
         }
     }
 
     // MARK: - Header
 
-    private func headerSection(isEN: Bool) -> some View {
+    private func headerSection(lang: AppLanguage) -> some View {
         HStack(spacing: 10) {
             // Squircle Sun Icon
             ZStack {
@@ -120,7 +120,7 @@ public struct ContentView: View {
                     }
                 }
 
-                Text(dm.isEnabled ? LocalizedStrings.activeStatus(isEN: isEN) : LocalizedStrings.inactiveStatus(isEN: isEN))
+                Text(dm.isEnabled ? LocalizedStrings.activeStatus(lang: lang) : LocalizedStrings.inactiveStatus(lang: lang))
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(dm.isEnabled ? Color.orange.opacity(0.9) : Color.secondary)
             }
@@ -141,12 +141,12 @@ public struct ContentView: View {
     // MARK: - Active Rule Banner
 
     @ViewBuilder
-    private func activeRuleBanner(isEN: Bool) -> some View {
+    private func activeRuleBanner(lang: AppLanguage) -> some View {
         if let activeAppName = dm.activeRuleAppName {
             HStack(spacing: 6) {
                 Image(systemName: "bolt.shield.fill")
                     .font(.system(size: 10))
-                Text(LocalizedStrings.ruleActiveBanner(isEN: isEN, appName: activeAppName))
+                Text(LocalizedStrings.ruleActiveBanner(lang: lang, appName: activeAppName))
                     .font(.system(size: 11, weight: .semibold))
                 Spacer()
             }
@@ -165,7 +165,7 @@ public struct ContentView: View {
             HStack(spacing: 6) {
                 Image(systemName: "clock.fill")
                     .font(.system(size: 10))
-                Text(LocalizedStrings.timeRuleActiveBanner(isEN: isEN, range: "\(startStr) ~ \(endStr)"))
+                Text(LocalizedStrings.timeRuleActiveBanner(lang: lang, range: "\(startStr) ~ \(endStr)"))
                     .font(.system(size: 11, weight: .semibold))
                 Spacer()
             }
@@ -182,13 +182,13 @@ public struct ContentView: View {
 
     // MARK: - Card 1: Live Curve Monitor Card
 
-    private func liveCurveCard(isEN: Bool) -> some View {
+    private func liveCurveCard(lang: AppLanguage) -> some View {
         let maxWhite = 100 - Int((dm.reduction * 30).rounded())
         let activeMax = dm.isEnabled ? maxWhite : 100
 
         return VStack(spacing: 6) {
             HStack {
-                Label(LocalizedStrings.liveCurveTitle(isEN: isEN), systemImage: "waveform.path.ecg")
+                Label(LocalizedStrings.liveCurveTitle(lang: lang), systemImage: "waveform.path.ecg")
                     .font(.system(size: 10.5, weight: .bold))
                     .foregroundStyle(Color.secondary)
 
@@ -266,16 +266,16 @@ public struct ContentView: View {
 
     // MARK: - Card 2: Reduction & Curve Profile Card
 
-    private func reductionAndProfileCard(isEN: Bool) -> some View {
+    private func reductionAndProfileCard(lang: AppLanguage) -> some View {
         VStack(spacing: 10) {
             // Display Picker Row (Always visible)
             HStack {
-                Label(LocalizedStrings.displayLabel(isEN: isEN), systemImage: "display")
+                Label(LocalizedStrings.displayLabel(lang: lang), systemImage: "display")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
                 Spacer()
                 Picker("", selection: $dm.selectedDisplayID) {
-                    Text(LocalizedStrings.allDisplays(isEN: isEN)).tag("all")
+                    Text(LocalizedStrings.allDisplays(lang: lang)).tag("all")
                     ForEach(dm.activeDisplaySettings) { setting in
                         Text(setting.name).tag(String(setting.displayID))
                     }
@@ -288,7 +288,7 @@ public struct ContentView: View {
 
             // Slider & Percentage Header
             HStack {
-                Text(LocalizedStrings.reductionLabel(isEN: isEN))
+                Text(LocalizedStrings.reductionLabel(lang: lang))
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(dm.isEnabled ? Color.primary : Color.secondary)
                 Spacer()
@@ -307,9 +307,9 @@ public struct ContentView: View {
             // Curve Profile 3-Way Segmented Buttons
             HStack(spacing: 4) {
                 let segments: [(Double, String, String)] = [
-                    (2.5, LocalizedStrings.curveGeneral(isEN: isEN), "sun.min"),
-                    (4.0, LocalizedStrings.curveDocs(isEN: isEN), "doc.text"),
-                    (6.0, LocalizedStrings.curveHighlights(isEN: isEN), "sparkles")
+                    (2.5, LocalizedStrings.curveGeneral(lang: lang), "sun.min"),
+                    (4.0, LocalizedStrings.curveDocs(lang: lang), "doc.text"),
+                    (6.0, LocalizedStrings.curveHighlights(lang: lang), "sparkles")
                 ]
                 ForEach(segments, id: \.0) { value, label, icon in
                     let selected = dm.curveExponent == value
@@ -354,26 +354,43 @@ public struct ContentView: View {
 
     // MARK: - Footer
 
-    private func footerSection(isEN: Bool) -> some View {
+    private func footerSection(lang: AppLanguage) -> some View {
         VStack(spacing: 0) {
-            updateBanner(isEN: isEN)
+            updateBanner(lang: lang)
 
             HStack {
-                // KR / EN Language Switch Button
-                Button {
-                    withAnimation {
-                        dm.language = (dm.language == "ko") ? "en" : "ko"
+                // 6-Language Dropdown Menu
+                Menu {
+                    Picker(selection: Binding(
+                        get: { dm.appLanguage },
+                        set: { newLang in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                dm.appLanguage = newLang
+                            }
+                        }
+                    ), label: EmptyView()) {
+                        ForEach(AppLanguage.allCases) { item in
+                            Text(item.fullDisplay).tag(item)
+                        }
                     }
+                    .pickerStyle(.inline)
                 } label: {
-                    Text(dm.language == "ko" ? "🇰🇷 한국어" : "🇺🇸 English")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color.secondary)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(Color.primary.opacity(0.04))
-                        .clipShape(Capsule())
+                    HStack(spacing: 4) {
+                        Text(dm.appLanguage.fullDisplay)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundStyle(Color.secondary)
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 7, weight: .bold))
+                            .foregroundStyle(Color.secondary.opacity(0.6))
+                    }
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3.5)
+                    .background(Color.primary.opacity(0.04))
+                    .clipShape(Capsule())
                 }
-                .buttonStyle(.plain)
+                .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
+                .fixedSize()
 
                 Spacer()
 
@@ -397,7 +414,7 @@ public struct ContentView: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .help(LocalizedStrings.manualCheckHelp(isEN: isEN))
+                .help(LocalizedStrings.manualCheckHelp(lang: lang))
 
                 Spacer()
 
@@ -405,7 +422,7 @@ public struct ContentView: View {
                 Button {
                     dm.quit()
                 } label: {
-                    Text(LocalizedStrings.quitLabel(isEN: isEN))
+                    Text(LocalizedStrings.quitLabel(lang: lang))
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(Color.secondary)
                 }
@@ -420,14 +437,14 @@ public struct ContentView: View {
     // MARK: - Update Banner
 
     @ViewBuilder
-    private func updateBanner(isEN: Bool) -> some View {
+    private func updateBanner(lang: AppLanguage) -> some View {
         if updater.updateAvailable {
             if updater.isDownloading {
                 VStack(spacing: 6) {
                     HStack {
                         Image(systemName: "arrow.down.circle.fill")
                             .foregroundStyle(.orange)
-                        Text(LocalizedStrings.updateDownloading(isEN: isEN, ver: updater.latestVersion))
+                        Text(LocalizedStrings.updateDownloading(lang: lang, ver: updater.latestVersion))
                             .font(.system(size: 11, weight: .semibold))
                         Spacer()
                         Text("\(Int(updater.downloadProgress * 100))%")
@@ -448,10 +465,10 @@ public struct ContentView: View {
                         Image(systemName: "arrow.down.circle.fill")
                             .foregroundStyle(.orange)
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(LocalizedStrings.updateAvailable(isEN: isEN, ver: updater.latestVersion))
+                            Text(LocalizedStrings.updateAvailable(lang: lang, ver: updater.latestVersion))
                                 .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(.primary)
-                            Text(LocalizedStrings.updateClickToUpdate(isEN: isEN))
+                            Text(LocalizedStrings.updateClickToUpdate(lang: lang))
                                 .font(.system(size: 10))
                                 .foregroundStyle(.secondary)
                         }

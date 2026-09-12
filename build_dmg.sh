@@ -7,7 +7,7 @@ export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
 
 APP_NAME="WhiteOut"
 BUNDLE_ID="com.tankjw.WhiteOut"
-VERSION="2.1.0"
+VERSION="2.1.1"
 DMG_NAME="${APP_NAME}.dmg"
 ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"

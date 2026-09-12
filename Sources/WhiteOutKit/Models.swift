@@ -86,3 +86,41 @@ public struct TimeRule: Codable, Identifiable, Equatable {
         }
     }
 }
+
+public enum AppLanguage: String, CaseIterable, Identifiable, Codable {
+    case en = "en"
+    case ko = "ko"
+    case ja = "ja"
+    case zhHans = "zh-Hans"
+    case zhHant = "zh-Hant"
+    case de = "de"
+
+    public var id: String { rawValue }
+
+    public var displayName: String {
+        switch self {
+        case .en: return "English"
+        case .ko: return "한국어"
+        case .ja: return "日本語"
+        case .zhHans: return "简体中文"
+        case .zhHant: return "繁體中文"
+        case .de: return "Deutsch"
+        }
+    }
+
+    public var flag: String {
+        switch self {
+        case .en: return "🇺🇸"
+        case .ko: return "🇰🇷"
+        case .ja: return "🇯🇵"
+        case .zhHans: return "🇨🇳"
+        case .zhHant: return "🇹🇼"
+        case .de: return "🇩🇪"
+        }
+    }
+
+    public var fullDisplay: String {
+        "\(flag) \(displayName)"
+    }
+}
+

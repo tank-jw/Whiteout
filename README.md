@@ -335,6 +335,8 @@ Sources/Whiteout/
   - [2026-09-11] macOS Sequoia(15+)에서 ControlCenter의 내부 stale 차단 목록(Moving host to blocked list) 및 Hidden Bar 등 서드파티 메뉴바 관리 유틸리티의 접힘 상태로 인해 메뉴바 아이콘이 화면 밖(X=-3900)으로 밀려나거나 NSStatusItemChangeVisibilityAction으로 강제 조기 종료되던 시스템 현상을 규명함. 번들 ID를 고유화(com.tankjw.WhiteOut)하고 AppDelegate에서 NSStatusItem Preferred Position(250) 및 VisibleCC(true)를 명시 초기화하여 항상 보이는 메뉴바 상단 영역에 100% 안착되도록 해결함.
   - [2026-09-12] 분리되어 있던 메인 제어부와 설정/규칙 화면(2페이지 슬라이드)을 단일 세로 스크롤 카드형 윈도우(320pt)로 전면 통합하고, 단일 모니터 환경에서 감춰져 있던 디스플레이 선택 Picker 가드를 해제하여 항상 활성 모니터 및 전체 디스플레이 제어가 노출되도록 복원함. 또한 macOS MenuBarExtra 윈도우 내 ScrollView가 maxHeight만 가질 때 0으로 높이가 붕괴(수축)되던 현상을 `frame(height: 520)` 및 ShortcutRecorderView의 `canBecomeKeyView: false` 가드로 해결하여 v2.1.0을 완성함.
   - [2026-09-12] 시간대별 규칙(Time-based Rules)의 토글과 시작 시간 피커 간 여백(Spacer 6pt)을 확보하고, 앱별 규칙(App-specific Rules)의 휴지통 아이콘을 컨트롤 라인 우측 끝으로 재배치하여 두 규칙 카드 간 토글 스위치 및 삭제 버튼의 X축 위치를 완벽하게 일렬 정렬함.
+  - [2026-09-12] 온/오프 토글 및 슬라이더 조절 시 하드웨어 감마가 즉각 튀던(Instant step) 현상을 해결하기 위해, RunLoop .common 모드 기반 60Hz 큐빅 감속(Cubic Ease-Out) 연속 밝기 전환 엔진을 개발함. 전체 온/오프는 0.22초, 슬라이더 조절은 거리 비례 0.12~0.15초로 적응형 튜닝하여 맥북 네이티브 화면 밝기 조절과 동일한 무위화감 페이드 전환을 완성하고 v2.1.1로 패키징함.
+  - [2026-09-12] 글로벌 맥 유틸리티 최고 인기 6대 언어(영어, 한국어, 일본어, 중국어 간체, 중국어 번체, 독일어) 모델(AppLanguage) 및 전수 지역화 사전을 구축함. 하단 푸터에 SwiftUI `Menu`와 `Picker(.inline)`를 조합한 네이티브 드롭다운 메뉴를 구현하고 `.menuIndicator(.hidden)`를 적용해 불필요한 중복 인디케이터를 차단하여, 캡슐 버튼 클릭 한 번으로 모든 UI 텍스트가 즉각 다국어로 실시간 전환되는 글로벌 현지화 체계를 완성함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:

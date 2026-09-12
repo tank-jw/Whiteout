@@ -44,9 +44,10 @@ public struct LiveClockService: ClockServiceProtocol {
     }
     
     public func scheduleRepeatingTimer(interval: TimeInterval, block: @escaping () -> Void) -> ClockTimer {
-        let timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { _ in
+        let timer = Timer(timeInterval: interval, repeats: true) { _ in
             block()
         }
+        RunLoop.main.add(timer, forMode: .common)
         return LiveClockTimer(timer: timer)
     }
 }

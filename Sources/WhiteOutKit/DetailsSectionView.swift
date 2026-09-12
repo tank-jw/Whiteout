@@ -4,28 +4,28 @@ struct DetailsSectionView: View {
     @ObservedObject var dm: DisplayManager
 
     var body: some View {
-        let isEN = dm.language == "en"
+        let lang = dm.appLanguage
         VStack(spacing: 10) {
             // 1. Time-Based Rules Card
-            timeRulesCard(isEN: isEN)
+            timeRulesCard(lang: lang)
 
             // 2. App-Specific Rules Card
-            appRulesCard(isEN: isEN)
+            appRulesCard(lang: lang)
 
             // 3. Shortcuts & System Card
-            shortcutsAndSystemCard(isEN: isEN)
+            shortcutsAndSystemCard(lang: lang)
 
             // 4. Principles & Mode Guide Card
-            principlesCard(isEN: isEN)
+            principlesCard(lang: lang)
         }
     }
 
     // MARK: - 1. Shortcuts & System Card
 
-    private func shortcutsAndSystemCard(isEN: Bool) -> some View {
+    private func shortcutsAndSystemCard(lang: AppLanguage) -> some View {
         VStack(spacing: 10) {
             HStack {
-                Label(LocalizedStrings.shortcutsAndLaunchSection(isEN: isEN), systemImage: "keyboard")
+                Label(LocalizedStrings.shortcutsAndLaunchSection(lang: lang), systemImage: "keyboard")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(Color.secondary)
                 Spacer()
@@ -34,7 +34,7 @@ struct DetailsSectionView: View {
             // Shortcut row
             VStack(spacing: 6) {
                 HStack {
-                    Text(LocalizedStrings.shortcutToggle(isEN: isEN))
+                    Text(LocalizedStrings.shortcutToggle(lang: lang))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundStyle(Color.primary)
                     Spacer()
@@ -47,7 +47,7 @@ struct DetailsSectionView: View {
 
                 if dm.isShortcutEnabled {
                     HStack {
-                        Text(LocalizedStrings.shortcutRecord(isEN: isEN))
+                        Text(LocalizedStrings.shortcutRecord(lang: lang))
                             .font(.system(size: 10))
                             .foregroundStyle(Color.secondary)
                         Spacer()
@@ -62,7 +62,7 @@ struct DetailsSectionView: View {
 
             // Launch at login row
             HStack {
-                Text(LocalizedStrings.launchAtLogin(isEN: isEN))
+                Text(LocalizedStrings.launchAtLogin(lang: lang))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(Color.primary)
                 Spacer()
@@ -86,10 +86,10 @@ struct DetailsSectionView: View {
 
     // MARK: - 2. Time Rules Card
 
-    private func timeRulesCard(isEN: Bool) -> some View {
+    private func timeRulesCard(lang: AppLanguage) -> some View {
         VStack(spacing: 8) {
             HStack {
-                Label(LocalizedStrings.timeRulesSectionTitle(isEN: isEN), systemImage: "clock")
+                Label(LocalizedStrings.timeRulesSectionTitle(lang: lang), systemImage: "clock")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(Color.secondary)
                 Spacer()
@@ -101,7 +101,7 @@ struct DetailsSectionView: View {
                     HStack(spacing: 2) {
                         Image(systemName: "plus")
                             .font(.system(size: 9, weight: .bold))
-                        Text(isEN ? "Add" : "추가")
+                        Text(LocalizedStrings.add(lang: lang))
                             .font(.system(size: 10, weight: .semibold))
                     }
                     .foregroundStyle(.orange)
@@ -114,7 +114,7 @@ struct DetailsSectionView: View {
             }
 
             if dm.timeRules.isEmpty {
-                Text(isEN ? "No scheduled time rules." : "설정된 시간별 규칙이 없습니다.")
+                Text(LocalizedStrings.noTimeRules(lang: lang))
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary.opacity(0.8))
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -122,7 +122,7 @@ struct DetailsSectionView: View {
             } else {
                 VStack(spacing: 6) {
                     ForEach(Array(dm.timeRules.enumerated()), id: \.element.id) { index, rule in
-                        timeRuleRow(index: index, rule: rule, isEN: isEN)
+                        timeRuleRow(index: index, rule: rule, lang: lang)
                     }
                 }
             }
@@ -138,7 +138,7 @@ struct DetailsSectionView: View {
         )
     }
 
-    private func timeRuleRow(index: Int, rule: TimeRule, isEN: Bool) -> some View {
+    private func timeRuleRow(index: Int, rule: TimeRule, lang: AppLanguage) -> some View {
         let isActive = dm.activeTimeRuleId == rule.id
 
         return HStack(spacing: 4) {
@@ -256,10 +256,10 @@ struct DetailsSectionView: View {
 
     // MARK: - 3. App Rules Card
 
-    private func appRulesCard(isEN: Bool) -> some View {
+    private func appRulesCard(lang: AppLanguage) -> some View {
         VStack(spacing: 8) {
             HStack {
-                Label(LocalizedStrings.appRulesSectionTitle(isEN: isEN), systemImage: "app.badge")
+                Label(LocalizedStrings.appRulesSectionTitle(lang: lang), systemImage: "app.badge")
                     .font(.system(size: 11, weight: .bold))
                     .foregroundStyle(Color.secondary)
                 Spacer()
@@ -271,7 +271,7 @@ struct DetailsSectionView: View {
                     HStack(spacing: 2) {
                         Image(systemName: "plus")
                             .font(.system(size: 9, weight: .bold))
-                        Text(isEN ? "Add" : "추가")
+                        Text(LocalizedStrings.add(lang: lang))
                             .font(.system(size: 10, weight: .semibold))
                     }
                     .foregroundStyle(.orange)
@@ -284,7 +284,7 @@ struct DetailsSectionView: View {
             }
 
             if dm.appRules.isEmpty {
-                Text(isEN ? "No app-specific rules." : "등록된 앱 규칙이 없습니다.")
+                Text(LocalizedStrings.noAppRules(lang: lang))
                     .font(.system(size: 10))
                     .foregroundStyle(.secondary.opacity(0.8))
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -292,7 +292,7 @@ struct DetailsSectionView: View {
             } else {
                 VStack(spacing: 6) {
                     ForEach(dm.appRules) { rule in
-                        appRuleRow(rule: rule, isEN: isEN)
+                        appRuleRow(rule: rule, lang: lang)
                     }
                 }
             }
@@ -308,7 +308,7 @@ struct DetailsSectionView: View {
         )
     }
 
-    private func appRuleRow(rule: AppRule, isEN: Bool) -> some View {
+    private func appRuleRow(rule: AppRule, lang: AppLanguage) -> some View {
         let active = dm.activeRuleAppName == rule.appName
 
         return VStack(spacing: 5) {
@@ -329,7 +329,7 @@ struct DetailsSectionView: View {
                     .lineLimit(1)
 
                 if active {
-                    Text(isEN ? "Active" : "작동 중")
+                    Text(LocalizedStrings.activeRuleBadge(lang: lang))
                         .font(.system(size: 8, weight: .bold))
                         .foregroundStyle(.orange)
                         .padding(.horizontal, 4)
@@ -442,9 +442,9 @@ struct DetailsSectionView: View {
 
     // MARK: - 4. Principles & Mode Guide Card
 
-    private func principlesCard(isEN: Bool) -> some View {
+    private func principlesCard(lang: AppLanguage) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(LocalizedStrings.detailsSectionTitle(isEN: isEN), systemImage: "info.circle")
+            Label(LocalizedStrings.detailsSectionTitle(lang: lang), systemImage: "info.circle")
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(Color.secondary)
 
@@ -466,12 +466,12 @@ struct DetailsSectionView: View {
             // Method Comparison
             VStack(alignment: .leading, spacing: 5) {
                 bulletPoint(
-                    title: LocalizedStrings.compareOurApp(isEN: isEN),
-                    desc: LocalizedStrings.compareOurAppDesc(isEN: isEN)
+                    title: LocalizedStrings.compareOurApp(lang: lang),
+                    desc: LocalizedStrings.compareOurAppDesc(lang: lang)
                 )
                 bulletPoint(
-                    title: LocalizedStrings.compareOverlay(isEN: isEN),
-                    desc: LocalizedStrings.compareOverlayDesc(isEN: isEN)
+                    title: LocalizedStrings.compareOverlay(lang: lang),
+                    desc: LocalizedStrings.compareOverlayDesc(lang: lang)
                 )
             }
         }
@@ -490,7 +490,7 @@ struct DetailsSectionView: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
                 Circle()
-                    .fill(title.contains("Whiteout") || title.contains("화이트아웃") ? Color.orange : Color.secondary)
+                    .fill(title.contains("Whiteout") || title.contains("화이트아웃") || title.contains("WhiteOut") ? Color.orange : Color.secondary)
                     .frame(width: 3.5, height: 3.5)
                 Text(title)
                     .font(.system(size: 9.5, weight: .semibold))
@@ -504,38 +504,22 @@ struct DetailsSectionView: View {
     }
 
     private var curveTypeTitle: String {
-        let isEN = dm.language == "en"
+        let lang = dm.appLanguage
         switch dm.curveExponent {
-        case 2.5:
-            return isEN ? "Natural Mode (t = 2.5)" : "일반 모드 (t = 2.5)"
-        case 4.0:
-            return isEN ? "Docs · Reading Mode (t = 4.0)" : "문서 · 독서 모드 (t = 4.0)"
-        case 6.0:
-            return isEN ? "Highlight Protection Mode (t = 6.0)" : "하이라이트 보호 모드 (t = 6.0)"
-        default:
-            return isEN ? "Custom Mode" : "커스텀 모드"
+        case 2.5: return LocalizedStrings.curveDescGeneral(lang: lang)
+        case 4.0: return LocalizedStrings.curveDescDocs(lang: lang)
+        case 6.0: return LocalizedStrings.curveDescHighlights(lang: lang)
+        default:  return LocalizedStrings.curveDescCustom(lang: lang)
         }
     }
 
     private var curveTypeDescription: String {
-        let isEN = dm.language == "en"
+        let lang = dm.appLanguage
         switch dm.curveExponent {
-        case 2.5:
-            return isEN 
-                ? "Lowers brightness smoothly and naturally across the whole screen. Recommended for daily tasks."
-                : "전반적으로 자연스럽고 부드럽게 밝기를 낮춥니다. 웹서핑 및 일상 작업에 가장 권장됩니다."
-        case 4.0:
-            return isEN 
-                ? "Perfectly preserves text contrast while compressing glaring white backgrounds. Ideal for reading."
-                : "텍스트의 선명한 블랙을 완벽히 유지하면서 눈부신 흰 배경만 집중 감쇄합니다. 독서와 문서 작업에 적합합니다."
-        case 6.0:
-            return isEN 
-                ? "Maximally preserves dark and mid-tones, compressing only peak bright highlights. Tailored for dark rooms."
-                : "어두운 톤과 중간 톤을 최대로 보존하고 가장 밝은 극단적 광원만 눌러줍니다. 어두운 환경에 특화되어 있습니다."
-        default:
-            return isEN 
-                ? "Nonlinear dimming is applied based on the configured exponent."
-                : "설정된 곡선 지수에 따라 비선형 감쇄가 적용됩니다."
+        case 2.5: return LocalizedStrings.curveDescDetailGeneral(lang: lang)
+        case 4.0: return LocalizedStrings.curveDescDetailDocs(lang: lang)
+        case 6.0: return LocalizedStrings.curveDescDetailHighlights(lang: lang)
+        default:  return LocalizedStrings.curveDescDetailCustom(lang: lang)
         }
     }
 }
