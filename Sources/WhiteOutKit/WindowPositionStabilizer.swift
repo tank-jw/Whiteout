@@ -81,8 +81,10 @@ public final class WindowPositionStabilizer: NSObject {
 
         if let x = lockedX {
             return NSPoint(x: x, y: newOrigin.y)
-        } else {
+        } else if newOrigin.x > 0 {
             lockedX = newOrigin.x
+            return newOrigin
+        } else {
             return newOrigin
         }
     }

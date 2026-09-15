@@ -5,9 +5,11 @@ import AppKit
 
 struct ShortcutRecorderView: NSViewRepresentable {
     @Binding var shortcut: KeyShortcut?
+    var lang: AppLanguage = .en
 
     func makeNSView(context: Context) -> RecorderNSView {
         let view = RecorderNSView()
+        view.lang = lang
         view.onShortcutChanged = { newShortcut in
             shortcut = newShortcut
         }
@@ -15,6 +17,7 @@ struct ShortcutRecorderView: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: RecorderNSView, context: Context) {
+        nsView.lang = lang
         nsView.currentShortcut = shortcut
         nsView.needsDisplay = true
     }
@@ -24,6 +27,7 @@ struct ShortcutRecorderView: NSViewRepresentable {
 
 class RecorderNSView: NSView {
     var currentShortcut: KeyShortcut?
+    var lang: AppLanguage = .en
     var onShortcutChanged: ((KeyShortcut?) -> Void)?
     private var isRecording = false
 
@@ -50,13 +54,13 @@ class RecorderNSView: NSView {
         let label: String
         let color: NSColor
         if isRecording {
-            label = "⌨ 녹화 중..."
+            label = LocalizedStrings.shortcutRecording(lang: lang)
             color = .orange
         } else if let s = currentShortcut {
             label = s.displayString
             color = .labelColor
         } else {
-            label = "클릭하여 설정"
+            label = LocalizedStrings.shortcutRecordPrompt(lang: lang)
             color = .tertiaryLabelColor
         }
 

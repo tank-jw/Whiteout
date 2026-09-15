@@ -175,6 +175,9 @@ public class DisplayManager: ObservableObject {
     private var screenParamsObserver: NSObjectProtocol?
 
     private let tableSize = 256
+    private var gammaBufferR: [CGGammaValue] = [CGGammaValue](repeating: 0, count: 256)
+    private var gammaBufferG: [CGGammaValue] = [CGGammaValue](repeating: 0, count: 256)
+    private var gammaBufferB: [CGGammaValue] = [CGGammaValue](repeating: 0, count: 256)
     private var originalTables: [CGDirectDisplayID: GammaTable] = [:]
     private var isSyncingProperties = false
 
@@ -470,18 +473,14 @@ public class DisplayManager: ObservableObject {
         let maxOutput = CGGammaValue(1.0 - reduction * 0.3)
         let exp = CGGammaValue(exponent)
 
-        var r = [CGGammaValue](repeating: 0, count: tableSize)
-        var g = [CGGammaValue](repeating: 0, count: tableSize)
-        var b = [CGGammaValue](repeating: 0, count: tableSize)
-
         for i in 0..<tableSize {
             let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
             let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
-            r[i] = tables.red[i]   * sf
-            g[i] = tables.green[i] * sf
-            b[i] = tables.blue[i]  * sf
+            gammaBufferR[i] = tables.red[i]   * sf
+            gammaBufferG[i] = tables.green[i] * sf
+            gammaBufferB[i] = tables.blue[i]  * sf
         }
-        _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+        _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &gammaBufferR, &gammaBufferG, &gammaBufferB)
     }
 
     /// Toggle the effect on/off.
@@ -654,9 +653,11 @@ public class DisplayManager: ObservableObject {
         }
 
         if selectedDisplayID == "all" {
-            for key in displaySettings.keys {
-                displaySettings[key]?.reduction = val
+            var updated = displaySettings
+            for key in updated.keys {
+                updated[key]?.reduction = val
             }
+            displaySettings = updated
         } else {
             displaySettings[selectedDisplayID]?.reduction = val
         }
@@ -674,9 +675,11 @@ public class DisplayManager: ObservableObject {
         }
 
         if selectedDisplayID == "all" {
-            for key in displaySettings.keys {
-                displaySettings[key]?.curveExponent = val
+            var updated = displaySettings
+            for key in updated.keys {
+                updated[key]?.curveExponent = val
             }
+            displaySettings = updated
         } else {
             displaySettings[selectedDisplayID]?.curveExponent = val
         }
@@ -694,9 +697,11 @@ public class DisplayManager: ObservableObject {
         }
 
         if selectedDisplayID == "all" {
-            for key in displaySettings.keys {
-                displaySettings[key]?.isEnabled = val
+            var updated = displaySettings
+            for key in updated.keys {
+                updated[key]?.isEnabled = val
             }
+            displaySettings = updated
         } else {
             displaySettings[selectedDisplayID]?.isEnabled = val
         }

@@ -96,6 +96,28 @@ public struct LocalizedStrings {
         }
     }
 
+    public static func shortcutRecordPrompt(lang: AppLanguage) -> String {
+        switch lang {
+        case .ko:     return "클릭하여 설정"
+        case .ja:     return "クリックして設定"
+        case .zhHans: return "点击设置"
+        case .zhHant: return "點擊設定"
+        case .de:     return "Klicken zum Aufnehmen"
+        case .en:     return "Click to record"
+        }
+    }
+
+    public static func shortcutRecording(lang: AppLanguage) -> String {
+        switch lang {
+        case .ko:     return "⌨ 녹화 중..."
+        case .ja:     return "⌨ 録音中..."
+        case .zhHans: return "⌨ 正在录制..."
+        case .zhHant: return "⌨ 正在錄製..."
+        case .de:     return "⌨ Aufnahme..."
+        case .en:     return "⌨ Recording..."
+        }
+    }
+
     public static func curveTypeLabel(lang: AppLanguage) -> String {
         switch lang {
         case .ko:     return "곡선 타입"
@@ -622,6 +644,8 @@ public struct LocalizedStrings {
     public static func shortcutToggle(isEN: Bool) -> String { shortcutToggle(lang: bridge(isEN)) }
     public static func launchAtLogin(isEN: Bool) -> String { launchAtLogin(lang: bridge(isEN)) }
     public static func shortcutRecord(isEN: Bool) -> String { shortcutRecord(lang: bridge(isEN)) }
+    public static func shortcutRecordPrompt(isEN: Bool) -> String { shortcutRecordPrompt(lang: bridge(isEN)) }
+    public static func shortcutRecording(isEN: Bool) -> String { shortcutRecording(lang: bridge(isEN)) }
     public static func curveTypeLabel(isEN: Bool) -> String { curveTypeLabel(lang: bridge(isEN)) }
     public static func curveGeneral(isEN: Bool) -> String { curveGeneral(lang: bridge(isEN)) }
     public static func curveDocs(isEN: Bool) -> String { curveDocs(lang: bridge(isEN)) }

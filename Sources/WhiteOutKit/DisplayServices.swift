@@ -80,11 +80,18 @@ public extension WorkspaceServiceProtocol {
 }
 
 public final class LiveWorkspaceService: WorkspaceServiceProtocol {
+    private var iconCache: [String: NSImage] = [:]
+
     public init() {}
     
     public func getAppIcon(bundleIdentifier: String) -> NSImage? {
+        if let cached = iconCache[bundleIdentifier] {
+            return cached
+        }
         if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) {
-            return NSWorkspace.shared.icon(forFile: url.path)
+            let icon = NSWorkspace.shared.icon(forFile: url.path)
+            iconCache[bundleIdentifier] = icon
+            return icon
         }
         return nil
     }

@@ -51,7 +51,7 @@ struct DetailsSectionView: View {
                             .font(.system(size: 10))
                             .foregroundStyle(Color.secondary)
                         Spacer()
-                        ShortcutRecorderView(shortcut: $dm.shortcut)
+                        ShortcutRecorderView(shortcut: $dm.shortcut, lang: lang)
                             .frame(width: 120, height: 22)
                     }
                     .transition(.move(edge: .top).combined(with: .opacity))
@@ -121,8 +121,8 @@ struct DetailsSectionView: View {
                     .padding(.vertical, 6)
             } else {
                 VStack(spacing: 6) {
-                    ForEach(Array(dm.timeRules.enumerated()), id: \.element.id) { index, rule in
-                        timeRuleRow(index: index, rule: rule, lang: lang)
+                    ForEach(dm.timeRules) { rule in
+                        timeRuleRow(rule: rule, lang: lang)
                     }
                 }
             }
@@ -138,14 +138,16 @@ struct DetailsSectionView: View {
         )
     }
 
-    private func timeRuleRow(index: Int, rule: TimeRule, lang: AppLanguage) -> some View {
+    private func timeRuleRow(rule: TimeRule, lang: AppLanguage) -> some View {
         let isActive = dm.activeTimeRuleId == rule.id
 
         return HStack(spacing: 4) {
             Toggle("", isOn: Binding(
                 get: { rule.isEnabled },
                 set: { newVal in
-                    dm.timeRules[index].isEnabled = newVal
+                    if let idx = dm.timeRules.firstIndex(where: { $0.id == rule.id }) {
+                        dm.timeRules[idx].isEnabled = newVal
+                    }
                 }
             ))
             .toggleStyle(.switch)
@@ -159,7 +161,9 @@ struct DetailsSectionView: View {
             DatePicker("", selection: Binding(
                 get: { rule.startDate },
                 set: { newVal in
-                    dm.timeRules[index].startDate = newVal
+                    if let idx = dm.timeRules.firstIndex(where: { $0.id == rule.id }) {
+                        dm.timeRules[idx].startDate = newVal
+                    }
                 }
             ), displayedComponents: .hourAndMinute)
             .labelsHidden()
@@ -174,7 +178,9 @@ struct DetailsSectionView: View {
             DatePicker("", selection: Binding(
                 get: { rule.endDate },
                 set: { newVal in
-                    dm.timeRules[index].endDate = newVal
+                    if let idx = dm.timeRules.firstIndex(where: { $0.id == rule.id }) {
+                        dm.timeRules[idx].endDate = newVal
+                    }
                 }
             ), displayedComponents: .hourAndMinute)
             .labelsHidden()
@@ -197,9 +203,11 @@ struct DetailsSectionView: View {
                 }
                 ForEach(presets, id: \.self) { pct in
                     Button {
-                        dm.timeRules[index].reduction = Double(pct) / 30.0
-                        if isActive {
-                            dm.applyReduction()
+                        if let idx = dm.timeRules.firstIndex(where: { $0.id == rule.id }) {
+                            dm.timeRules[idx].reduction = Double(pct) / 30.0
+                            if isActive {
+                                dm.applyReduction()
+                            }
                         }
                     } label: {
                         if currentPct == pct {
@@ -234,8 +242,10 @@ struct DetailsSectionView: View {
             .disabled(!rule.isEnabled)
 
             Button {
-                withAnimation {
-                    dm.deleteTimeRule(at: index)
+                if let idx = dm.timeRules.firstIndex(where: { $0.id == rule.id }) {
+                    withAnimation {
+                        dm.deleteTimeRule(at: idx)
+                    }
                 }
             } label: {
                 Image(systemName: "trash")

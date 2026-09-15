@@ -565,10 +565,16 @@ final class DisplayManagerTests: XCTestCase {
             XCTAssertFalse(LocalizedStrings.curveHighlights(lang: lang).isEmpty)
             XCTAssertFalse(LocalizedStrings.quitLabel(lang: lang).isEmpty)
             XCTAssertFalse(LocalizedStrings.manualCheckHelp(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.shortcutRecordPrompt(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.shortcutRecording(lang: lang).isEmpty)
         }
 
         // Test backward-compatibility bridge
         XCTAssertEqual(LocalizedStrings.activeStatus(isEN: true), LocalizedStrings.activeStatus(lang: .en))
         XCTAssertEqual(LocalizedStrings.activeStatus(isEN: false), LocalizedStrings.activeStatus(lang: .ko))
+        XCTAssertEqual(LocalizedStrings.shortcutRecordPrompt(isEN: true), LocalizedStrings.shortcutRecordPrompt(lang: .en))
+        XCTAssertEqual(LocalizedStrings.shortcutRecordPrompt(isEN: false), LocalizedStrings.shortcutRecordPrompt(lang: .ko))
+        XCTAssertEqual(LocalizedStrings.shortcutRecording(isEN: true), LocalizedStrings.shortcutRecording(lang: .en))
+        XCTAssertEqual(LocalizedStrings.shortcutRecording(isEN: false), LocalizedStrings.shortcutRecording(lang: .ko))
     }
 }
