@@ -294,6 +294,28 @@ public struct LocalizedStrings {
         }
     }
 
+    public static func externalDisplay(lang: AppLanguage) -> String {
+        switch lang {
+        case .ko:     return "외장 디스플레이"
+        case .ja:     return "外部ディスプレイ"
+        case .zhHans: return "外接显示器"
+        case .zhHant: return "外接顯示器"
+        case .de:     return "Externes Display"
+        case .en:     return "External Display"
+        }
+    }
+
+    public static func builtInDisplay(lang: AppLanguage) -> String {
+        switch lang {
+        case .ko:     return "내장 디스플레이"
+        case .ja:     return "内蔵ディスプレイ"
+        case .zhHans: return "内置显示器"
+        case .zhHant: return "內建顯示器"
+        case .de:     return "Integriertes Display"
+        case .en:     return "Built-in Display"
+        }
+    }
+
     public static func appRulesSectionTitle(lang: AppLanguage) -> String {
         switch lang {
         case .ko:     return "앱별 자동 설정"
@@ -662,6 +684,8 @@ public struct LocalizedStrings {
     public static func updateNetworkErrorMsg(isEN: Bool) -> String { updateNetworkErrorMsg(lang: bridge(isEN)) }
     public static func allDisplays(isEN: Bool) -> String { allDisplays(lang: bridge(isEN)) }
     public static func displayLabel(isEN: Bool) -> String { displayLabel(lang: bridge(isEN)) }
+    public static func externalDisplay(isEN: Bool) -> String { externalDisplay(lang: bridge(isEN)) }
+    public static func builtInDisplay(isEN: Bool) -> String { builtInDisplay(lang: bridge(isEN)) }
     public static func appRulesSectionTitle(isEN: Bool) -> String { appRulesSectionTitle(lang: bridge(isEN)) }
     public static func addRuleBtn(isEN: Bool, appName: String) -> String { addRuleBtn(lang: bridge(isEN), appName: appName) }
     public static func addRuleBtnDefault(isEN: Bool) -> String { addRuleBtnDefault(lang: bridge(isEN)) }

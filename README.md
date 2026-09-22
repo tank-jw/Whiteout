@@ -138,6 +138,7 @@ Sources/Whiteout/
 
 | 버전 | 내용 |
 |---|---|
+| **v2.1.3** | **다중 모니터 디스플레이 이름 하드웨어 감지 정상화, ColorSync 연동 및 동일 모델 구분 번호 부여**<br>- 3개 이상의 모니터(내장 디스플레이 및 다중 외장 모니터) 연결 시 세 번째 디스플레이 명칭이 하드코딩된 '외장 디스플레이 (xxx)'로 fallback 표시되던 버그 수정<br>- `NSScreen.deviceDescription`의 NSScreenNumber(`NSNumber` -> `uint32Value`) 안전 언래핑 및 `ColorSyncProfile` 기반 하드웨어 EDID 명칭 실시간 감지 파이프라인 탑재<br>- 동일 모델의 다중 모니터 연결 시 `DELL U2720Q (1)`, `DELL U2720Q (2)`와 같이 고유 번호를 자동 부여하여 식별성 극대화<br>- 외부 모니터 fallback 텍스트("외장 디스플레이")를 지원 언어 6종 전수 지역화 완료 |
 | **v2.1.2** | **앱 전면 성능 최적화, 60 FPS 감마 버퍼링 및 다국어 완성도 강화**<br>- 60Hz 연속 감마 전환 애니메이션 시 프레임마다 발생하던 256 크기의 Float 배열 힙 할당을 제거하고 사전 할당 버퍼(`gammaBufferR/G/B`) 재사용 구조로 전환<br>- 전체 디스플레이 설정 시 슬라이더 드래그 중 `displaySettings`의 매 루프마다 발생하던 JSON 인코딩 및 `UserDefaults` I/O를 로컬 배치 갱신으로 일원화하여 성능 병목 해소<br>- 앱 규칙 목록 렌더링 시 매 프레임 디스크에서 아이콘을 로드하던 `LiveWorkspaceService`에 인메모리 아이콘 캐시(`iconCache`) 탑재<br>- 규칙 삭제 시 발생할 수 있는 잠재적 `IndexOutOfBounds`를 방지하기 위해 `DetailsSectionView`의 직접 인덱스 바인딩을 고유 식별자(id) 기반 안전 검색으로 전면 리팩토링<br>- `WindowPositionStabilizer`에 음수 오프스크린 좌표(X <= 0) 잠금 방지 가드를 적용하여 팝오버 창 갇힘 현상 원천 차단<br>- 단축키 녹화 안내 문구("클릭하여 설정", "⌨ 녹화 중...") 6개 국어 전수 지역화 완료 |
 | **v2.1.1** | **60Hz 연속 밝기 페이드 전환 엔진 탑재 및 6대 글로벌 다국어 지원**<br>- 화면 밝기 On/Off 및 슬라이더 조절 시 튀는 현상을 맥북 네이티브 화면 밝기 조절 수준의 부드러운 큐빅 감속(Cubic Ease-Out) 60Hz 연속 전환으로 개편<br>- 영어, 한국어, 일본어, 중국어 간체, 중국어 번체, 독일어 6개 국어 실시간 전환 지원 네이티브 드롭다운 메뉴 탑재 |
 | **v2.1.0** | **설정창 단일 윈도우 전면 통합, 디스플레이별 개별 조절 UI 복원 및 중복 그래프 정리**<br>- 메인 화면과 분리되어 있던 환경설정/규칙 화면(2페이지 슬라이드 네비게이션)을 단일 통합 세로 스크롤 팝오버 윈도우로 전면 통합<br>- 단일 모니터 환경에서 가려져 있던 디스플레이 선택 Picker 가드를 해제하여 항상 현재 활성 모니터 및 전체 디스플레이 제어 선택이 가능하도록 UI 전면 복원<br>- 하단 설정 섹션 내 중복 배치되었던 진단용 곡선 그래프를 제거하고 현재 모드 설명 및 하드웨어 GPU 감마 원리 안내 카드로 최적화<br>- 연결 해제된 디스플레이 선택 시 '전체 디스플레이'로 자동 안전 롤백하는 예외 방어 로직 강화 |
@@ -341,6 +342,7 @@ Sources/Whiteout/
   - [2026-09-12] 글로벌 맥 유틸리티 최고 인기 6대 언어(영어, 한국어, 일본어, 중국어 간체, 중국어 번체, 독일어) 모델(AppLanguage) 및 전수 지역화 사전을 구축함. 하단 푸터에 SwiftUI `Menu`와 `Picker(.inline)`를 조합한 네이티브 드롭다운 메뉴를 구현하고 `.menuIndicator(.hidden)`를 적용해 불필요한 중복 인디케이터를 차단하여, 캡슐 버튼 클릭 한 번으로 모든 UI 텍스트가 즉각 다국어로 실시간 전환되는 글로벌 현지화 체계를 완성함.
   - [2026-09-15] 60Hz 감마 전환 시 프레임별 동적 힙 할당을 제거하기 위한 정적 감마 버퍼 사전 할당(`gammaBufferR/G/B`), '전체 디스플레이' 슬라이더 조작 시 `displaySettings` 루프에 의한 `UserDefaults` 중복 직렬화 I/O를 로컬 배치 갱신으로 일원화, 그리고 `LiveWorkspaceService` 내 메모리 아이콘 캐싱(`iconCache`)을 도입하여 렌더링 프레임 드랍 및 디스크 부하를 원천 제거함.
   - [2026-09-15] 단축키 녹화기 안내 문구의 6개 국어 지역화를 완비하고, SwiftUI ForEach 배열 인덱스 직접 바인딩을 고유 식별자(id) 기반 안전 검색으로 전환하여 규칙 삭제 애니메이션 시의 잠재적 IndexOutOfBounds 크래시를 방지함. 또한 `WindowPositionStabilizer`의 음수 좌표(X <= 0) 잠금 방지 가드를 추가하여 v2.1.2 무결성 최적화를 완성함.
+  - [2026-09-22] 3모니터 환경에서 외장 디스플레이 이름이 누락되던 원인이 `NSScreen.deviceDescription` 내 `NSScreenNumber`가 Signed NSNumber로 래핑되어 Swift의 단순 `as? CGDirectDisplayID` 캐스팅 시 `nil`로 떨어지는 현상임을 규명함. `(deviceDescription[key] as? NSNumber)?.uint32Value`로 안전 언래핑하고, ColorSync C-API(`ColorSyncProfileCreateWithDisplayID`)를 결합한 2단계 감지 체계 및 동일 모델 중복 시 인덱스 번호(`(1)`, `(2)`) 자동 부여 알고리즘을 구축하여 v2.1.3으로 배포함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:

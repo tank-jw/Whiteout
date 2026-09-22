@@ -49,9 +49,13 @@ final class MockDisplayService: DisplayServiceProtocol {
     func setDisplayTransferByTable(_ display: CGDirectDisplayID, _ capacity: UInt32, _ redTable: UnsafePointer<CGGammaValue>?, _ greenTable: UnsafePointer<CGGammaValue>?, _ blueTable: UnsafePointer<CGGammaValue>?) -> CGError {
         let rBuffer = redTable != nil ? Array(UnsafeBufferPointer(start: redTable, count: Int(capacity))) : []
         let gBuffer = greenTable != nil ? Array(UnsafeBufferPointer(start: greenTable, count: Int(capacity))) : []
-        let bBuffer = blueTable != nil ? Array(UnsafeBufferPointer(start: blueTable, count: Int(capacity))) : []
         setDisplayTables[display] = (capacity: capacity, red: rBuffer, green: gBuffer, blue: bBuffer)
         return .success
+    }
+
+    var mockDisplayNames: [CGDirectDisplayID: String] = [:]
+    func getDisplayName(_ displayID: CGDirectDisplayID) -> String? {
+        return mockDisplayNames[displayID]
     }
 }
 
@@ -567,6 +571,8 @@ final class DisplayManagerTests: XCTestCase {
             XCTAssertFalse(LocalizedStrings.manualCheckHelp(lang: lang).isEmpty)
             XCTAssertFalse(LocalizedStrings.shortcutRecordPrompt(lang: lang).isEmpty)
             XCTAssertFalse(LocalizedStrings.shortcutRecording(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.externalDisplay(lang: lang).isEmpty)
+            XCTAssertFalse(LocalizedStrings.builtInDisplay(lang: lang).isEmpty)
         }
 
         // Test backward-compatibility bridge
@@ -576,5 +582,47 @@ final class DisplayManagerTests: XCTestCase {
         XCTAssertEqual(LocalizedStrings.shortcutRecordPrompt(isEN: false), LocalizedStrings.shortcutRecordPrompt(lang: .ko))
         XCTAssertEqual(LocalizedStrings.shortcutRecording(isEN: true), LocalizedStrings.shortcutRecording(lang: .en))
         XCTAssertEqual(LocalizedStrings.shortcutRecording(isEN: false), LocalizedStrings.shortcutRecording(lang: .ko))
+        XCTAssertEqual(LocalizedStrings.externalDisplay(isEN: true), LocalizedStrings.externalDisplay(lang: .en))
+        XCTAssertEqual(LocalizedStrings.externalDisplay(isEN: false), LocalizedStrings.externalDisplay(lang: .ko))
+        XCTAssertEqual(LocalizedStrings.builtInDisplay(isEN: true), LocalizedStrings.builtInDisplay(lang: .en))
+        XCTAssertEqual(LocalizedStrings.builtInDisplay(isEN: false), LocalizedStrings.builtInDisplay(lang: .ko))
+    }
+
+    func testDisplayNameResolutionAndDisambiguation() {
+        displayService.mockDisplayNames[1] = "Built-in Retina Display"
+        displayService.mockDisplayNames[2] = "DELL U2720Q"
+        displayService.mockDisplayNames[3] = "DELL U2720Q" // Identical model
+        displayService.activeDisplays = [1, 2, 3]
+
+        // Test single resolution
+        XCTAssertEqual(dm.getDisplayName(1), "Built-in Retina Display")
+        XCTAssertEqual(dm.getDisplayName(2), "DELL U2720Q")
+        
+        // Test fallback when service returns nil
+        dm.appLanguage = .en
+        XCTAssertEqual(dm.getDisplayName(999), "External Display (999)")
+        dm.appLanguage = .ko
+        XCTAssertEqual(dm.getDisplayName(999), "외장 디스플레이 (999)")
+
+        // Test activeDisplaySettings duplicate disambiguation
+        dm.displaySettings["1"] = DisplaySetting(displayID: 1, name: "Built-in Retina Display", reduction: 0.1, curveExponent: 2.5, isEnabled: true)
+        dm.displaySettings["2"] = DisplaySetting(displayID: 2, name: "DELL U2720Q", reduction: 0.1, curveExponent: 2.5, isEnabled: true)
+        dm.displaySettings["3"] = DisplaySetting(displayID: 3, name: "DELL U2720Q", reduction: 0.1, curveExponent: 2.5, isEnabled: true)
+
+        let active = dm.activeDisplaySettings
+        XCTAssertEqual(active.count, 1) // Default originalTables only has 1
+
+        // When all 3 are in originalTables
+        displayService.getDisplayTables[2] = displayService.getDisplayTables[1]
+        displayService.getDisplayTables[3] = displayService.getDisplayTables[1]
+
+        // Trigger configuration refresh via DisplayManager
+        NotificationCenter.default.post(name: NSApplication.didChangeScreenParametersNotification, object: nil)
+
+        let updatedActive = dm.activeDisplaySettings
+        XCTAssertEqual(updatedActive.count, 3)
+        XCTAssertEqual(updatedActive[0].name, "Built-in Retina Display")
+        XCTAssertEqual(updatedActive[1].name, "DELL U2720Q (1)")
+        XCTAssertEqual(updatedActive[2].name, "DELL U2720Q (2)")
     }
 }

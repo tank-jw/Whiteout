@@ -4,7 +4,7 @@ import CoreGraphics
 public struct DisplaySetting: Codable, Identifiable, Equatable {
     public var id: String { String(displayID) }
     public let displayID: CGDirectDisplayID
-    public let name: String
+    public var name: String
     public var reduction: Double
     public var curveExponent: Double
     public var isEnabled: Bool

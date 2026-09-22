@@ -106,12 +106,40 @@ public class DisplayManager: ObservableObject {
         }
     }
 
-    /// 현재 실제 활성화된 디스플레이 설정 목록 (이름순 정렬)
+    /// 현재 실제 활성화된 디스플레이 설정 목록 (이름 최신화 및 동일 모델명 번호 구분 포함)
     public var activeDisplaySettings: [DisplaySetting] {
         let currentIDs = Set(originalTables.keys.map { String($0) })
-        return displaySettings.values
+        var settings = displaySettings.values
             .filter { currentIDs.contains(String($0.displayID)) }
-            .sorted(by: { $0.name < $1.name })
+            .sorted(by: { $0.displayID < $1.displayID })
+
+        // 1. 최신 하드웨어 이름 실시간 반영
+        for i in 0..<settings.count {
+            let detected = getDisplayName(settings[i].displayID)
+            if !detected.isEmpty {
+                settings[i].name = detected
+            }
+        }
+
+        // 2. 동일 모델 다중 모니터 구분: 동일한 이름이 2개 이상일 경우 (1), (2) 부여
+        var nameCounts: [String: Int] = [:]
+        for s in settings {
+            nameCounts[s.name, default: 0] += 1
+        }
+        let duplicates = Set(nameCounts.filter { $0.value > 1 }.map { $0.key })
+
+        if !duplicates.isEmpty {
+            var nameIndices: [String: Int] = [:]
+            for i in 0..<settings.count {
+                if duplicates.contains(settings[i].name) {
+                    nameIndices[settings[i].name, default: 0] += 1
+                    let idx = nameIndices[settings[i].name]!
+                    settings[i].name = "\(settings[i].name) (\(idx))"
+                }
+            }
+        }
+
+        return settings
     }
 
     @Published public var appRules: [AppRule] = [] {
@@ -263,8 +291,11 @@ public class DisplayManager: ObservableObject {
         // Initialize settings for active displays
         for displayID in activeDisplayIDs() {
             let key = String(displayID)
+            let detectedName = getDisplayName(displayID)
             if displaySettings[key] == nil {
-                displaySettings[key] = DisplaySetting(displayID: displayID, name: getDisplayName(displayID), reduction: savedReduction, curveExponent: savedExponent, isEnabled: savedEnabled)
+                displaySettings[key] = DisplaySetting(displayID: displayID, name: detectedName, reduction: savedReduction, curveExponent: savedExponent, isEnabled: savedEnabled)
+            } else if !detectedName.isEmpty && displaySettings[key]?.name != detectedName {
+                displaySettings[key]?.name = detectedName
             }
         }
 
@@ -498,13 +529,10 @@ public class DisplayManager: ObservableObject {
     // MARK: - Monitor/App Rule Management
 
     public func getDisplayName(_ displayID: CGDirectDisplayID) -> String {
-        for screen in NSScreen.screens {
-            if let screenNumber = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID,
-               screenNumber == displayID {
-                return screen.localizedName
-            }
+        if let name = displayService.getDisplayName(displayID), !name.isEmpty {
+            return name
         }
-        return "외장 디스플레이 (\(displayID))"
+        return "\(LocalizedStrings.externalDisplay(lang: appLanguage)) (\(displayID))"
     }
 
     public func addAppRuleForLastActiveApp() {
@@ -824,8 +852,11 @@ public class DisplayManager: ObservableObject {
             }
 
             let key = String(id)
+            let detectedName = getDisplayName(id)
             if displaySettings[key] == nil {
-                displaySettings[key] = DisplaySetting(displayID: id, name: getDisplayName(id), reduction: reduction, curveExponent: curveExponent, isEnabled: isEnabled)
+                displaySettings[key] = DisplaySetting(displayID: id, name: detectedName, reduction: reduction, curveExponent: curveExponent, isEnabled: isEnabled)
+            } else if !detectedName.isEmpty {
+                displaySettings[key]?.name = detectedName
             }
         }
 

@@ -2,12 +2,20 @@ import Foundation
 import CoreGraphics
 import AppKit
 import ServiceManagement
+import ColorSync
 
 // MARK: - DisplayServiceProtocol
 public protocol DisplayServiceProtocol {
     func getActiveDisplayList(_ maxDisplays: UInt32, _ activeDisplays: UnsafeMutablePointer<CGDirectDisplayID>?, _ displayCount: UnsafeMutablePointer<UInt32>?) -> CGError
     func getDisplayTransferByTable(_ display: CGDirectDisplayID, _ capacity: UInt32, _ redTable: UnsafeMutablePointer<CGGammaValue>?, _ greenTable: UnsafeMutablePointer<CGGammaValue>?, _ blueTable: UnsafeMutablePointer<CGGammaValue>?, _ sampleCount: UnsafeMutablePointer<UInt32>?) -> CGError
     func setDisplayTransferByTable(_ display: CGDirectDisplayID, _ capacity: UInt32, _ redTable: UnsafePointer<CGGammaValue>?, _ greenTable: UnsafePointer<CGGammaValue>?, _ blueTable: UnsafePointer<CGGammaValue>?) -> CGError
+    func getDisplayName(_ displayID: CGDirectDisplayID) -> String?
+}
+
+extension DisplayServiceProtocol {
+    public func getDisplayName(_ displayID: CGDirectDisplayID) -> String? {
+        return nil
+    }
 }
 
 public struct LiveDisplayService: DisplayServiceProtocol {
@@ -23,6 +31,46 @@ public struct LiveDisplayService: DisplayServiceProtocol {
     
     public func setDisplayTransferByTable(_ display: CGDirectDisplayID, _ capacity: UInt32, _ redTable: UnsafePointer<CGGammaValue>?, _ greenTable: UnsafePointer<CGGammaValue>?, _ blueTable: UnsafePointer<CGGammaValue>?) -> CGError {
         return CGSetDisplayTransferByTable(display, capacity, redTable, greenTable, blueTable)
+    }
+
+    public func getDisplayName(_ displayID: CGDirectDisplayID) -> String? {
+        // 1. NSScreen.screens matching with safe NSNumber unwrap
+        for screen in NSScreen.screens {
+            if let num = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value,
+               num == displayID {
+                let name = screen.localizedName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !name.isEmpty {
+                    return name
+                }
+            }
+        }
+
+        // 2. ColorSync profile lookup (direct CoreGraphics hardware ICC description)
+        if let prof = ColorSyncProfileCreateWithDisplayID(displayID)?.takeRetainedValue() {
+            if let desc = ColorSyncProfileCopyDescriptionString(prof)?.takeRetainedValue() as String? {
+                let trimmed = desc.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty {
+                    return trimmed
+                }
+            }
+        }
+
+        // 3. Built-in check
+        if CGDisplayIsBuiltin(displayID) != 0 {
+            // Check if any NSScreen has a built-in name
+            if let builtInScreen = NSScreen.screens.first(where: { screen in
+                let id = (screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber)?.uint32Value
+                return id.map { CGDisplayIsBuiltin($0) != 0 } ?? false
+            }) {
+                let name = builtInScreen.localizedName.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !name.isEmpty {
+                    return name
+                }
+            }
+            return "Built-in Display"
+        }
+
+        return nil
     }
 }
 

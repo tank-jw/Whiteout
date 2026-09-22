@@ -3,11 +3,13 @@
 
 set -e
 
-export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+if /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -checkFirstLaunchStatus 2>/dev/null; then
+  export DEVELOPER_DIR="/Applications/Xcode.app/Contents/Developer"
+fi
 
 APP_NAME="WhiteOut"
 BUNDLE_ID="com.tankjw.WhiteOut"
-VERSION="2.1.2"
+VERSION="2.1.3"
 DMG_NAME="${APP_NAME}.dmg"
 ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"
@@ -18,16 +20,22 @@ hdiutil detach "/Volumes/WhiteOut Installer" 2>/dev/null || true
 rm -rf .build/apple .build/release "${APP_DIR}" temp.dmg "${DMG_NAME}" "${ZIP_NAME}"
 
 echo "🔨 유니버셜 바이너리 (arm64 + x86_64) Release 빌드 중..."
-swift build -c release --arch arm64 --arch x86_64
-
-# 빌드된 바이너리 경로 탐색 (dSYM 제외)
-if [ -f ".build/apple/Products/Release/${APP_NAME}" ]; then
-  UNIVERSAL_BIN=".build/apple/Products/Release/${APP_NAME}"
+if swift build -c release --arch arm64 --arch x86_64 2>/dev/null; then
+  if [ -f ".build/apple/Products/Release/${APP_NAME}" ]; then
+    UNIVERSAL_BIN=".build/apple/Products/Release/${APP_NAME}"
+  else
+    UNIVERSAL_BIN=$(find .build -name "${APP_NAME}" -type f | grep -v "\.dSYM" | grep -i "/release/" | head -n 1)
+  fi
 else
-  UNIVERSAL_BIN=$(find .build -name "${APP_NAME}" -type f | grep -v "\.dSYM" | grep -i "/release/" | head -n 1)
+  echo "ℹ️  arm64 및 x86_64 독립 빌드 후 lipo 유니버셜 병합 수행 중..."
+  swift build -c release --triple arm64-apple-macosx
+  swift build -c release --triple x86_64-apple-macosx
+  mkdir -p .build/universal/release
+  lipo -create -output ".build/universal/release/${APP_NAME}" .build/arm64-apple-macosx/release/${APP_NAME} .build/x86_64-apple-macosx/release/${APP_NAME}
+  UNIVERSAL_BIN=".build/universal/release/${APP_NAME}"
 fi
 
-if [ -z "$UNIVERSAL_BIN" ]; then
+if [ -z "$UNIVERSAL_BIN" ] || [ ! -f "$UNIVERSAL_BIN" ]; then
   echo "❌ 빌드된 유니버셜 바이너리를 찾을 수 없습니다."
   exit 1
 fi
