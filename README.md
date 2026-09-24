@@ -120,24 +120,28 @@ bash build_dmg.sh
 ## 파일 구조
 
 ```
-Sources/Whiteout/
-├── WhiteoutApp.swift         — @main, MenuBarExtra
-├── AppDelegate.swift         — Dock 아이콘 숨김
-├── DisplayManager.swift      — 다중 모니터 감마 테이블 관리 및 Carbon 단축키 로직 연동
-├── ContentView.swift         — SwiftUI 메인 팝오버 컨테이너 뷰
-├── CurveGraphView.swift      — 감마 곡선 실시간 시각화 그래프 뷰
-├── DetailsSectionView.swift   — 다중 모니터, 앱 규칙, 시간 규칙 등 상세 제어 뷰
-├── Models.swift              — 규칙(Rule) 및 비즈니스 데이터 모델 정의
-├── LocalizedStrings.swift    — 한국어/영어 다국어 번역 딕셔너리
-├── ShortcutRecorderView.swift — Carbon API 기반 글로벌 단축키 녹화용 뷰
-├── Shortcuts.swift           — 단축키 등록 및 Carbon HotKey 연동 정의
-└── UpdateChecker.swift        — GitHub Releases 기반 자동 업데이트 엔진
+Sources/
+├── Whiteout/
+│   ├── main.swift                — AppKit 진입부, NSApplication 실행
+│   └── AppDelegate.swift         — StatusBarController 및 DisplayManager 라이프사이클 관리
+└── WhiteOutKit/
+    ├── StatusBarController.swift — NSStatusItem + NSPopover + NSMenu 관리
+    ├── DisplayManager.swift      — 다중 모니터 감마 테이블 관리 및 서비스 주입
+    ├── ContentView.swift         — NSHostingController로 마운트되는 메인 SwiftUI 뷰
+    ├── CurveGraphView.swift      — 감마 곡선 실시간 시각화 그래프 뷰
+    ├── DetailsSectionView.swift   — 다중 모니터, 앱 규칙, 시간 규칙 등 상세 제어 뷰
+    ├── Models.swift              — 규칙(Rule) 및 비즈니스 데이터 모델 정의
+    ├── LocalizedStrings.swift    — 6개 국어 다국어 번역 딕셔너리
+    ├── ShortcutRecorderView.swift — Carbon API 기반 글로벌 단축키 녹화용 뷰
+    ├── Shortcuts.swift           — 단축키 등록 및 Carbon HotKey 연동 정의
+    └── UpdateChecker.swift        — GitHub Releases 기반 자동 업데이트 엔진
 ```
 
 ## 업데이트 내역
 
 | 버전 | 내용 |
 |---|---|
+| **v2.2.1** | **AppKit NSStatusItem + NSPopover 정석 하이브리드 아키텍처 전면 전환 및 윈도우 스위즐링 완전 제거**<br>- SwiftUI의 간이 추상화 `MenuBarExtra(.window)`를 탈피하고, macOS 프로덕션 앱(Rectangle, Stats, ProNotes 등)의 표준인 `NSStatusItem` + `NSPopover` + `NSHostingController` 정석 하이브리드 아키텍처로 전면 개편<br>- 좌클릭 시 정밀 팝오버 토글, 우클릭(보조 클릭) 시 온/오프·설정 열기·종료 네이티브 컨텍스트 메뉴(`NSMenu`) 즉시 표시 지원<br>- 메뉴바 아이콘 너비 변경 시 팝오버 좌표 흔들림을 막기 위해 사용되던 `WindowPositionStabilizer` 런타임 메서드 스위즐링 해킹 및 좌표 잠금 코드를 100% 영구 제거하여 시스템 순정 안정성 확보<br>- 메뉴바 아이콘 상태(On/Off 및 % 뱃지) 실시간 반응성 극대화 및 패키지 릴리즈 완료 |
 | **v2.1.3** | **다중 모니터 디스플레이 이름 하드웨어 감지 정상화, ColorSync 연동 및 동일 모델 구분 번호 부여**<br>- 3개 이상의 모니터(내장 디스플레이 및 다중 외장 모니터) 연결 시 세 번째 디스플레이 명칭이 하드코딩된 '외장 디스플레이 (xxx)'로 fallback 표시되던 버그 수정<br>- `NSScreen.deviceDescription`의 NSScreenNumber(`NSNumber` -> `uint32Value`) 안전 언래핑 및 `ColorSyncProfile` 기반 하드웨어 EDID 명칭 실시간 감지 파이프라인 탑재<br>- 동일 모델의 다중 모니터 연결 시 `DELL U2720Q (1)`, `DELL U2720Q (2)`와 같이 고유 번호를 자동 부여하여 식별성 극대화<br>- 외부 모니터 fallback 텍스트("외장 디스플레이")를 지원 언어 6종 전수 지역화 완료 |
 | **v2.1.2** | **앱 전면 성능 최적화, 60 FPS 감마 버퍼링 및 다국어 완성도 강화**<br>- 60Hz 연속 감마 전환 애니메이션 시 프레임마다 발생하던 256 크기의 Float 배열 힙 할당을 제거하고 사전 할당 버퍼(`gammaBufferR/G/B`) 재사용 구조로 전환<br>- 전체 디스플레이 설정 시 슬라이더 드래그 중 `displaySettings`의 매 루프마다 발생하던 JSON 인코딩 및 `UserDefaults` I/O를 로컬 배치 갱신으로 일원화하여 성능 병목 해소<br>- 앱 규칙 목록 렌더링 시 매 프레임 디스크에서 아이콘을 로드하던 `LiveWorkspaceService`에 인메모리 아이콘 캐시(`iconCache`) 탑재<br>- 규칙 삭제 시 발생할 수 있는 잠재적 `IndexOutOfBounds`를 방지하기 위해 `DetailsSectionView`의 직접 인덱스 바인딩을 고유 식별자(id) 기반 안전 검색으로 전면 리팩토링<br>- `WindowPositionStabilizer`에 음수 오프스크린 좌표(X <= 0) 잠금 방지 가드를 적용하여 팝오버 창 갇힘 현상 원천 차단<br>- 단축키 녹화 안내 문구("클릭하여 설정", "⌨ 녹화 중...") 6개 국어 전수 지역화 완료 |
 | **v2.1.1** | **60Hz 연속 밝기 페이드 전환 엔진 탑재 및 6대 글로벌 다국어 지원**<br>- 화면 밝기 On/Off 및 슬라이더 조절 시 튀는 현상을 맥북 네이티브 화면 밝기 조절 수준의 부드러운 큐빅 감속(Cubic Ease-Out) 60Hz 연속 전환으로 개편<br>- 영어, 한국어, 일본어, 중국어 간체, 중국어 번체, 독일어 6개 국어 실시간 전환 지원 네이티브 드롭다운 메뉴 탑재 |
@@ -310,6 +314,11 @@ Sources/Whiteout/
   - macOS Finder 캐시 우회를 위해 볼륨명을 **`WhiteOut Installer`**로 지정하고, 마운트 직후 Finder 프로세스가 `.DS_Store` 파일 버퍼를 쓰기 전에 디태치되는 현상을 방지하고자 **AppleScript 실행 후 `sleep 5` 대기 처리**를 추가하여 메타데이터 저장을 보장함.
   - Retina 디스플레이 대응을 위해 배포 배경 이미지(`assets/dmg_background.png`)의 해상도를 sips 명령어를 통해 **144 DPI**로 강제 출력 처리하여 600x600 pt 크기에 깨짐 없이 채움. Finder 내 아이콘 크기를 **115 pt**로 맞춰 배경 이미지 슬롯 가이드와 일치시킴.
 
+* **메뉴바 및 팝오버 아키텍처 표준 (AppKit NSStatusItem + NSPopover Hybrid)**:
+  - SwiftUI의 `MenuBarExtra(.window)`와 같은 간이 추상화 API는 창 위치 고정, 보조 클릭(우클릭) 메뉴 분기, 시스템 라이프사이클 통제 등 프로덕션 환경에서의 제약이 심각하므로 전면 배제함.
+  - macOS 프로덕션 앱(Rectangle, Stats, ProNotes 등)의 표준인 **`AppKit NSStatusItem` + `NSPopover`에 SwiftUI 뷰를 `NSHostingController`로 얹는 정석 하이브리드 아키텍처**(`StatusBarController.swift`)를 프로젝트 공식 표준으로 채택함.
+  - 좌클릭 시 정밀한 네이티브 팝오버 토글, 우클릭 시 컨텍스트 메뉴(`NSMenu`)를 제공하며, 기존에 창 위치 흔들림을 막기 위해 사용되던 `WindowPositionStabilizer` 런타임 메서드 스위즐링 해킹 및 좌표 잠금 코드를 100% 영구 제거함.
+
 * **웹 랜딩 페이지 스펙 & 호스팅 (Web & Hosting)**:
   - `docs/` 및 `new_web/`에 퍼포먼스 중심의 Vanilla CSS/JS 정적 페이지 구축.
   - **핵심 요소**: Split-screen 이미지 대비 슬라이더, 지수 값(n=2.5, 4.0, 6.0) 및 슬라이더 조절에 반응하는 실시간 Canvas/SVG 감마 곡선 그래프, 단축키 녹화/자동 실행 Mockup UI를 포함.
@@ -343,6 +352,7 @@ Sources/Whiteout/
   - [2026-09-15] 60Hz 감마 전환 시 프레임별 동적 힙 할당을 제거하기 위한 정적 감마 버퍼 사전 할당(`gammaBufferR/G/B`), '전체 디스플레이' 슬라이더 조작 시 `displaySettings` 루프에 의한 `UserDefaults` 중복 직렬화 I/O를 로컬 배치 갱신으로 일원화, 그리고 `LiveWorkspaceService` 내 메모리 아이콘 캐싱(`iconCache`)을 도입하여 렌더링 프레임 드랍 및 디스크 부하를 원천 제거함.
   - [2026-09-15] 단축키 녹화기 안내 문구의 6개 국어 지역화를 완비하고, SwiftUI ForEach 배열 인덱스 직접 바인딩을 고유 식별자(id) 기반 안전 검색으로 전환하여 규칙 삭제 애니메이션 시의 잠재적 IndexOutOfBounds 크래시를 방지함. 또한 `WindowPositionStabilizer`의 음수 좌표(X <= 0) 잠금 방지 가드를 추가하여 v2.1.2 무결성 최적화를 완성함.
   - [2026-09-22] 3모니터 환경에서 외장 디스플레이 이름이 누락되던 원인이 `NSScreen.deviceDescription` 내 `NSScreenNumber`가 Signed NSNumber로 래핑되어 Swift의 단순 `as? CGDirectDisplayID` 캐스팅 시 `nil`로 떨어지는 현상임을 규명함. `(deviceDescription[key] as? NSNumber)?.uint32Value`로 안전 언래핑하고, ColorSync C-API(`ColorSyncProfileCreateWithDisplayID`)를 결합한 2단계 감지 체계 및 동일 모델 중복 시 인덱스 번호(`(1)`, `(2)`) 자동 부여 알고리즘을 구축하여 v2.1.3으로 배포함.
+  - [2026-09-24] SwiftUI의 간이 추상화 MenuBarExtra 대신 AppKit NSStatusItem + NSPopover + NSHostingController 정석 하이브리드 아키텍처(StatusBarController)로 전면 전환함. 좌클릭(NSPopover 토글)과 우클릭(NSMenu 컨텍스트 메뉴: On/Off, Preferences, Quit)을 깔끔하게 분기하고, 메뉴바 아이콘 너비 변경 시 창 위치를 고정하기 위해 필요했던 WindowPositionStabilizer 런타임 메서드 스위즐링 해킹을 완전 제거하여 시스템 순정 안정성과 테스트 가능성을 확보하고 v2.2.1로 배포함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:

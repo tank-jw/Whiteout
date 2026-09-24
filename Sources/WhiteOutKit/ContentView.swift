@@ -65,14 +65,6 @@ public struct ContentView: View {
         }
         .frame(width: 320)
         .background(.ultraThinMaterial)
-        .background(
-            WindowPositionLock()
-                .frame(width: 0, height: 0)
-                .allowsHitTesting(false)
-        )
-        .onDisappear {
-            WindowPositionStabilizer.shared.releaseLock()
-        }
         .alert(LocalizedStrings.updateNetworkErrorTitle(lang: lang), isPresented: $updater.showNetworkErrorAlert) {
             Button(LocalizedStrings.ok(lang: lang), role: .cancel) {}
         } message: {

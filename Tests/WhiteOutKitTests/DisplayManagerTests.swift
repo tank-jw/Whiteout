@@ -49,6 +49,7 @@ final class MockDisplayService: DisplayServiceProtocol {
     func setDisplayTransferByTable(_ display: CGDirectDisplayID, _ capacity: UInt32, _ redTable: UnsafePointer<CGGammaValue>?, _ greenTable: UnsafePointer<CGGammaValue>?, _ blueTable: UnsafePointer<CGGammaValue>?) -> CGError {
         let rBuffer = redTable != nil ? Array(UnsafeBufferPointer(start: redTable, count: Int(capacity))) : []
         let gBuffer = greenTable != nil ? Array(UnsafeBufferPointer(start: greenTable, count: Int(capacity))) : []
+        let bBuffer = blueTable != nil ? Array(UnsafeBufferPointer(start: blueTable, count: Int(capacity))) : []
         setDisplayTables[display] = (capacity: capacity, red: rBuffer, green: gBuffer, blue: bBuffer)
         return .success
     }
@@ -440,25 +441,22 @@ final class DisplayManagerTests: XCTestCase {
     }
 
     @MainActor
-    func testWindowPositionStabilizer() {
-        let window = NSWindow(contentRect: NSRect(x: 100, y: 200, width: 310, height: 400), styleMask: .borderless, backing: .buffered, defer: false)
-        window.orderFront(nil)
-        XCTAssertTrue(window.isVisible)
+    func testStatusBarControllerInitializationAndUpdates() {
+        let sc = StatusBarController(displayManager: dm, updateChecker: UpdateChecker())
+        XCTAssertNotNil(sc.statusItem)
+        XCTAssertNotNil(sc.popover)
+        XCTAssertEqual(sc.popover.behavior, .transient)
+        XCTAssertEqual(sc.statusItem.autosaveName, "WhiteOut")
         
-        let stabilizer = WindowPositionStabilizer.shared
-        stabilizer.attach(to: window)
+        // Initial state
+        sc.updateButton()
+        XCTAssertEqual(sc.statusItem.button?.title, "")
         
-        // When SwiftUI attempts to shift the window from X=100 to X=86 due to menu bar icon resizing:
-        let clampedOrigin = stabilizer.shouldLock(window: window, newOrigin: NSPoint(x: 86, y: 200))
-        // Origin X must remain locked at 100
-        XCTAssertEqual(clampedOrigin.x, 100)
-        XCTAssertEqual(clampedOrigin.y, 200)
-        
-        // When lock is released (window closes):
-        stabilizer.releaseLock()
-        // Next opening origin is accepted:
-        let newOrigin = stabilizer.shouldLock(window: window, newOrigin: NSPoint(x: 86, y: 200))
-        XCTAssertEqual(newOrigin.x, 86)
+        // When enabled with reduction
+        dm.isEnabled = true
+        dm.reduction = 0.2
+        sc.updateButton()
+        XCTAssertEqual(sc.statusItem.button?.title, " 6%")
     }
 
     func testContinuousTransitionAnimation() {

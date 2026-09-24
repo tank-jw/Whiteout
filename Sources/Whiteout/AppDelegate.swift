@@ -1,16 +1,18 @@
 import Cocoa
+import WhiteOutKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private var displayManager: DisplayManager!
+    private var updateChecker: UpdateChecker!
+    private var statusBarController: StatusBarController!
+
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Hide the app from the Dock — menu bar only
+        // Run as accessory app (menu bar only, no dock icon)
         NSApp.setActivationPolicy(.accessory)
 
-        // Ensure menu bar item is visible and positioned to the right of menu bar hiders (e.g. Hidden Bar)
-        UserDefaults.standard.set(true, forKey: "NSStatusItem Visible Item-0")
-        UserDefaults.standard.set(true, forKey: "NSStatusItem VisibleCC Item-0")
-        if UserDefaults.standard.object(forKey: "NSStatusItem Preferred Position Item-0") == nil {
-            UserDefaults.standard.set(250, forKey: "NSStatusItem Preferred Position Item-0")
-        }
+        displayManager = DisplayManager()
+        updateChecker = UpdateChecker()
+        statusBarController = StatusBarController(displayManager: displayManager, updateChecker: updateChecker)
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

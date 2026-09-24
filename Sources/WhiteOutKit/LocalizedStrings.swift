@@ -184,6 +184,39 @@ public struct LocalizedStrings {
         }
     }
 
+    public static func turnOff(lang: AppLanguage) -> String {
+        switch lang {
+        case .ko:     return "화이트아웃 끄기"
+        case .ja:     return "ホワイトアウトをオフ"
+        case .zhHans: return "关闭 Whiteout"
+        case .zhHant: return "關閉 Whiteout"
+        case .de:     return "Whiteout ausschalten"
+        case .en:     return "Turn Whiteout Off"
+        }
+    }
+
+    public static func turnOn(lang: AppLanguage) -> String {
+        switch lang {
+        case .ko:     return "화이트아웃 켜기"
+        case .ja:     return "ホワイトアウトをオン"
+        case .zhHans: return "开启 Whiteout"
+        case .zhHant: return "開啟 Whiteout"
+        case .de:     return "Whiteout einschalten"
+        case .en:     return "Turn Whiteout On"
+        }
+    }
+
+    public static func openSettings(lang: AppLanguage) -> String {
+        switch lang {
+        case .ko:     return "환경설정 열기..."
+        case .ja:     return "環境設定を開く..."
+        case .zhHans: return "打开设置..."
+        case .zhHant: return "打開設定..."
+        case .de:     return "Einstellungen öffnen..."
+        case .en:     return "Open Settings..."
+        }
+    }
+
     public static func detailsTitle(lang: AppLanguage) -> String {
         switch lang {
         case .ko:     return "밝기 변환 곡선 (x축 : 입력 밝기 → y축 : 출력 밝기)"
@@ -674,6 +707,9 @@ public struct LocalizedStrings {
     public static func curveHighlights(isEN: Bool) -> String { curveHighlights(lang: bridge(isEN)) }
     public static func manualCheckHelp(isEN: Bool) -> String { manualCheckHelp(lang: bridge(isEN)) }
     public static func quitLabel(isEN: Bool) -> String { quitLabel(lang: bridge(isEN)) }
+    public static func turnOff(isEN: Bool) -> String { turnOff(lang: bridge(isEN)) }
+    public static func turnOn(isEN: Bool) -> String { turnOn(lang: bridge(isEN)) }
+    public static func openSettings(isEN: Bool) -> String { openSettings(lang: bridge(isEN)) }
     public static func detailsTitle(isEN: Bool) -> String { detailsTitle(lang: bridge(isEN)) }
     public static func detailsSectionTitle(isEN: Bool) -> String { detailsSectionTitle(lang: bridge(isEN)) }
     public static func detailsHowItWorks(isEN: Bool) -> String { detailsHowItWorks(lang: bridge(isEN)) }
