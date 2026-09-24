@@ -91,7 +91,10 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
             return
         }
 
-        if event.type == .rightMouseUp {
+        let isRightClick = event.type == .rightMouseUp || event.type == .rightMouseDown
+        let isControlClick = event.modifierFlags.contains(.control) && (event.type == .leftMouseUp || event.type == .leftMouseDown)
+
+        if isRightClick || isControlClick {
             showContextMenu(sender)
         } else {
             togglePopover(sender)
@@ -107,7 +110,7 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
     }
 
     public func showPopover(_ sender: NSStatusBarButton) {
-        popover.show(relativeTo: sender.bounds, of: sender, preferredEdge: .maxY)
+        popover.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()
         NSApp.activate(ignoringOtherApps: true)
     }
