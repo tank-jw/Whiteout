@@ -355,6 +355,7 @@ Sources/
   - [2026-09-22] 3모니터 환경에서 외장 디스플레이 이름이 누락되던 원인이 `NSScreen.deviceDescription` 내 `NSScreenNumber`가 Signed NSNumber로 래핑되어 Swift의 단순 `as? CGDirectDisplayID` 캐스팅 시 `nil`로 떨어지는 현상임을 규명함. `(deviceDescription[key] as? NSNumber)?.uint32Value`로 안전 언래핑하고, ColorSync C-API(`ColorSyncProfileCreateWithDisplayID`)를 결합한 2단계 감지 체계 및 동일 모델 중복 시 인덱스 번호(`(1)`, `(2)`) 자동 부여 알고리즘을 구축하여 v2.1.3으로 배포함.
   - [2026-09-24] SwiftUI의 간이 추상화 MenuBarExtra 대신 AppKit NSStatusItem + NSPopover + NSHostingController 정석 하이브리드 아키텍처(StatusBarController)로 전면 전환함. 좌클릭(NSPopover 토글)과 우클릭(NSMenu 컨텍스트 메뉴: On/Off, Preferences, Quit)을 깔끔하게 분기하고, 메뉴바 아이콘 너비 변경 시 창 위치를 고정하기 위해 필요했던 WindowPositionStabilizer 런타임 메서드 스위즐링 해킹을 완전 제거하여 시스템 순정 안정성과 테스트 가능성을 확보하고 v2.2.1로 배포함.
   - [2026-09-24] AppKit NSStatusBarButton의 팝오버 앵커링 시 preferredEdge는 화면 아래 방향인 .minY여야 하며, .maxY 지정 시 화면 상단 바깥으로 위치가 잡혀 팝오버가 렌더링되지 않던 결함을 규명하고 해결함. 또한 AppDelegate.applicationShouldTerminate의 .terminateCancel 반환으로 인해 인앱 업데이터의 terminate(nil) 요청이 무시되어 10초 대기 후 강제 종료(kill -9)되던 라이프사이클 병목을 .terminateNow로 수정하여 인앱 업데이트 시의 즉시 부드러운 재실행과 원본 감마 자동 복원 무결성을 확보하고 v2.2.2로 배포함.
+  - [2026-09-24] Xcode 16/macOS 15 환경에서 SwiftPM 빌드 결과물 경로가 .build/out/Products/Release로 변경되었으나 build_dmg.sh의 find 명령어가 삭제되지 않은 과거 캐시(.build/universal 내 2.1.3)를 우선 참조하여 2.1.3 구버전 바이너리가 DMG에 오패키징되던 치명적인 빌드 결함을 규명함. .build 전체 폴더 사전 청소 및 .build/out 우선 탐색 로직으로 스크립트를 개선하고 정상적인 2.2.2 유니버설 바이너리 패키징 및 GitHub Release 갱신을 완료함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:
