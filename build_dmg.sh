@@ -17,11 +17,13 @@ APP_DIR="${APP_NAME}.app"
 
 echo "🧹 이전 빌드 아티팩트 청소 중..."
 hdiutil detach "/Volumes/WhiteOut Installer" 2>/dev/null || true
-rm -rf .build/apple .build/release "${APP_DIR}" temp.dmg "${DMG_NAME}" "${ZIP_NAME}"
+rm -rf .build/apple .build/release .build/universal .build/out "${APP_DIR}" temp.dmg "${DMG_NAME}" "${ZIP_NAME}"
 
 echo "🔨 유니버셜 바이너리 (arm64 + x86_64) Release 빌드 중..."
 if swift build -c release --arch arm64 --arch x86_64 2>/dev/null; then
-  if [ -f ".build/apple/Products/Release/${APP_NAME}" ]; then
+  if [ -f ".build/out/Products/Release/${APP_NAME}" ]; then
+    UNIVERSAL_BIN=".build/out/Products/Release/${APP_NAME}"
+  elif [ -f ".build/apple/Products/Release/${APP_NAME}" ]; then
     UNIVERSAL_BIN=".build/apple/Products/Release/${APP_NAME}"
   else
     UNIVERSAL_BIN=$(find .build -name "${APP_NAME}" -type f | grep -v "\.dSYM" | grep -i "/release/" | head -n 1)
