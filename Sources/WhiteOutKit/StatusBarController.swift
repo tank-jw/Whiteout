@@ -41,6 +41,7 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
             button.target = self
             button.action = #selector(handleStatusItemClick(_:))
             button.sendAction(on: [.leftMouseUp, .rightMouseUp])
+            button.font = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)
         }
 
         // 4. Reactive bindings to DisplayManager state
@@ -78,8 +79,8 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
 
         if isEnabled && reduction > 0.01 {
             let pct = Int((reduction * 30).rounded())
+            button.font = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)
             button.title = " \(pct)%"
-            button.font = NSFont.monospacedSystemFont(ofSize: 10, weight: .semibold)
         } else {
             button.title = ""
         }
