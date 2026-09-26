@@ -141,6 +141,7 @@ Sources/
 
 | 버전 | 내용 |
 |---|---|
+| **v2.2.4** | **설정창 On/Off 토글 시 팝오버 윈도우 좌우 흔들림(축 이동) 완벽 방지**<br>- 설정창(팝오버)이 열린 상태에서 On/Off 토글 시 메뉴바 버튼 너비 변화(텍스트 표시/제거)로 인해 AppKit `NSPopover` 윈도우가 좌우로 점프하던 현상을 `WindowPositionStabilizer`로 완벽 고정<br>- 팝오버 표시 시점의 X 좌표를 안전 잠금(Lock)하여 On/Off 조작 중 윈도우가 단 1픽셀도 흔들리지 않고 완벽하게 위치를 유지하도록 개선하고, 창 종료 시 락을 해제하여 재오픈 시의 유연한 반응성 확보 |
 | **v2.2.3** | **메뉴바 백분율 수치 폰트 크기 및 시인성 최적화**<br>- `StatusBarController`의 메뉴바 텍스트 폰트를 축소 폰트(`10pt`)에서 macOS 메뉴바 표준 규격에 맞춘 `NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)`로 확대 복원하여 이전 버전의 크고 또렷한 시인성 회복<br>- 1~30% 수치 변동 시에도 메뉴바 아이콘이 좌우로 흔들리지 않도록 고정폭 숫자(Monospaced Digits)와 세미볼드 가독성 동시 확보 |
 | **v2.2.2** | **AppKit 팝오버 앵커링 방향(.minY) 수정 및 인앱 업데이트 즉시 재시작 안정화**<br>- `StatusBarController`의 팝오버 표시 방향이 화면 상단 바깥(`.maxY`)으로 설정되어 창이 열리지 않던 결함을 메뉴바 하단 방향(`.minY`)으로 정상화하여 클릭 즉시 부드럽게 열리도록 수정<br>- `AppDelegate`에서 `NSApplication.shared.terminate` 요청 시 비정상적으로 취소하던 `.terminateCancel`을 제거하고 `.terminateNow`로 정상화하여 인앱 업데이트 시 10초 대기 지연(타임아웃) 없이 즉시 매끄럽게 재실행되도록 해결<br>- 우클릭 및 보조클릭(Control+클릭) 이벤트 판별 로직 강화 |
 | **v2.2.1** | **AppKit NSStatusItem + NSPopover 정석 하이브리드 아키텍처 전면 전환 및 윈도우 스위즐링 완전 제거**<br>- SwiftUI의 간이 추상화 `MenuBarExtra(.window)`를 탈피하고, macOS 프로덕션 앱(Rectangle, Stats, ProNotes 등)의 표준인 `NSStatusItem` + `NSPopover` + `NSHostingController` 정석 하이브리드 아키텍처로 전면 개편<br>- 좌클릭 시 정밀 팝오버 토글, 우클릭(보조 클릭) 시 온/오프·설정 열기·종료 네이티브 컨텍스트 메뉴(`NSMenu`) 즉시 표시 지원<br>- 메뉴바 아이콘 너비 변경 시 팝오버 좌표 흔들림을 막기 위해 사용되던 `WindowPositionStabilizer` 런타임 메서드 스위즐링 해킹 및 좌표 잠금 코드를 100% 영구 제거하여 시스템 순정 안정성 확보<br>- 메뉴바 아이콘 상태(On/Off 및 % 뱃지) 실시간 반응성 극대화 및 패키지 릴리즈 완료 |
@@ -358,6 +359,7 @@ Sources/
   - [2026-09-24] AppKit NSStatusBarButton의 팝오버 앵커링 시 preferredEdge는 화면 아래 방향인 .minY여야 하며, .maxY 지정 시 화면 상단 바깥으로 위치가 잡혀 팝오버가 렌더링되지 않던 결함을 규명하고 해결함. 또한 AppDelegate.applicationShouldTerminate의 .terminateCancel 반환으로 인해 인앱 업데이터의 terminate(nil) 요청이 무시되어 10초 대기 후 강제 종료(kill -9)되던 라이프사이클 병목을 .terminateNow로 수정하여 인앱 업데이트 시의 즉시 부드러운 재실행과 원본 감마 자동 복원 무결성을 확보하고 v2.2.2로 배포함.
   - [2026-09-24] Xcode 16/macOS 15 환경에서 SwiftPM 빌드 결과물 경로가 .build/out/Products/Release로 변경되었으나 build_dmg.sh의 find 명령어가 삭제되지 않은 과거 캐시(.build/universal 내 2.1.3)를 우선 참조하여 2.1.3 구버전 바이너리가 DMG에 오패키징되던 치명적인 빌드 결함을 규명함. .build 전체 폴더 사전 청소 및 .build/out 우선 탐색 로직으로 스크립트를 개선하고 정상적인 2.2.2 유니버설 바이너리 패키징 및 GitHub Release 갱신을 완료함.
   - [2026-09-25] AppKit NSStatusBarButton의 텍스트 폰트를 10pt 고정폭에서 macOS 메뉴바 표준 규격인 NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)로 확대 복원하여 메뉴바 아이콘 옆의 % 수치가 작아지던 시인성 문제를 해결하고, 숫자 폭 변화에 따른 메뉴바 떨림 방지와 또렷한 가독성을 동시 달성하여 v2.2.3으로 배포함.
+  - [2026-09-26] AppKit 하이브리드 아키텍처(NSStatusItem + NSPopover)에서도 On/Off 토글 시 메뉴바 버튼 너비 변화(백분율 텍스트 표시/제거)로 인해 버튼의 중심점이 이동하며 NSPopover 윈도우가 좌우로 축 이동(점프)하는 현상을 재확인함. WindowPositionStabilizer를 StatusBarController 및 ContentView에 재결합하여 팝오버 표시 중 X 좌표를 안전 잠금(Lock)함으로써 설정창이 미동도 없이 완벽히 고정되도록 해결함 (v2.2.4 로컬 빌드).
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:

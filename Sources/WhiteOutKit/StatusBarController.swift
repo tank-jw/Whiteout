@@ -112,8 +112,15 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
 
     public func showPopover(_ sender: NSStatusBarButton) {
         popover.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
-        popover.contentViewController?.view.window?.makeKey()
+        if let window = popover.contentViewController?.view.window {
+            window.makeKey()
+            WindowPositionStabilizer.shared.attach(to: window)
+        }
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    public func popoverDidClose(_ notification: Notification) {
+        WindowPositionStabilizer.shared.releaseLock()
     }
 
     public func hidePopover(_ sender: Any? = nil) {

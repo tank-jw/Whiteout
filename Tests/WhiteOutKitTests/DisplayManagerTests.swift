@@ -623,4 +623,26 @@ final class DisplayManagerTests: XCTestCase {
         XCTAssertEqual(updatedActive[1].name, "DELL U2720Q (1)")
         XCTAssertEqual(updatedActive[2].name, "DELL U2720Q (2)")
     }
+
+    @MainActor
+    func testWindowPositionStabilizer() {
+        let window = NSWindow(contentRect: NSRect(x: 100, y: 200, width: 310, height: 400), styleMask: .borderless, backing: .buffered, defer: false)
+        window.orderFront(nil)
+        XCTAssertTrue(window.isVisible)
+        
+        let stabilizer = WindowPositionStabilizer.shared
+        stabilizer.attach(to: window)
+        
+        // When AppKit attempts to shift the window from X=100 to X=86 due to menu bar icon resizing:
+        let clampedOrigin = stabilizer.shouldLock(window: window, newOrigin: NSPoint(x: 86, y: 200))
+        // Origin X must remain locked at 100
+        XCTAssertEqual(clampedOrigin.x, 100)
+        XCTAssertEqual(clampedOrigin.y, 200)
+        
+        // When lock is released (window closes):
+        stabilizer.releaseLock()
+        // Next opening origin is accepted:
+        let newOrigin = stabilizer.shouldLock(window: window, newOrigin: NSPoint(x: 86, y: 200))
+        XCTAssertEqual(newOrigin.x, 86)
+    }
 }
