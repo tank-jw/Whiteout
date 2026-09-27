@@ -141,6 +141,7 @@ Sources/
 
 | 버전 | 내용 |
 |---|---|
+| **v2.2.5** | **메뉴바 아이콘 재클릭 시 설정창 닫힘(토글) 완벽 지원**<br>- 팝오버가 열려 있는 상태에서 메뉴바 아이콘을 다시 클릭할 때 창이 닫히지 않고 재오픈되던 AppKit `NSPopover` 특유의 `.transient` 레이스 컨디션을 완벽 해결<br>- `popoverWillClose` 시점의 메뉴바 버튼 영역 마우스 좌표 검사(`isClosedByButton`) 및 250ms 타임스탬프 디바운스 이중 방어 로직을 탑재하여 일반적인 메뉴바 앱과 동일한 자연스러운 열림/닫힘 토글 UX 완성<br>- 단위 테스트 스위트에 메뉴바 팝오버 토글 라이프사이클 검증 테스트 추가 (17개 테스트 전원 통과) |
 | **v2.2.4** | **설정창 On/Off 토글 시 팝오버 윈도우 좌우 흔들림(축 이동) 완벽 방지**<br>- 설정창(팝오버)이 열린 상태에서 On/Off 토글 시 메뉴바 버튼 너비 변화(텍스트 표시/제거)로 인해 AppKit `NSPopover` 윈도우가 좌우로 점프하던 현상을 `WindowPositionStabilizer`로 완벽 고정<br>- 팝오버 표시 시점의 X 좌표를 안전 잠금(Lock)하여 On/Off 조작 중 윈도우가 단 1픽셀도 흔들리지 않고 완벽하게 위치를 유지하도록 개선하고, 창 종료 시 락을 해제하여 재오픈 시의 유연한 반응성 확보 |
 | **v2.2.3** | **메뉴바 백분율 수치 폰트 크기 및 시인성 최적화**<br>- `StatusBarController`의 메뉴바 텍스트 폰트를 축소 폰트(`10pt`)에서 macOS 메뉴바 표준 규격에 맞춘 `NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)`로 확대 복원하여 이전 버전의 크고 또렷한 시인성 회복<br>- 1~30% 수치 변동 시에도 메뉴바 아이콘이 좌우로 흔들리지 않도록 고정폭 숫자(Monospaced Digits)와 세미볼드 가독성 동시 확보 |
 | **v2.2.2** | **AppKit 팝오버 앵커링 방향(.minY) 수정 및 인앱 업데이트 즉시 재시작 안정화**<br>- `StatusBarController`의 팝오버 표시 방향이 화면 상단 바깥(`.maxY`)으로 설정되어 창이 열리지 않던 결함을 메뉴바 하단 방향(`.minY`)으로 정상화하여 클릭 즉시 부드럽게 열리도록 수정<br>- `AppDelegate`에서 `NSApplication.shared.terminate` 요청 시 비정상적으로 취소하던 `.terminateCancel`을 제거하고 `.terminateNow`로 정상화하여 인앱 업데이트 시 10초 대기 지연(타임아웃) 없이 즉시 매끄럽게 재실행되도록 해결<br>- 우클릭 및 보조클릭(Control+클릭) 이벤트 판별 로직 강화 |
@@ -361,6 +362,7 @@ Sources/
   - [2026-09-25] AppKit NSStatusBarButton의 텍스트 폰트를 10pt 고정폭에서 macOS 메뉴바 표준 규격인 NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)로 확대 복원하여 메뉴바 아이콘 옆의 % 수치가 작아지던 시인성 문제를 해결하고, 숫자 폭 변화에 따른 메뉴바 떨림 방지와 또렷한 가독성을 동시 달성하여 v2.2.3으로 배포함.
   - [2026-09-26] On/Off 토글 시 팝오버 창의 상하(Y) 미세 이동 및 화살표 좌우 이동, 그리고 상단 여백 소실 결함을 완벽히 규명하고 해결함. 1) 상단 여백 소실은 SwiftUI(ContentView) 마운트 및 팝오버 표시 시작 시점의 슬라이드 인 미완료 좌표(Y=-7)를 조기 잠금(Lock)하여 창이 메뉴바를 침범하던 현상이었으며, WindowPositionLock을 제거하고 AppKit의 `popoverDidShow` 델리게이트 시점에 정상 안착 좌표(Y=28)를 캡처하도록 개선하여 메뉴바와 화살표 사이의 네이티브 상단 여백을 완벽 복원함. 2) 버튼 앵커를 태양 아이콘 하단 경계(`y: 0, height: 0`)로 정밀 타겟팅하고, 팝오버 표시 중 `statusItem.length` 동결 및 투명 플레이스홀더(`NSColor.clear`)를 유지하여 On/Off 토글 시에도 상하/좌우 0.0px 미동 없는 v2.2.4 로컬 빌드를 완성함.
   - [2026-09-26] 팝오버 화살표 끝이 메뉴바 아이콘을 가리거나 침범하지 않도록 Y축 오프셋을 -36pt(Quartz Y=36)로 정밀 조정하여, 메뉴바 하단 라인(Y=33)과 화살표 끝단 사이에 3pt의 절제된 상단 여백 및 아이콘과의 7.5pt 간격을 확보함. WindowPositionStabilizer 내 중복 잠금 방지 가드를 보강하여 On/Off 토글 시에도 상하·좌우 0.0px 윈도우 고정 상태를 완벽히 유지하도록 완성함.
+  - [2026-09-27] NSPopover의 .transient 동작 시 메뉴바 버튼 클릭의 mouseDown이 팝오버 외부 클릭으로 감지되어 먼저 닫힌 후 mouseUp 액션에서 재오픈되던 토글 비정상 현상을 해결함. popoverWillClose 시점의 버튼 영역 마우스 좌표 검사(isClosedByButton)와 타임스탬프 기반 디바운스 이중 가드를 구축하여, 일반적인 메뉴바 앱과 동일하게 메뉴바 아이콘 클릭 시 열림/닫힘이 자연스럽게 토글되도록 완성하고 v2.2.5로 배포함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:

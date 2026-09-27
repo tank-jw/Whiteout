@@ -14,6 +14,8 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
     private var cancellables = Set<AnyCancellable>()
     private var openItemLength: CGFloat?
     private var lastDisplayedPct: Int = 20
+    private var isClosedByButton = false
+    private var popoverClosedTime: TimeInterval = 0
 
     public init(displayManager: DisplayManager, updateChecker: UpdateChecker) {
         self.displayManager = displayManager
@@ -133,12 +135,26 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
     public func togglePopover(_ sender: NSStatusBarButton) {
         if popover.isShown {
             hidePopover(sender)
-        } else {
-            showPopover(sender)
+            return
         }
+
+        // If the popover was closed by the mouse-down of this exact click,
+        // do not immediately reopen it on mouse-up.
+        if isClosedByButton {
+            isClosedByButton = false
+            return
+        }
+
+        let elapsed = Date.timeIntervalSinceReferenceDate - popoverClosedTime
+        if elapsed < 0.25 {
+            return
+        }
+
+        showPopover(sender)
     }
 
     public func showPopover(_ sender: NSStatusBarButton) {
+        isClosedByButton = false
         let currentWidth = sender.frame.width
         if currentWidth > 0 {
             openItemLength = currentWidth
@@ -165,7 +181,20 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
         }
     }
 
+    public func popoverWillClose(_ notification: Notification) {
+        popoverClosedTime = Date.timeIntervalSinceReferenceDate
+        if let button = statusItem.button, let window = button.window {
+            let mouseLoc = NSEvent.mouseLocation
+            // Expand button frame slightly by 4pt for hit testing tolerance
+            let hitRect = window.frame.insetBy(dx: -4, dy: -4)
+            if hitRect.contains(mouseLoc) {
+                isClosedByButton = true
+            }
+        }
+    }
+
     public func popoverDidClose(_ notification: Notification) {
+        popoverClosedTime = Date.timeIntervalSinceReferenceDate
         openItemLength = nil
         statusItem.length = NSStatusItem.variableLength
         WindowPositionStabilizer.shared.releaseLock()

@@ -683,4 +683,48 @@ final class DisplayManagerTests: XCTestCase {
         // Title should be cleared when popover is closed and disabled
         XCTAssertEqual(button.title, "")
     }
+
+    @MainActor
+    func testStatusBarControllerPopoverToggle() {
+        let updateChecker = UpdateChecker()
+        let controller = StatusBarController(displayManager: dm, updateChecker: updateChecker)
+
+        let testWindow = NSWindow(contentRect: NSRect(x: 100, y: 100, width: 200, height: 100), styleMask: [.titled], backing: .buffered, defer: false)
+        testWindow.orderFront(nil)
+
+        let testButton = NSStatusBarButton(frame: NSRect(x: 10, y: 10, width: 50, height: 24))
+        testWindow.contentView?.addSubview(testButton)
+
+        // Initial state: popover is not shown
+        XCTAssertFalse(controller.popover.isShown)
+
+        // 1. First click: opens popover
+        controller.togglePopover(testButton)
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
+        XCTAssertTrue(controller.popover.isShown)
+
+        // 2. Second click while open: closes popover
+        controller.togglePopover(testButton)
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
+        XCTAssertFalse(controller.popover.isShown)
+
+        // 3. Transient dismissal simulation:
+        // Wait for debounce window (> 0.25s) before reopening
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.26))
+        controller.togglePopover(testButton)
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
+        XCTAssertTrue(controller.popover.isShown)
+
+        // Button click causes popover to close via notification
+        controller.popoverWillClose(Notification(name: NSPopover.willCloseNotification))
+        controller.popover.close()
+        controller.popoverDidClose(Notification(name: NSPopover.didCloseNotification))
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
+
+        // Button mouseUp follows immediately (within 0.25s debounce window)
+        controller.togglePopover(testButton)
+        RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
+        // Must stay closed (not reopen)
+        XCTAssertFalse(controller.popover.isShown)
+    }
 }
