@@ -633,16 +633,54 @@ final class DisplayManagerTests: XCTestCase {
         let stabilizer = WindowPositionStabilizer.shared
         stabilizer.attach(to: window)
         
-        // When AppKit attempts to shift the window from X=100 to X=86 due to menu bar icon resizing:
-        let clampedOrigin = stabilizer.shouldLock(window: window, newOrigin: NSPoint(x: 86, y: 200))
-        // Origin X must remain locked at 100
+        // When AppKit attempts to shift the window from (100, 200) to (86, 197) due to menu bar icon resizing:
+        let clampedOrigin = stabilizer.shouldLock(window: window, newOrigin: NSPoint(x: 86, y: 197))
+        // Origin X and Y must remain locked at (100, 200)
         XCTAssertEqual(clampedOrigin.x, 100)
         XCTAssertEqual(clampedOrigin.y, 200)
         
         // When lock is released (window closes):
         stabilizer.releaseLock()
         // Next opening origin is accepted:
-        let newOrigin = stabilizer.shouldLock(window: window, newOrigin: NSPoint(x: 86, y: 200))
+        let newOrigin = stabilizer.shouldLock(window: window, newOrigin: NSPoint(x: 86, y: 197))
         XCTAssertEqual(newOrigin.x, 86)
+        XCTAssertEqual(newOrigin.y, 197)
+    }
+
+    @MainActor
+    func testStatusBarControllerLengthLockingDuringPopover() {
+        let updateChecker = UpdateChecker()
+        let controller = StatusBarController(displayManager: dm, updateChecker: updateChecker)
+        
+        // Enable with 20%
+        dm.isEnabled = true
+        dm.reduction = 20.0 / 30.0
+        controller.updateButton()
+        
+        guard let button = controller.statusItem.button else {
+            XCTFail("StatusBar button not found")
+            return
+        }
+        button.frame = NSRect(x: 0, y: 0, width: 65, height: 24)
+        
+        // Open popover
+        controller.showPopover(button)
+        XCTAssertEqual(controller.statusItem.length, 65)
+        
+        // Toggle Off while popover is open
+        dm.isEnabled = false
+        controller.updateButton()
+        
+        // Length must remain locked at 65 while popover is shown
+        XCTAssertEqual(controller.statusItem.length, 65)
+        // Title text should be transparent placeholder to keep icon in place
+        XCTAssertTrue(button.attributedTitle.string.contains("20%"))
+        
+        // Close popover
+        controller.popoverDidClose(Notification(name: NSPopover.didCloseNotification))
+        // Length should be restored to variable length
+        XCTAssertEqual(controller.statusItem.length, NSStatusItem.variableLength)
+        // Title should be cleared when popover is closed and disabled
+        XCTAssertEqual(button.title, "")
     }
 }

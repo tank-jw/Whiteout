@@ -12,6 +12,8 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
     public let updateChecker: UpdateChecker
 
     private var cancellables = Set<AnyCancellable>()
+    private var openItemLength: CGFloat?
+    private var lastDisplayedPct: Int = 20
 
     public init(displayManager: DisplayManager, updateChecker: UpdateChecker) {
         self.displayManager = displayManager
@@ -24,7 +26,7 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
         // 2. Create NSPopover
         self.popover = NSPopover()
         self.popover.behavior = .transient
-        self.popover.animates = true
+        self.popover.animates = false
         self.popover.contentSize = NSSize(width: 320, height: 580)
         self.popover.contentViewController = NSHostingController(
             rootView: ContentView()
@@ -77,12 +79,38 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
         button.image = NSImage(systemSymbolName: imageName, accessibilityDescription: "Whiteout")
         button.imagePosition = .imageLeading
 
-        if isEnabled && reduction > 0.01 {
-            let pct = Int((reduction * 30).rounded())
-            button.font = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)
-            button.title = " \(pct)%"
+        if let fixedLength = openItemLength {
+            statusItem.length = fixedLength
+            if fixedLength > 36 {
+                if isEnabled && reduction > 0.01 {
+                    let pct = Int((reduction * 30).rounded())
+                    lastDisplayedPct = pct
+                    button.font = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)
+                    button.title = " \(pct)%"
+                } else {
+                    let placeholder = " \(lastDisplayedPct)%"
+                    let attr = NSAttributedString(
+                        string: placeholder,
+                        attributes: [
+                            .foregroundColor: NSColor.clear,
+                            .font: NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)
+                        ]
+                    )
+                    button.attributedTitle = attr
+                }
+            } else {
+                button.title = ""
+            }
         } else {
-            button.title = ""
+            statusItem.length = NSStatusItem.variableLength
+            if isEnabled && reduction > 0.01 {
+                let pct = Int((reduction * 30).rounded())
+                lastDisplayedPct = pct
+                button.font = NSFont.monospacedDigitSystemFont(ofSize: 12.5, weight: .semibold)
+                button.title = " \(pct)%"
+            } else {
+                button.title = ""
+            }
         }
     }
 
@@ -111,16 +139,37 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
     }
 
     public func showPopover(_ sender: NSStatusBarButton) {
-        popover.show(relativeTo: sender.bounds, of: sender, preferredEdge: .minY)
+        let currentWidth = sender.frame.width
+        if currentWidth > 0 {
+            openItemLength = currentWidth
+            statusItem.length = currentWidth
+        }
+
+        let cell = sender.cell as? NSButtonCell
+        let imageRect = cell?.imageRect(forBounds: sender.bounds) ?? NSRect(x: 0, y: 0, width: min(sender.bounds.width, 32), height: sender.bounds.height)
+        let anchorX = imageRect.width > 0 ? imageRect.origin.x : 0
+        let anchorWidth = imageRect.width > 0 ? imageRect.width : min(sender.bounds.width, 32)
+        let anchorRect = NSRect(x: anchorX, y: 0, width: anchorWidth, height: sender.bounds.height)
+
+        popover.show(relativeTo: anchorRect, of: sender, preferredEdge: .minY)
         if let window = popover.contentViewController?.view.window {
             window.makeKey()
-            WindowPositionStabilizer.shared.attach(to: window)
+            WindowPositionStabilizer.shared.attach(to: window, yOffset: -36)
         }
         NSApp.activate(ignoringOtherApps: true)
     }
 
+    public func popoverDidShow(_ notification: Notification) {
+        if let window = popover.contentViewController?.view.window {
+            WindowPositionStabilizer.shared.attach(to: window, yOffset: -36)
+        }
+    }
+
     public func popoverDidClose(_ notification: Notification) {
+        openItemLength = nil
+        statusItem.length = NSStatusItem.variableLength
         WindowPositionStabilizer.shared.releaseLock()
+        updateButton()
     }
 
     public func hidePopover(_ sender: Any? = nil) {
