@@ -246,3 +246,107 @@ public final class LiveShortcutService: ShortcutServiceProtocol {
         ShortcutManager.shared.unregister()
     }
 }
+
+// MARK: - SystemDisplayEventServiceProtocol
+public protocol SystemDisplayEventSubscription {
+    func unsubscribe()
+}
+
+public protocol SystemDisplayEventServiceProtocol {
+    func observeSystemDisplayEvents(handler: @escaping () -> Void) -> SystemDisplayEventSubscription
+}
+
+public final class LiveSystemDisplayEventService: SystemDisplayEventServiceProtocol {
+    public init() {}
+    
+    public func observeSystemDisplayEvents(handler: @escaping () -> Void) -> SystemDisplayEventSubscription {
+        let observer = SystemDisplayEventObserver(handler: handler)
+        observer.start()
+        return observer
+    }
+}
+
+private final class SystemDisplayEventObserver: SystemDisplayEventSubscription {
+    private let handler: () -> Void
+    private var workspaceObservers: [NSObjectProtocol] = []
+    private var appObserver: NSObjectProtocol?
+    private var blueLightClient: AnyObject?
+    
+    init(handler: @escaping () -> Void) {
+        self.handler = handler
+    }
+    
+    func start() {
+        let wsCenter = NSWorkspace.shared.notificationCenter
+        let wsNotifications: [NSNotification.Name] = [
+            NSWorkspace.didWakeNotification,
+            NSWorkspace.screensDidWakeNotification,
+            NSWorkspace.screensDidSleepNotification,
+            NSWorkspace.sessionDidBecomeActiveNotification
+        ]
+        
+        for name in wsNotifications {
+            let obs = wsCenter.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                self?.handler()
+            }
+            workspaceObservers.append(obs)
+        }
+        
+        appObserver = NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.handler()
+        }
+        
+        // Dynamically integrate with CoreBrightness CBBlueLightClient for Night Shift
+        if let bundle = Bundle(path: "/System/Library/PrivateFrameworks/CoreBrightness.framework") {
+            bundle.load()
+            if let clientClass = NSClassFromString("CBBlueLightClient") as? NSObject.Type {
+                let client = clientClass.init()
+                self.blueLightClient = client
+                let sel = NSSelectorFromString("setStatusNotificationBlock:")
+                if client.responds(to: sel) {
+                    typealias SetBlockFunc = @convention(c) (AnyObject, Selector, @escaping @convention(block) () -> Void) -> Void
+                    let methodIMP = client.method(for: sel)
+                    let fn = unsafeBitCast(methodIMP, to: SetBlockFunc.self)
+                    fn(client, sel, { [weak self] in
+                        DispatchQueue.main.async {
+                            self?.handler()
+                        }
+                    })
+                }
+            }
+        }
+    }
+    
+    func unsubscribe() {
+        let wsCenter = NSWorkspace.shared.notificationCenter
+        for obs in workspaceObservers {
+            wsCenter.removeObserver(obs)
+        }
+        workspaceObservers.removeAll()
+        
+        if let obs = appObserver {
+            NotificationCenter.default.removeObserver(obs)
+            appObserver = nil
+        }
+        
+        if let client = blueLightClient {
+            let sel = NSSelectorFromString("setStatusNotificationBlock:")
+            if client.responds(to: sel) {
+                typealias ClearBlockFunc = @convention(c) (AnyObject, Selector, (@convention(block) () -> Void)?) -> Void
+                let methodIMP = client.method(for: sel)
+                let fn = unsafeBitCast(methodIMP, to: ClearBlockFunc.self)
+                fn(client, sel, nil)
+            }
+            blueLightClient = nil
+        }
+    }
+    
+    deinit {
+        unsubscribe()
+    }
+}
+

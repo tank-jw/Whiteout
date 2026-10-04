@@ -180,7 +180,9 @@ public class DisplayManager: ObservableObject {
     private let workspaceService: WorkspaceServiceProtocol
     private let appService: AppServiceProtocol
     private let shortcutService: ShortcutServiceProtocol
+    private let systemEventService: SystemDisplayEventServiceProtocol
     private var workspaceSubscription: WorkspaceSubscription?
+    private var displayEventSubscription: SystemDisplayEventSubscription?
 
     // MARK: - Private / App-tracking properties
 
@@ -199,6 +201,7 @@ public class DisplayManager: ObservableObject {
     }
 
     private var timeRuleTimer: ClockTimer?
+    private var hardwareWatchdogTimer: ClockTimer?
     private var willTerminateObserver: NSObjectProtocol?
     private var screenParamsObserver: NSObjectProtocol?
 
@@ -234,13 +237,15 @@ public class DisplayManager: ObservableObject {
         clockService: ClockServiceProtocol = LiveClockService(),
         workspaceService: WorkspaceServiceProtocol = LiveWorkspaceService(),
         appService: AppServiceProtocol = LiveAppService(),
-        shortcutService: ShortcutServiceProtocol = LiveShortcutService()
+        shortcutService: ShortcutServiceProtocol = LiveShortcutService(),
+        systemEventService: SystemDisplayEventServiceProtocol = LiveSystemDisplayEventService()
     ) {
         self.displayService = displayService
         self.clockService = clockService
         self.workspaceService = workspaceService
         self.appService = appService
         self.shortcutService = shortcutService
+        self.systemEventService = systemEventService
 
         let savedReduction    = UserDefaults.standard.double(forKey: Keys.reduction)
         let savedEnabled      = UserDefaults.standard.bool(forKey: Keys.isEnabled)
@@ -322,13 +327,18 @@ public class DisplayManager: ObservableObject {
             self?.restoreOriginalTables()
         }
 
+        // Observe system display environment changes (Night Shift, Sleep/Wake, Screen parameters, Unlock)
+        self.displayEventSubscription = systemEventService.observeSystemDisplayEvents { [weak self] in
+            self?.handleSystemDisplayEnvironmentChanged()
+        }
+
         // 모니터 연결/해제 시 디스플레이 구성 갱신
         self.screenParamsObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.refreshDisplayConfiguration()
+            self?.handleSystemDisplayEnvironmentChanged()
         }
 
         // Observe application focus change
@@ -347,12 +357,19 @@ public class DisplayManager: ObservableObject {
         timeRuleTimer = clockService.scheduleRepeatingTimer(interval: 30) { [weak self] in
             self?.evaluateTimeRules()
         }
+
+        // Periodic hardware watchdog (every 2.0s) to guarantee zero loss of whitepoint reduction
+        hardwareWatchdogTimer = clockService.scheduleRepeatingTimer(interval: 2.0) { [weak self] in
+            self?.verifyAndSynchronizeHardwareGamma()
+        }
     }
 
     deinit {
         transitionTimer?.invalidate()
         timeRuleTimer?.invalidate()
+        hardwareWatchdogTimer?.invalidate()
         workspaceSubscription?.unsubscribe()
+        displayEventSubscription?.unsubscribe()
         if let obs = willTerminateObserver {
             NotificationCenter.default.removeObserver(obs)
         }
@@ -892,16 +909,104 @@ public class DisplayManager: ObservableObject {
         }
     }
 
+    // MARK: - Hardware Synchronization & Night Shift Recovery
+
+    public func handleSystemDisplayEnvironmentChanged() {
+        refreshDisplayConfiguration()
+        if isEnabled && reduction > 0.001 {
+            synchronizeHardwareGamma(forceReapply: true)
+        } else {
+            // Whiteout is off. Update originalTables to track the current system baseline.
+            for displayID in activeDisplayIDs() {
+                var r = [CGGammaValue](repeating: 0, count: tableSize)
+                var g = [CGGammaValue](repeating: 0, count: tableSize)
+                var b = [CGGammaValue](repeating: 0, count: tableSize)
+                var count: UInt32 = 0
+                let err = displayService.getDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b, &count)
+                if (err == .success || err.rawValue == 0), count == tableSize, r[tableSize - 1] >= 0.95 {
+                    originalTables[displayID] = (red: r, green: g, blue: b)
+                }
+            }
+        }
+    }
+
+    public func verifyAndSynchronizeHardwareGamma() {
+        guard isEnabled && reduction > 0.001 else { return }
+        guard displayTransitions.isEmpty else { return }
+        synchronizeHardwareGamma(forceReapply: false)
+    }
+
+    private func synchronizeHardwareGamma(forceReapply: Bool) {
+        let activeIDs = activeDisplayIDs()
+        for displayID in activeIDs {
+            var r = [CGGammaValue](repeating: 0, count: tableSize)
+            var g = [CGGammaValue](repeating: 0, count: tableSize)
+            var b = [CGGammaValue](repeating: 0, count: tableSize)
+            var count: UInt32 = 0
+            let err = displayService.getDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b, &count)
+            guard err == .success || err.rawValue == 0, count == tableSize else { continue }
+            
+            let rLast = r[tableSize - 1]
+            
+            let currentActiveAppRule = self.currentActiveAppRule
+            let currentActiveTimeRule = self.currentActiveTimeRule
+            let targetReduction: Double
+            let targetExponent: Double
+            let targetEnabled: Bool
+
+            if let appRule = currentActiveAppRule {
+                targetReduction = appRule.reduction
+                targetExponent = appRule.curveExponent
+                targetEnabled = appRule.isEnabled
+            } else if let timeRule = currentActiveTimeRule {
+                targetReduction = timeRule.reduction
+                targetExponent = curveExponent
+                targetEnabled = isEnabled
+            } else {
+                let key = String(displayID)
+                let setting = displaySettings[key] ?? DisplaySetting(displayID: displayID, name: getDisplayName(displayID), reduction: reduction, curveExponent: curveExponent, isEnabled: isEnabled)
+                targetReduction = setting.reduction
+                targetExponent = setting.curveExponent
+                targetEnabled = setting.isEnabled
+            }
+            
+            guard targetEnabled && targetReduction > 0.001 else { continue }
+            let expectedMaxOutput = CGGammaValue(1.0 - targetReduction * 0.3)
+            
+            // If the hardware table's top point is close to 1.0 (e.g. >= 0.98, or notably higher than expectedMaxOutput),
+            // it means macOS / Night Shift / True Tone reset or replaced the hardware gamma table!
+            let isResetBySystem = (rLast > expectedMaxOutput + 0.035) || (rLast >= 0.985)
+            
+            if forceReapply || isResetBySystem {
+                // If rLast >= 0.95, this new table is a fresh, unreduced baseline from the system
+                // (e.g. containing updated Night Shift / True Tone color temperature!).
+                if rLast >= 0.95 && !isTableDistorted(red: r, green: g, blue: b) {
+                    originalTables[displayID] = (red: r, green: g, blue: b)
+                }
+                
+                currentAppliedReductions[displayID] = targetReduction
+                currentAppliedExponents[displayID] = targetExponent
+                applyHardwareGamma(displayID: displayID, reduction: targetReduction, exponent: targetExponent)
+            }
+        }
+    }
+
     // MARK: - Private Refactoring Helpers
 
     private func isTableDistorted(red: [CGGammaValue], green: [CGGammaValue], blue: [CGGammaValue]) -> Bool {
         guard red.count == tableSize, green.count == tableSize, blue.count == tableSize else { return true }
         let rLast = red[tableSize - 1]
         let gLast = green[tableSize - 1]
-        let bLast = blue[tableSize - 1]
         
-        // 마지막 화이트포인트 값이 0.9 미만으로 감소되어 있으면 이미 조절된 왜곡 상태로 판단
-        return rLast < 0.9 || gLast < 0.9 || bLast < 0.9
+        // If the red channel is at full output (>= 0.95), this is not Whiteout reduction.
+        // It could be Night Shift or a warm color profile where blue/green are naturally lower.
+        if rLast >= 0.95 {
+            return false
+        }
+        
+        // If red & green channels are uniformly depressed below 0.92,
+        // it indicates an un-restored Whiteout reduction from a previous crash/kill.
+        return rLast < 0.92 && gLast < 0.92
     }
 
     private func generateLinearTable() -> GammaTable {

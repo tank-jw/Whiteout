@@ -71,6 +71,7 @@ final class MockClockService: ClockServiceProtocol {
     var mockedDate = Date()
     var scheduledTimerInterval: TimeInterval?
     var scheduledTimerBlock: (() -> Void)?
+    var timersByInterval: [TimeInterval: () -> Void] = [:]
     
     func currentDate() -> Date {
         return mockedDate
@@ -79,6 +80,7 @@ final class MockClockService: ClockServiceProtocol {
     func scheduleRepeatingTimer(interval: TimeInterval, block: @escaping () -> Void) -> ClockTimer {
         scheduledTimerInterval = interval
         scheduledTimerBlock = block
+        timersByInterval[interval] = block
         return MockClockTimer()
     }
 }
@@ -98,9 +100,33 @@ final class MockWorkspaceService: WorkspaceServiceProtocol {
         return appIcons[bundleIdentifier]
     }
     
+    func observeActiveApplication(handler: @escaping () -> Void) -> WorkspaceSubscription {
+        return MockWorkspaceSubscription()
+    }
+    
     func observeActiveApplication(handler: @escaping (String, String) -> Void) -> WorkspaceSubscription {
         activeAppHandler = handler
         return MockWorkspaceSubscription()
+    }
+}
+
+final class MockSystemDisplayEventSubscription: SystemDisplayEventSubscription {
+    var isUnsubscribed = false
+    func unsubscribe() {
+        isUnsubscribed = true
+    }
+}
+
+final class MockSystemDisplayEventService: SystemDisplayEventServiceProtocol {
+    var eventHandler: (() -> Void)?
+    
+    func observeSystemDisplayEvents(handler: @escaping () -> Void) -> SystemDisplayEventSubscription {
+        eventHandler = handler
+        return MockSystemDisplayEventSubscription()
+    }
+    
+    func triggerDisplayEvent() {
+        eventHandler?()
     }
 }
 
@@ -135,6 +161,7 @@ final class DisplayManagerTests: XCTestCase {
     var workspaceService: MockWorkspaceService!
     var appService: MockAppService!
     var shortcutService: MockShortcutService!
+    var systemEventService: MockSystemDisplayEventService!
     var dm: DisplayManager!
     
     override func setUp() {
@@ -144,6 +171,7 @@ final class DisplayManagerTests: XCTestCase {
         workspaceService = MockWorkspaceService()
         appService = MockAppService()
         shortcutService = MockShortcutService()
+        systemEventService = MockSystemDisplayEventService()
         
         let keys = [
             "whitePointReduction",
@@ -167,7 +195,8 @@ final class DisplayManagerTests: XCTestCase {
             clockService: clockService,
             workspaceService: workspaceService,
             appService: appService,
-            shortcutService: shortcutService
+            shortcutService: shortcutService,
+            systemEventService: systemEventService
         )
         dm.isAnimationEnabled = false
     }
@@ -179,6 +208,7 @@ final class DisplayManagerTests: XCTestCase {
         workspaceService = nil
         appService = nil
         shortcutService = nil
+        systemEventService = nil
         super.tearDown()
     }
     
@@ -726,5 +756,99 @@ final class DisplayManagerTests: XCTestCase {
         RunLoop.current.run(until: Date(timeIntervalSinceNow: 0.05))
         // Must stay closed (not reopen)
         XCTAssertFalse(controller.popover.isShown)
+    }
+
+    func testNightShiftWarmthPreservedAndNotTreatedAsDistorted() {
+        let nightShiftService = MockDisplayService()
+        var rNight = [CGGammaValue](repeating: 0, count: 256)
+        var gNight = [CGGammaValue](repeating: 0, count: 256)
+        var bNight = [CGGammaValue](repeating: 0, count: 256)
+        for i in 0..<256 {
+            let t = CGGammaValue(i) / 255.0
+            rNight[i] = t * 1.0
+            gNight[i] = t * 0.85
+            bNight[i] = t * 0.65
+        }
+        nightShiftService.getDisplayTables[1] = (red: rNight, green: gNight, blue: bNight)
+
+        let testDM = DisplayManager(
+            displayService: nightShiftService,
+            clockService: clockService,
+            workspaceService: workspaceService,
+            appService: appService,
+            shortcutService: shortcutService,
+            systemEventService: systemEventService
+        )
+        testDM.isAnimationEnabled = false
+        testDM.isEnabled = true
+        testDM.reduction = 0.2 // 6% whitepoint reduction (maxOutput = 0.94)
+        testDM.applyReduction()
+
+        XCTAssertNotNil(nightShiftService.setDisplayTables[1])
+        if let table = nightShiftService.setDisplayTables[1] {
+            let rLast = Double(table.red.last!)
+            let gLast = Double(table.green.last!)
+            let bLast = Double(table.blue.last!)
+
+            // Red channel should be reduced by maxOutput (~0.94)
+            XCTAssertEqual(rLast, 1.0 * (1.0 - 0.2 * 0.3), accuracy: 0.005)
+            // Green channel should be 0.85 * 0.94 (~0.799)
+            XCTAssertEqual(gLast, 0.85 * (1.0 - 0.2 * 0.3), accuracy: 0.005)
+            // Blue channel should be 0.65 * 0.94 (~0.611)
+            XCTAssertEqual(bLast, 0.65 * (1.0 - 0.2 * 0.3), accuracy: 0.005)
+
+            // Warmth ratio must be strictly preserved
+            let ratio = bLast / rLast
+            XCTAssertEqual(ratio, 0.65, accuracy: 0.01)
+        }
+    }
+
+    func testSystemDisplayEventRestoresReductionOnSystemReset() {
+        dm.isEnabled = true
+        dm.reduction = 0.2
+        dm.applyReduction()
+
+        // Verify initial reduction is applied
+        if let table = displayService.setDisplayTables[1] {
+            XCTAssertEqual(Double(table.red.last!), 1.0 - 0.2 * 0.3, accuracy: 0.005)
+        }
+
+        // Simulate macOS or Night Shift resetting the hardware table to 1.0
+        let rReset = (0..<256).map { CGGammaValue($0) / 255.0 }
+        let gReset = (0..<256).map { CGGammaValue($0) / 255.0 }
+        let bReset = (0..<256).map { CGGammaValue($0) / 255.0 }
+        displayService.getDisplayTables[1] = (red: rReset, green: gReset, blue: bReset)
+
+        // Trigger system event (e.g. Night Shift notification, Wake from sleep)
+        systemEventService.triggerDisplayEvent()
+
+        // Reduction must be immediately re-applied to the display
+        if let table = displayService.setDisplayTables[1] {
+            XCTAssertEqual(Double(table.red.last!), 1.0 - 0.2 * 0.3, accuracy: 0.005)
+        }
+    }
+
+    func testHardwareWatchdogRestoresReductionOnExternalGammaReset() {
+        dm.isEnabled = true
+        dm.reduction = 0.2
+        dm.applyReduction()
+
+        // Simulate external gamma reset to 1.0 without sending a notification
+        let rReset = (0..<256).map { CGGammaValue($0) / 255.0 }
+        let gReset = (0..<256).map { CGGammaValue($0) / 255.0 }
+        let bReset = (0..<256).map { CGGammaValue($0) / 255.0 }
+        displayService.getDisplayTables[1] = (red: rReset, green: gReset, blue: bReset)
+
+        // Verify watchdog timer is registered
+        let watchdogBlock = clockService.timersByInterval[2.0]
+        XCTAssertNotNil(watchdogBlock, "Hardware watchdog timer should be registered at 2.0s")
+
+        // Trigger watchdog block
+        watchdogBlock?()
+
+        // Reduction must be automatically recovered by the watchdog
+        if let table = displayService.setDisplayTables[1] {
+            XCTAssertEqual(Double(table.red.last!), 1.0 - 0.2 * 0.3, accuracy: 0.005)
+        }
     }
 }
