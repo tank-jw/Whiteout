@@ -9,7 +9,7 @@ fi
 
 APP_NAME="WhiteOut"
 BUNDLE_ID="com.tankjw.WhiteOut"
-VERSION="2.2.6"
+VERSION="2.2.7"
 DMG_NAME="${APP_NAME}.dmg"
 ZIP_NAME="${APP_NAME}.zip"
 BUILD_DIR=".build/release"

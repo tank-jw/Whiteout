@@ -153,7 +153,20 @@ public final class StatusBarController: NSObject, NSPopoverDelegate {
         showPopover(sender)
     }
 
+    public func showPopover() {
+        guard let button = statusItem.button else { return }
+        showPopover(button)
+    }
+
     public func showPopover(_ sender: NSStatusBarButton) {
+        if popover.isShown {
+            if let window = popover.contentViewController?.view.window {
+                window.makeKeyAndOrderFront(nil)
+            }
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
         isClosedByButton = false
         let currentWidth = sender.frame.width
         if currentWidth > 0 {

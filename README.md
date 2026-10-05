@@ -141,6 +141,7 @@ Sources/
 
 | 버전 | 내용 |
 |---|---|
+| **v2.2.7** | **단일 인스턴스 보장(Single Instance Guard) 및 중복 실행 시 기존 팝오버 자동 표시**<br>- 메뉴바 상주형(`ActivationPolicy.accessory`) 앱 특성 및 인앱 업데이트/스포트라이트 재실행 시 발생할 수 있던 동일 프로세스 2중 실행(동일 아이콘 2개 노출) 버그 원천 차단<br>- `NSRunningApplication` 및 POSIX 커널 수준의 atomic `flock`을 결합한 2중 가드(`AppInstanceGuard`)를 탑재하여 신규 중복 프로세스는 하드웨어 감마나 UI를 건드리지 않고 1ms 내에 즉시 자진 종료<br>- 중복 실행 시도 시 macOS 분산 알림(`DistributedNotificationCenter`)을 통해 기존에 켜져 있던 Whiteout 인스턴스의 설정창(팝오버)을 부드럽게 띄워주는 네이티브 스마트 UX 구현<br>- 단일 인스턴스 락 및 팝오버 원격 트리거를 검증하는 단위 테스트 3종 추가 (총 23개 테스트 전원 무결성 통과) |
 | **v2.2.6** | **Night Shift 완벽 공존 및 화면 전환/잠자기 감마 자가 치유(Self-Healing) 엔진 탑재**<br>- macOS Night Shift 켜짐/꺼짐, Mac 잠자기/깨우기(`didWake`), 화면 잠금 해제 시 WindowServer가 GPU 감마 LUT를 강제 초기화하여 화이트포인트 감쇄가 풀리던 치명적 결함을 완벽 해결<br>- Night Shift의 따뜻한 색온도(Blue 채널 0.5~0.8)를 왜곡으로 오인 치환하지 않도록 감마 왜곡 가드(`isTableDistorted`)를 고도화하여 색온도 비율(Blue/Red) 100% 보존<br>- `CoreBrightness`(Night Shift 알림) 및 `NSWorkspace` 시스템 이벤트를 즉각 감지하는 1차 능동 동기화와, 2초 주기 GPU 하드웨어 워치독(`verifyAndSynchronizeHardwareGamma`) 2차 자가 치유 이중 방어막 구축<br>- Night Shift 공존 및 자가 치유를 검증하는 단위 테스트 3종 추가 (총 20개 테스트 전원 무결성 통과) |
 | **v2.2.5** | **메뉴바 아이콘 재클릭 시 설정창 닫힘(토글) 완벽 지원**<br>- 팝오버가 열려 있는 상태에서 메뉴바 아이콘을 다시 클릭할 때 창이 닫히지 않고 재오픈되던 AppKit `NSPopover` 특유의 `.transient` 레이스 컨디션을 완벽 해결<br>- `popoverWillClose` 시점의 메뉴바 버튼 영역 마우스 좌표 검사(`isClosedByButton`) 및 250ms 타임스탬프 디바운스 이중 방어 로직을 탑재하여 일반적인 메뉴바 앱과 동일한 자연스러운 열림/닫힘 토글 UX 완성<br>- 단위 테스트 스위트에 메뉴바 팝오버 토글 라이프사이클 검증 테스트 추가 (17개 테스트 전원 통과) |
 | **v2.2.4** | **설정창 On/Off 토글 시 팝오버 윈도우 좌우 흔들림(축 이동) 완벽 방지**<br>- 설정창(팝오버)이 열린 상태에서 On/Off 토글 시 메뉴바 버튼 너비 변화(텍스트 표시/제거)로 인해 AppKit `NSPopover` 윈도우가 좌우로 점프하던 현상을 `WindowPositionStabilizer`로 완벽 고정<br>- 팝오버 표시 시점의 X 좌표를 안전 잠금(Lock)하여 On/Off 조작 중 윈도우가 단 1픽셀도 흔들리지 않고 완벽하게 위치를 유지하도록 개선하고, 창 종료 시 락을 해제하여 재오픈 시의 유연한 반응성 확보 |
@@ -365,6 +366,7 @@ Sources/
   - [2026-09-26] 팝오버 화살표 끝이 메뉴바 아이콘을 가리거나 침범하지 않도록 Y축 오프셋을 -36pt(Quartz Y=36)로 정밀 조정하여, 메뉴바 하단 라인(Y=33)과 화살표 끝단 사이에 3pt의 절제된 상단 여백 및 아이콘과의 7.5pt 간격을 확보함. WindowPositionStabilizer 내 중복 잠금 방지 가드를 보강하여 On/Off 토글 시에도 상하·좌우 0.0px 윈도우 고정 상태를 완벽히 유지하도록 완성함.
   - [2026-09-27] NSPopover의 .transient 동작 시 메뉴바 버튼 클릭의 mouseDown이 팝오버 외부 클릭으로 감지되어 먼저 닫힌 후 mouseUp 액션에서 재오픈되던 토글 비정상 현상을 해결함. popoverWillClose 시점의 버튼 영역 마우스 좌표 검사(isClosedByButton)와 타임스탬프 기반 디바운스 이중 가드를 구축하여, 일반적인 메뉴바 앱과 동일하게 메뉴바 아이콘 클릭 시 열림/닫힘이 자연스럽게 토글되도록 완성하고 v2.2.5로 배포함.
   - [2026-10-04] macOS Night Shift(CoreBrightness), True Tone 및 잠자기/깨우기(didWake) 시 시스템 WindowServer가 GPU 감마 테이블을 1.0으로 덮어써 Whiteout의 감쇄가 풀리던 문제와, isTableDistorted가 Night Shift의 따뜻한 색온도(B채널 감쇄)를 왜곡으로 오인 치환하던 아키텍처 결함을 규명함. 1) isTableDistorted에 R채널 가드(>=0.95)를 적용해 Night Shift 온기를 100% 보존하고, 2) CBBlueLightClient 알림 및 NSWorkspace 슬립/웨이크 옵저버를 구축했으며, 3) 2초 주기 하드웨어 워치독(verifyAndSynchronizeHardwareGamma) 자가 치유 엔진을 탑재하여 어떤 OS 디스플레이 이벤트에도 감쇄율이 영구 유지되도록 해결함.
+  - [2026-10-05] 메뉴바 전용(Accessory) 앱 환경에서 인앱 업데이트 후 또는 사용자 다중 실행 시 발생할 수 있는 동일 프로세스 중복 실행 결함을 규명함. 1) NSRunningApplication 및 POSIX 커널 수준의 atomic flock 파일 잠금을 결합한 AppInstanceGuard를 구축하여 중복 프로세스는 1ms 내에 즉시 자진 종료(exit)하도록 차단하고, 2) DistributedNotificationCenter를 연동하여 중복 실행 시도 시 기존 활성 인스턴스의 설정창(팝오버)을 자동으로 열어주는 네이티브 스마트 UX를 완성하여 v2.2.7로 배포함.
 * **Mathematical Explainer**:
   - (여기에 에이전트가 학습 사항을 기록합니다)
 * **Web Frontend Developer**:
@@ -391,6 +393,12 @@ Sources/
   - [2026-09-11] AI 코딩 툴 고도화 시대에서의 구매 심리(코드 생성이 아닌 0-Setup 완제품 경험 소비) 및 초기 비용(20만원) 리스크를 0으로 만드는 웹 기반 사전 검증(Lemon Squeezy MoR 린 런칭) 프레임워크 수립.
   - [2026-09-11] Lemon Squeezy 등 MoR(Merchant of Record) 플랫폼의 글로벌 세금 대행 구조 및 한국 세법(초기 개인 정산/종소세 신고, 사업화 시 외화 영세율 부가세 0% 적용) 합법성 및 세무 전략 정립.
   - [2026-09-11] 애플 앱스토어의 한국 지역 유료 판매 규정(전자상거래법 사업자 정보 요구)과 글로벌(북미/유럽) 타겟 출시 시 개인(Individual) 정산 프로세스 및 통신판매업 면제 요건 분석.
+  - [2026-10-05] Astra 등 고도화된 프론티어 AI 코딩 시대에서의 유틸리티 앱 수익화 현실 진단: 복잡한 기능 자체의 기술 해자는 소멸했으나, 0-Friction(패키징, OS 시스템 예외 처리, 즉각적 사용성)과 충동구매 가격대($3.99~$4.99)에서 유효한 마이크로 유틸리티 틈새시장 가치 분석.
+  - [2026-10-05] $2.99 전후 가격대(충동구매 마찰력 제로 및 Lemon Squeezy 수수료 최적화)와 $4.99 기준 앵커링 할인($4.99 ➔ 40% OFF $2.99) 전환율 극대화 전략 검증.
+  - [2026-10-05] Mac App Store 유틸리티 카테고리의 티어별 가격 저항감 분석: $1.99(저품질 낙인 리스크)와 $3.99(심리적 모호성) 대비 양대 표준 축인 $2.99(다운로드 볼륨 극대화) vs $4.99(프로페셔널 인지 및 총매출 최적화) 비교 검증.
+  - [2026-10-05] 국내 1인 개발자의 Mac App Store 글로벌/국내 병행 출시를 위한 원스톱 행정(홈택스 0원 간이사업자, W-8BEN 조세감면) 및 App Store Connect 정산 세팅 가이드라인 수립.
+  - [2026-10-05] 직장인 1인 개발자의 겸업/사업자등록 시 사내 노출 리스크(건강보험 소득월액 2,000만 원 초과 기준, 연말정산 분리 신고, 1인 무고용 원칙) 분석 및 완벽 은닉 가이드라인 정립.
+  - [2026-10-05] 건강보험 소득월액보험료(연 2,000만 원 초과 시)의 개인 전액 부담 및 자택 개별 고지 메커니즘 검증: 회사 EDI 급여내역 비노출 및 연말정산 서류 제출 시 주의점 정리.
 * **Business Auditor & PM**:
   - [2026-06-30] macOS에 존재하지 않는 "흰색점 줄이기(Reduce White Point)" 기능을 재발견하여 iOS와의 차이를 검증하고, 이를 경쟁 제품군(BetterDisplay, Lunar 등) 분석에 연동하여 차별화된 영문 마케팅(극지 화이트아웃/설맹 서사) 및 타겟 포지셔닝(밤샘 개발자 중심) 전략을 수립함.
   - [2026-06-30] 에이전트들이 이전 의사결정 사항(Whiteout 명명 및 하드웨어 감마 테이블 등)을 일관성 있게 준수하며 개발할 수 있도록 AGENTS.md 행동 수칙 및 README.md 핵심 의사결정 이력(Key Decision Log) 자동화 연동을 설계 및 구현함.
@@ -398,6 +406,7 @@ Sources/
 * **QA Engineer & Integrity Verifier**:
   - [2026-06-30] 감쇄율 연동, 곡선 지수 보정, 다중 디스플레이, 시간/앱별 자동화 O(1) 매핑, 전역 핫키 및 왜곡된 감마의 복원 가드(isTableDistorted) 검증을 포괄하는 8대 무결성 시나리오 교차 테스트 프로토콜을 수립하고 전원 통과를 확인하여 v1.7.2로 배포함.
   - [2026-06-30] DisplayManager의 감쇄 공식, 앱/시간 자동화 규칙, 전역 핫키 토글, 그리고 왜곡된 감마 복원 가드를 검증하는 5대 시나리오 통합 테스트 케이스를 구현하고, 테스트 중 발견된 Rule 활성화 시 UserDefaults의 사용자 설정 값이 오버라이트되는 버그를 수정함.
+  - [2026-10-05] 외부 C-API 및 OS 하드웨어 결합 시스템을 프로토콜 기반 가상화 하네스로 분리하고, AI 에이전트의 자가 평가 환각을 원천 차단하는 객관적 검증 기반 '하네스 엔지니어링 프레임워크(Test & Agent Harness Engineering)'를 체계화함.
 * **Preview Explorer**:
   - [2026-06-30] CoreGraphics C-API, Timer, NSWorkspace, 및 SMAppService 등의 강결합을 해제하기 위한 프로토콜 기반 의존성 주입(Dependency Injection) 아키텍처를 설계하고, 자정 교차 시간 규칙 테스트용 MockClockService 등 5종의 Mock 구조를 수립함.
   - [2026-06-30] Designed a testable architecture for Whiteout using dependency injection, decoupling DisplayManager from CoreGraphics, Date/Timer, NSWorkspace, and SMAppService with fully mockable protocols.
