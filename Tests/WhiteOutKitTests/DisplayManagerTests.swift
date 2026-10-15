@@ -58,6 +58,18 @@ final class MockDisplayService: DisplayServiceProtocol {
     func getDisplayName(_ displayID: CGDirectDisplayID) -> String? {
         return mockDisplayNames[displayID]
     }
+
+    var mockNightShiftActive = false
+    var mockNightShiftStrength: Float = 0.5
+    var restoreColorSyncSettingsCalled = false
+
+    func restoreColorSyncSettings() {
+        restoreColorSyncSettingsCalled = true
+    }
+
+    func getNightShiftStatus() -> (active: Bool, strength: Float) {
+        return (mockNightShiftActive, mockNightShiftStrength)
+    }
 }
 
 final class MockClockTimer: ClockTimer {
@@ -850,5 +862,38 @@ final class DisplayManagerTests: XCTestCase {
         if let table = displayService.setDisplayTables[1] {
             XCTAssertEqual(Double(table.red.last!), 1.0 - 0.2 * 0.3, accuracy: 0.005)
         }
+    }
+
+    func testNightShiftActivePreservesWarmthOnNeutralTable() {
+        displayService.mockNightShiftActive = true
+        displayService.mockNightShiftStrength = 0.5
+
+        dm.isAnimationEnabled = false
+        dm.isEnabled = true
+        dm.reduction = 10.0 / 30.0 // 10% whiteout reduction, maxOutput = 0.90
+        dm.applyReduction()
+
+        XCTAssertNotNil(displayService.setDisplayTables[1])
+        if let table = displayService.setDisplayTables[1] {
+            let rLast = Double(table.red.last!)
+            let gLast = Double(table.green.last!)
+            let bLast = Double(table.blue.last!)
+
+            // Red should be 0.90
+            XCTAssertEqual(rLast, 0.90, accuracy: 0.005)
+            // Green should be 0.90 * (1.0 - 0.5 * 0.12) = 0.846
+            XCTAssertEqual(gLast, 0.90 * 0.94, accuracy: 0.005)
+            // Blue should be 0.90 * (1.0 - 0.5 * 0.45) = 0.6975
+            XCTAssertEqual(bLast, 0.90 * 0.775, accuracy: 0.005)
+
+            // Warmth ordering: Blue must be noticeably lower than Red
+            XCTAssertTrue(bLast < gLast)
+            XCTAssertTrue(gLast < rLast)
+        }
+
+        // When reduction is disabled, ColorSync should be restored
+        dm.isEnabled = false
+        dm.applyReduction()
+        XCTAssertTrue(displayService.restoreColorSyncSettingsCalled)
     }
 }

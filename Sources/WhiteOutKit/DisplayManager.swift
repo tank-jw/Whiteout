@@ -383,6 +383,21 @@ public class DisplayManager: ObservableObject {
 
     /// Apply the current `reduction` value to active displays.
     public func applyReduction(animated: Bool = true) {
+        // If enabling or starting reduction from 0, refresh originalTables from hardware if unreduced
+        let isStartingFromZero = currentAppliedReductions.values.allSatisfy { $0 < 0.001 }
+        if isStartingFromZero {
+            for displayID in activeDisplayIDs() {
+                var r = [CGGammaValue](repeating: 0, count: tableSize)
+                var g = [CGGammaValue](repeating: 0, count: tableSize)
+                var b = [CGGammaValue](repeating: 0, count: tableSize)
+                var count: UInt32 = 0
+                let err = displayService.getDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b, &count)
+                if (err == .success || err.rawValue == 0), count == tableSize, r[tableSize - 1] >= 0.95, !isTableDistorted(red: r, green: g, blue: b) {
+                    originalTables[displayID] = (red: r, green: g, blue: b)
+                }
+            }
+        }
+
         let currentActiveAppRule = self.currentActiveAppRule
         let currentActiveTimeRule = self.currentActiveTimeRule
         let shouldAnimate = animated && isAnimationEnabled
@@ -515,18 +530,36 @@ public class DisplayManager: ObservableObject {
             var g = tables.green
             var b = tables.blue
             _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
+            displayService.restoreColorSyncSettings()
             return
         }
 
         let maxOutput = CGGammaValue(1.0 - reduction * 0.3)
         let exp = CGGammaValue(exponent)
 
+        let nightShift = displayService.getNightShiftStatus()
+        let tableRedLast = tables.red.last ?? 1.0
+        let tableBlueLast = tables.blue.last ?? 1.0
+        let existingWarmthRatio = tableRedLast > 0 ? (tableBlueLast / tableRedLast) : 1.0
+
+        let greenWarmth: CGGammaValue
+        let blueWarmth: CGGammaValue
+
+        if nightShift.active && existingWarmthRatio >= 0.95 {
+            let str = CGGammaValue(max(0.0, min(1.0, nightShift.strength)))
+            greenWarmth = 1.0 - str * 0.12
+            blueWarmth = 1.0 - str * 0.45
+        } else {
+            greenWarmth = 1.0
+            blueWarmth = 1.0
+        }
+
         for i in 0..<tableSize {
             let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
             let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
             gammaBufferR[i] = tables.red[i]   * sf
-            gammaBufferG[i] = tables.green[i] * sf
-            gammaBufferB[i] = tables.blue[i]  * sf
+            gammaBufferG[i] = tables.green[i] * sf * greenWarmth
+            gammaBufferB[i] = tables.blue[i]  * sf * blueWarmth
         }
         _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &gammaBufferR, &gammaBufferG, &gammaBufferB)
     }
@@ -839,13 +872,17 @@ public class DisplayManager: ObservableObject {
         displayTransitions.removeAll()
         currentAppliedReductions.removeAll()
         currentAppliedExponents.removeAll()
-        guard !originalTables.isEmpty else { return }
+        guard !originalTables.isEmpty else {
+            displayService.restoreColorSyncSettings()
+            return
+        }
         for (displayID, tables) in originalTables {
             var r = tables.red
             var g = tables.green
             var b = tables.blue
             _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &r, &g, &b)
         }
+        displayService.restoreColorSyncSettings()
     }
 
     /// 모니터 연결/해제 시 호출 — 새 디스플레이 추가, 제거된 디스플레이 정리
