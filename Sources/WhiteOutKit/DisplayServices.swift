@@ -85,28 +85,33 @@ public struct LiveDisplayService: DisplayServiceProtocol {
         CGDisplayRestoreColorSyncSettings()
     }
 
-    public func getNightShiftStatus() -> (active: Bool, strength: Float) {
+    private static let blueLightClient: AnyObject? = {
         if let bundle = Bundle(path: "/System/Library/PrivateFrameworks/CoreBrightness.framework") {
             bundle.load()
             if let clientClass = NSClassFromString("CBBlueLightClient") as? NSObject.Type {
-                let client = clientClass.init()
-                var buf = [UInt8](repeating: 0, count: 256)
-                let getStatusSel = NSSelectorFromString("getBlueLightStatus:")
-                if client.responds(to: getStatusSel) {
-                    typealias GetStatusFunc = @convention(c) (AnyObject, Selector, UnsafeMutableRawPointer) -> Bool
-                    let fn = unsafeBitCast(client.method(for: getStatusSel), to: GetStatusFunc.self)
-                    let ok = fn(client, getStatusSel, &buf)
-                    if ok && buf[0] != 0 {
-                        var strength: Float = 0.5
-                        let strSel = NSSelectorFromString("getStrength:")
-                        if client.responds(to: strSel) {
-                            typealias GetStrFunc = @convention(c) (AnyObject, Selector, UnsafeMutablePointer<Float>) -> Bool
-                            let strFn = unsafeBitCast(client.method(for: strSel), to: GetStrFunc.self)
-                            _ = strFn(client, strSel, &strength)
-                        }
-                        return (true, strength)
-                    }
+                return clientClass.init()
+            }
+        }
+        return nil
+    }()
+
+    public func getNightShiftStatus() -> (active: Bool, strength: Float) {
+        guard let client = Self.blueLightClient else { return (false, 0.0) }
+        var buf = [UInt8](repeating: 0, count: 256)
+        let getStatusSel = NSSelectorFromString("getBlueLightStatus:")
+        if client.responds(to: getStatusSel) {
+            typealias GetStatusFunc = @convention(c) (AnyObject, Selector, UnsafeMutableRawPointer) -> Bool
+            let fn = unsafeBitCast(client.method(for: getStatusSel), to: GetStatusFunc.self)
+            let ok = fn(client, getStatusSel, &buf)
+            if ok && buf[0] != 0 {
+                var strength: Float = 0.5
+                let strSel = NSSelectorFromString("getStrength:")
+                if client.responds(to: strSel) {
+                    typealias GetStrFunc = @convention(c) (AnyObject, Selector, UnsafeMutablePointer<Float>) -> Bool
+                    let strFn = unsafeBitCast(client.method(for: strSel), to: GetStrFunc.self)
+                    _ = strFn(client, strSel, &strength)
                 }
+                return (true, strength)
             }
         }
         return (false, 0.0)

@@ -537,6 +537,55 @@ final class DisplayManagerTests: XCTestCase {
         }
     }
 
+    func testContinuousTransitionToggleOff() {
+        dm.isAnimationEnabled = true
+        dm.isEnabled = true
+        dm.reduction = 0.2
+        
+        let initialDate = Date()
+        clockService.mockedDate = initialDate
+        dm.applyReduction(animated: true)
+
+        // Advance past duration to complete enabling
+        clockService.mockedDate = initialDate.addingTimeInterval(0.25)
+        clockService.scheduledTimerBlock?()
+
+        // Verify enabled state reached (0.94)
+        if let table = displayService.setDisplayTables[1] {
+            XCTAssertEqual(Double(table.red.last!), 0.94, accuracy: 0.001)
+        }
+
+        // Now turn OFF via setEnabled(false)
+        let toggleOffDate = initialDate.addingTimeInterval(1.0)
+        clockService.mockedDate = toggleOffDate
+        dm.setEnabled(false)
+
+        XCTAssertNotNil(clockService.scheduledTimerBlock, "Animation timer should be scheduled when disabling")
+
+        // Advance halfway through fade-out (0.08s)
+        clockService.mockedDate = toggleOffDate.addingTimeInterval(0.08)
+        clockService.scheduledTimerBlock?()
+
+        // Intermediate gamma should be between 0.94 and 1.0
+        if let table = displayService.setDisplayTables[1] {
+            let lastVal = table.red.last!
+            print("Halfway fade-out red.last = \(lastVal)")
+            XCTAssertGreaterThan(lastVal, 0.94)
+            XCTAssertLessThan(lastVal, 1.0)
+        }
+
+        // Advance to full completion (0.25s)
+        clockService.mockedDate = toggleOffDate.addingTimeInterval(0.25)
+        clockService.scheduledTimerBlock?()
+
+        // Final restored gamma should be 1.0
+        if let table = displayService.setDisplayTables[1] {
+            let lastVal = table.red.last!
+            print("Completed fade-out red.last = \(lastVal)")
+            XCTAssertEqual(Double(lastVal), 1.0, accuracy: 0.001)
+        }
+    }
+
     func testContinuousTransitionInterruption() {
         dm.isAnimationEnabled = true
         dm.isEnabled = true

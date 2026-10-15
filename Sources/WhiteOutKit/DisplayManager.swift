@@ -454,8 +454,8 @@ public class DisplayManager: ObservableObject {
                 continue
             }
 
-            // Calibrated duration: ~0.20-0.22s for large jumps, ~0.12-0.15s for small slider adjustments
-            let duration: TimeInterval = min(0.22, max(0.12, redDiff * 0.8))
+            // Calibrated duration: ~0.30-0.35s for On/Off toggle & large jumps, ~0.16-0.20s for small slider adjustments
+            let duration: TimeInterval = min(0.35, max(0.16, redDiff * 0.9))
             displayTransitions[displayID] = DisplayTransitionState(
                 startReduction: currentRed,
                 targetReduction: finalTargetReduction,
@@ -492,8 +492,8 @@ public class DisplayManager: ObservableObject {
             let elapsed = now.timeIntervalSince(state.startTime)
             let progress = min(1.0, max(0.0, elapsed / state.duration))
 
-            // Cubic ease-out: f(p) = 1.0 - (1.0 - p)^3
-            let eased = 1.0 - pow(1.0 - progress, 3.0)
+            // Smooth natural ease-out: f(p) = 1.0 - (1.0 - p)^2.2
+            let eased = 1.0 - pow(1.0 - progress, 2.2)
 
             let interpRed = state.startReduction + (state.targetReduction - state.startReduction) * eased
             let interpExp = state.startExponent + (state.targetExponent - state.startExponent) * eased
@@ -566,8 +566,11 @@ public class DisplayManager: ObservableObject {
 
     /// Toggle the effect on/off.
     public func setEnabled(_ enabled: Bool) {
-        isEnabled = enabled
-        applyReduction()
+        if isEnabled != enabled {
+            isEnabled = enabled
+        } else {
+            applyReduction()
+        }
     }
 
     /// Restore original tables and quit.
