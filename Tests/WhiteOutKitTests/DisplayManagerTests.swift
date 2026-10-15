@@ -928,16 +928,10 @@ final class DisplayManagerTests: XCTestCase {
             let gLast = Double(table.green.last!)
             let bLast = Double(table.blue.last!)
 
-            // Red should be 0.90
+            // Red, Green, Blue should all scale cleanly by maxOutput (0.90) without artificial tint distortion
             XCTAssertEqual(rLast, 0.90, accuracy: 0.005)
-            // Green should be 0.90 * (1.0 - 0.5 * 0.12) = 0.846
-            XCTAssertEqual(gLast, 0.90 * 0.94, accuracy: 0.005)
-            // Blue should be 0.90 * (1.0 - 0.5 * 0.45) = 0.6975
-            XCTAssertEqual(bLast, 0.90 * 0.775, accuracy: 0.005)
-
-            // Warmth ordering: Blue must be noticeably lower than Red
-            XCTAssertTrue(bLast < gLast)
-            XCTAssertTrue(gLast < rLast)
+            XCTAssertEqual(gLast, 0.90, accuracy: 0.005)
+            XCTAssertEqual(bLast, 0.90, accuracy: 0.005)
         }
 
         // When reduction is disabled, ColorSync should be restored

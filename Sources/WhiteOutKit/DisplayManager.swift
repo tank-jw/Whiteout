@@ -537,29 +537,12 @@ public class DisplayManager: ObservableObject {
         let maxOutput = CGGammaValue(1.0 - reduction * 0.3)
         let exp = CGGammaValue(exponent)
 
-        let nightShift = displayService.getNightShiftStatus()
-        let tableRedLast = tables.red.last ?? 1.0
-        let tableBlueLast = tables.blue.last ?? 1.0
-        let existingWarmthRatio = tableRedLast > 0 ? (tableBlueLast / tableRedLast) : 1.0
-
-        let greenWarmth: CGGammaValue
-        let blueWarmth: CGGammaValue
-
-        if nightShift.active && existingWarmthRatio >= 0.95 {
-            let str = CGGammaValue(max(0.0, min(1.0, nightShift.strength)))
-            greenWarmth = 1.0 - str * 0.12
-            blueWarmth = 1.0 - str * 0.45
-        } else {
-            greenWarmth = 1.0
-            blueWarmth = 1.0
-        }
-
         for i in 0..<tableSize {
             let t = CGGammaValue(i) / CGGammaValue(tableSize - 1)
             let sf = 1.0 - pow(t, exp) * (1.0 - maxOutput)
             gammaBufferR[i] = tables.red[i]   * sf
-            gammaBufferG[i] = tables.green[i] * sf * greenWarmth
-            gammaBufferB[i] = tables.blue[i]  * sf * blueWarmth
+            gammaBufferG[i] = tables.green[i] * sf
+            gammaBufferB[i] = tables.blue[i]  * sf
         }
         _ = displayService.setDisplayTransferByTable(displayID, UInt32(tableSize), &gammaBufferR, &gammaBufferG, &gammaBufferB)
     }
